@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#00206b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,150 +13,287 @@
 <link rel="apple-touch-icon" id="touchIcon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* ============ Alhowail Field App — same design language as the Al-Howail dashboard ============ */
 :root{
-  --blue:#1631CE; --blue-deep:#0A1A7E; --blue-soft:#E9ECFD;
-  --yellow:#FEF301; --ink:#141A33; --muted:#5E6687; --line:#E1E5F0;
-  --bg:#F3F5FB; --card:#FFFFFF; --danger:#C62828; --danger-soft:#FDECEA;
-  --green:#1E8E3E; --green-soft:#E6F4EA;
-  --radius:14px;
-  --font:'Cairo', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  /* dashboard tokens */
+  --blue:#0033a0; --blue-dark:#00206b; --yellow:#ffd400; --yellow-dark:#e0b800;
+  --bg:#eef1f7; --panel:#ffffff; --line:#e2e6ee; --ink:#1c2333; --ink-dim:#6b7387; --ink-mute:#9aa1b3;
+  --good:#0f9d58; --bad:#d93025;
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  /* app aliases (used by the screens) */
+  --blue-deep:var(--blue-dark); --blue-soft:#e7ecfa; --muted:var(--ink-dim); --card:var(--panel);
+  --danger:var(--bad); --danger-soft:#fdecea; --green:var(--good); --green-soft:#e3f5ec;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.04);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'Noto Sans Arabic',sans-serif;
   --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;
-  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
-button,input{font:inherit;color:inherit}
-.ar{font-weight:600;color:inherit;opacity:.78;margin-inline-start:6px}
-.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden}
-.screen.on{display:flex}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.ar{font-family:'Noto Sans Arabic',var(--font);font-weight:700;font-size:.86em;color:inherit;opacity:.62;margin-inline-start:8px}
+.ar-line{display:block;direction:rtl;text-align:right;font-family:'Noto Sans Arabic',var(--font);opacity:.85;margin-top:2px}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow:hidden;background:var(--bg)}
+.screen.on{display:flex;animation:fadeIn .18s var(--ease-out)}
+@keyframes fadeIn{from{opacity:.4}to{opacity:1}}
 
 /* ---------- Splash ---------- */
-#splash{background:#fff;align-items:center;justify-content:center;gap:22px;color:var(--blue-deep)}
-#splash .logo{width:min(62vw,260px);height:auto}
-#splash .name{font-weight:700;font-size:15px;letter-spacing:.2px;opacity:.9;text-align:center}
-#splash .bar{width:120px;height:3px;border-radius:3px;background:var(--blue-soft);overflow:hidden}
+#splash{background:#fff;align-items:center;justify-content:center;gap:20px;color:var(--blue-dark)}
+#splash .logo{width:min(60vw,240px);height:auto;animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+#splash .name{font-weight:700;font-size:14px;letter-spacing:.3px;text-align:center}
+#splash .bar{width:120px;height:3px;border-radius:3px;background:#e7ecfa;overflow:hidden}
 #splash .bar i{display:block;height:100%;width:40%;background:var(--blue);border-radius:3px;animation:slide 1.1s ease-in-out infinite}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
-#splash .logo{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
-@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 
 /* ---------- Login ---------- */
-#login{background:var(--card);overflow-y:auto}
-.login-top{background:#fff;padding:calc(var(--safe-top) + 44px) 24px 30px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--blue-deep);
-  border-bottom:5px solid var(--yellow)}
-.login-top img{width:170px;height:auto}
-.login-top p{font-size:14px;opacity:.9;text-align:center}
-.form{padding:28px 24px calc(var(--safe-bottom) + 28px);display:flex;flex-direction:column;gap:18px;max-width:440px;width:100%;margin:0 auto}
-.field label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
-.input{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;background:#fff;transition:border-color .15s}
-.input:focus-within{border-color:var(--blue)}
-.input input{flex:1;border:0;outline:0;background:transparent;padding:13px 14px;font-size:16px;min-width:0}
-.input button{border:0;background:none;padding:0 14px;height:48px;color:var(--blue);font-weight:600;font-size:13px;cursor:pointer}
-.btn{border:0;border-radius:12px;padding:14px 16px;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:transform .12s ease, opacity .15s}
+#login{background:var(--bg);overflow-y:auto}
+.login-top{background:linear-gradient(135deg,#0033a0 0%,#00206b 100%);padding:calc(var(--safe-top) + 40px) 24px 64px;display:flex;flex-direction:column;align-items:center;gap:12px;color:#fff;text-align:center}
+.login-top img{width:150px;height:auto;background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.login-top p{font-size:14px;color:#cfd9f5;font-weight:600}
+.form{margin:-40px 16px 0;padding:22px 18px calc(var(--safe-bottom) + 22px);display:flex;flex-direction:column;gap:16px;max-width:440px;width:auto;align-self:center;
+  background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 32px -12px rgba(16,24,40,.25)}
+@media(min-width:480px){.form{width:420px}}
+.field label{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--ink-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.field label span:last-child{text-transform:none;letter-spacing:0;font-family:'Noto Sans Arabic',var(--font)}
+.input{display:flex;align-items:center;border:1px solid #d6dcea;border-radius:10px;background:#fff;transition:border-color .15s, box-shadow .15s}
+.input:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,51,160,.12)}
+.input input{flex:1;border:0;outline:0;background:transparent;padding:12px 13px;font-size:16px;min-width:0}
+.input button{border:0;background:none;padding:0 14px;height:46px;color:var(--blue);font-weight:700;font-size:13px;cursor:pointer}
+
+/* ---------- Buttons ---------- */
+.btn{border:1px solid transparent;border-radius:10px;padding:13px 16px;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .1s var(--ease-out), background .15s, opacity .15s;width:100%}
 .btn:active{transform:scale(.98)}
-.btn:disabled{opacity:.6;cursor:default;transform:none}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
 .btn-primary{background:var(--blue);color:#fff}
-.btn-quiet{background:var(--blue-soft);color:var(--blue)}
-.btn:focus-visible,.input button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
-.msg{display:none;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600}
+.btn-primary:not(:disabled):hover{background:var(--blue-dark)}
+.btn-quiet{background:#fff;color:var(--ink);border-color:#d6dcea}
+.btn .ar{opacity:.8}
+.btn:focus-visible,.input button:focus-visible,.icon-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.msg{display:none;border-radius:10px;padding:10px 13px;font-size:13.5px;font-weight:600}
 .msg.on{display:block}
-.msg.err{background:var(--danger-soft);color:var(--danger)}
-.msg .ar-line{display:block;direction:rtl;text-align:right;margin-top:2px;opacity:.9}
-.hint{font-size:13px;color:var(--muted);text-align:center}
-.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:rot .7s linear infinite;display:none}
+.msg.err{background:var(--danger-soft);color:#a32d2d;border:1px solid #f6c9c4}
+.hint{font-size:12.5px;color:var(--ink-dim);text-align:center}
+.spin{width:17px;height:17px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:rot .7s linear infinite;display:none;flex:none}
 .loading .spin{display:inline-block}
+.btn-quiet .spin{border-color:rgba(0,51,160,.2);border-top-color:var(--blue)}
 @keyframes rot{to{transform:rotate(360deg)}}
 
-/* ---------- App shell ---------- */
-#home{background:var(--bg)}
-.top{background:var(--blue-deep);color:#fff;padding:calc(var(--safe-top) + 14px) 18px 16px;border-bottom:4px solid var(--yellow);
-  display:flex;align-items:center;gap:12px}
-.top img{width:64px;height:auto;flex:none;background:#fff;border-radius:12px;padding:5px 7px}
+/* ---------- Header (dashboard style) ---------- */
+.top,.subtop{position:relative;background:linear-gradient(135deg,#0033a0 0%,#00206b 100%);color:#fff;display:flex;align-items:center;gap:12px;
+  padding:calc(var(--safe-top) + 14px) 16px 14px;box-shadow:0 2px 10px rgba(0,32,107,.25);flex:none}
+.top::after,.subtop::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--yellow)}
+.top img{width:62px;height:auto;flex:none;background:#fff;border-radius:10px;padding:5px 6px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .top .who{flex:1;min-width:0}
-.top h1{font-size:19px;font-weight:700;line-height:1.3}
-.top small{display:block;font-size:12.5px;opacity:.85}
-.content{flex:1;overflow-y:auto;padding:16px 16px calc(var(--safe-bottom) + 20px);display:flex;flex-direction:column;gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
-.card h2{font-size:15px;font-weight:700;margin-bottom:6px;display:flex;align-items:baseline;flex-wrap:wrap}
-.card p{font-size:13.5px;color:var(--muted)}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--blue-soft);color:var(--blue)}
-.tag.ok{background:var(--green-soft);color:var(--green)}
-.soon{opacity:.62}
-.link-out{border:0;background:none;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.14);cursor:pointer}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;margin-top:6px}
-.kv dt{color:var(--muted)} .kv dd{font-weight:600;text-align:end}
-
-
-/* ---------- Tab bar ---------- */
-.tabs{display:flex;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(var(--safe-bottom) + 6px)}
-.tabs button{flex:1;border:0;background:none;padding:6px 4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);font-size:12px;font-weight:700}
-.tabs button small{font-size:10.5px;font-weight:600;opacity:.85}
-.tabs button.on{color:var(--blue);background:var(--blue-soft)}
-.tabs svg{width:22px;height:22px}
-.screen .content{padding-bottom:16px}
-.content > *{flex-shrink:0}
-
-/* ---------- List ---------- */
-.subtop{background:var(--blue-deep);color:#fff;padding:calc(var(--safe-top) + 12px) 16px 14px;border-bottom:4px solid var(--yellow);display:flex;align-items:center;gap:10px}
+.top h1{font-size:18px;font-weight:700;line-height:1.25}
+.top small{display:block;font-size:12.5px;color:#cfd9f5;margin-top:2px}
 .subtop .t{flex:1;min-width:0}
-.subtop h1{font-size:18px;font-weight:700;line-height:1.3}
-.subtop small{display:block;font-size:12px;opacity:.85}
-.icon-btn{border:0;background:rgba(255,255,255,.14);color:#fff;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;cursor:pointer;flex:none}
+.subtop h1{font-size:17px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subtop small{display:block;font-size:12.5px;color:#cfd9f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-out{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-weight:700;font-size:12.5px;padding:7px 11px;border-radius:9px;cursor:pointer;flex:none}
+.icon-btn{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;min-width:40px;height:40px;border-radius:10px;display:grid;place-items:center;cursor:pointer;flex:none;font-weight:700}
 .icon-btn svg{width:20px;height:20px}
 .icon-btn:disabled{opacity:.5}
+
+/* ---------- Content & cards ---------- */
+.content{flex:1;overflow-y:auto;padding:16px 14px 20px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.content > *{flex-shrink:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
+.card h2{font-size:15px;font-weight:700;color:var(--blue-dark);margin-bottom:6px;display:flex;align-items:baseline;flex-wrap:wrap}
+.card p{font-size:13.5px;color:var(--ink-dim)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue-dark);white-space:nowrap}
+.tag.ok{background:var(--green-soft);color:#0b7a44}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;margin-top:6px}
+.kv dt{color:var(--ink-dim)} .kv dd{font-weight:700;text-align:end}
+
+/* ---------- Bottom tabs ---------- */
+.tabs{display:flex;background:#fff;border-top:1px solid var(--line);padding:0 6px calc(var(--safe-bottom) + 4px);flex:none;box-shadow:0 -2px 10px rgba(16,24,40,.04)}
+.tabs button{position:relative;flex:1;border:0;background:none;padding:9px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--ink-mute);font-size:11.5px;font-weight:700}
+.tabs button small{font-size:10px;font-weight:700;font-family:'Noto Sans Arabic',var(--font)}
+.tabs button.on{color:var(--blue)}
+.tabs button.on::before{content:'';position:absolute;top:0;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:var(--yellow)}
+.tabs svg{width:22px;height:22px;margin-bottom:1px}
+
+/* ---------- KPI tiles (dashboard .kpi) ---------- */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
-.kpi .l{font-size:11.5px;color:var(--muted);font-weight:600}
-.kpi .v{font-size:17px;font-weight:700;line-height:1.3;margin-top:2px;font-variant-numeric:tabular-nums}
-.kpi .s{font-size:11.5px;color:var(--muted)}
-.kpi.bal{background:#FFF8CC;border-color:#F2E27A}
-.kpi.bad .v{color:var(--danger)}
-.up{color:var(--green);font-weight:700}.down{color:var(--danger);font-weight:700}
-.chart{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 8px}
-.chart h3{font-size:13px;font-weight:700;margin-bottom:8px}
-.bars{display:flex;align-items:flex-end;gap:6px;height:90px}
-.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
-.bars i{display:block;width:100%;background:#A9B6F2;border-radius:4px 4px 2px 2px;min-height:2px}
+.kpi{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 12px 11px;box-shadow:var(--shadow);overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue)}
+.kpi .l{font-size:10.5px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.45px;font-weight:700}
+.kpi .v{font-size:18px;font-weight:800;line-height:1.3;margin-top:4px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .s{font-size:11.5px;color:var(--ink-dim);margin-top:2px}
+.kpi.bal::before{background:var(--yellow-dark)} .kpi.bal .v{color:#8a6d00!important}
+.kpi.bad::before{background:var(--bad)} .kpi.bad .v{color:var(--bad)}
+.up{color:var(--good);font-weight:700}.down{color:var(--bad);font-weight:700}
+.chart{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 13px 9px;box-shadow:var(--shadow)}
+.chart h3{font-size:11px;font-weight:700;margin-bottom:10px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.4px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:96px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.bars i{display:block;width:100%;background:#b8c6ea;border-radius:4px 4px 1px 1px;min-height:2px}
 .bars div.cur i{background:var(--blue)}
-.bars span{font-size:10px;color:var(--muted)}
-.search{display:flex;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:0 12px}
-.search:focus-within{border-color:var(--blue)}
-.search input{flex:1;border:0;outline:0;padding:11px 8px;font-size:15px;background:transparent;min-width:0}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.bars span{font-size:10px;color:var(--ink-dim);font-weight:600}
+
+/* ---------- List ---------- */
+.search{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #d6dcea;border-radius:10px;padding:0 12px;box-shadow:var(--shadow)}
+.search:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,51,160,.12)}
+.search input{flex:1;border:0;outline:0;padding:11px 4px;font-size:15px;background:transparent;min-width:0}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:1px 1px 3px;scrollbar-width:none;margin:0 -14px;padding-left:14px;padding-right:14px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.chip{flex:none;border:1px solid #d6dcea;background:#fff;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--ink)}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.cust{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:start;width:100%}
-.cust:active{background:#FAFBFE}
+.cust{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;cursor:pointer;text-align:start;width:100%;box-shadow:var(--shadow);transition:border-color .15s, transform .1s}
+.cust:active{transform:scale(.995);border-color:#c9d2ea}
 .cust .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.cust .n{font-weight:700;font-size:14px;line-height:1.35}
-.cust .grid{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:12.5px}
-.cust .grid dt{color:var(--muted)} .cust .grid dd{text-align:end;font-weight:600;font-variant-numeric:tabular-nums}
-.st{flex:none;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
-.st-new{background:var(--blue-soft);color:var(--blue)}
-.st-overdue{background:var(--danger-soft);color:var(--danger)}
-.st-due{background:#FFF3C4;color:#7A5A00}
-.st-risk{background:#FEF3E2;color:#B45F00}
-.st-active{background:var(--green-soft);color:var(--green)}
-.st-lost,.st-stale{background:#EEF0F5;color:#5E6687}
-.red{color:var(--danger)!important}.warn{color:#7A5A00!important}
-.state{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:12px}
-.state .spin{display:inline-block;border-color:rgba(22,49,206,.25);border-top-color:var(--blue);width:28px;height:28px}
+.cust .n{font-weight:700;font-size:14px;line-height:1.35;color:var(--ink)}
+.cust .grid{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;padding-top:7px;border-top:1px solid #f0f2f7}
+.cust .grid dt{color:var(--ink-dim)} .cust .grid dd{text-align:end;font-weight:700;font-variant-numeric:tabular-nums}
+.st{flex:none;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.st-new{background:var(--blue-soft);color:var(--blue-dark)}
+.st-overdue{background:#fdecea;color:#a32d2d}
+.st-due{background:#fff6cc;color:#7a5a00}
+.st-risk{background:#fff0dc;color:#9a4d00}
+.st-active{background:var(--green-soft);color:#0b7a44}
+.st-lost,.st-stale{background:#eef0f5;color:var(--ink-dim)}
+.red{color:var(--bad)!important}.warn{color:#8a6d00!important}
+.state{padding:44px 20px;text-align:center;color:var(--ink-dim);display:flex;flex-direction:column;align-items:center;gap:12px}
+.state .spin{display:inline-block;border-color:rgba(0,51,160,.2);border-top-color:var(--blue);width:28px;height:28px}
 .state b{color:var(--ink)}
-.count{font-size:12.5px;color:var(--muted);font-weight:600}
-/* customer detail */
-.big{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
-.lines{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13.5px;margin-top:8px}
-.lines dt{color:var(--muted)} .lines dd{font-weight:600;text-align:end;font-variant-numeric:tabular-nums}
-.next{border:1.5px dashed var(--line);background:transparent}
+.state .btn{width:auto}
+.count{font-size:12px;color:var(--ink-dim);font-weight:600}
+
+/* ---------- Customer card ---------- */
+.big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.lines{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:13.5px;margin-top:10px}
+.lines dt{color:var(--ink-dim)} .lines dd{font-weight:700;text-align:end;font-variant-numeric:tabular-nums}
+.next{border:1px dashed #cfd6e6;background:transparent;box-shadow:none}
 .next p{font-size:13px}
 
+/* ============ Components — same design language as the dashboard ============ */
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sec-h h2{margin:0}
+.mini{white-space:nowrap;flex:none;border:1px solid transparent;border-radius:9px;padding:7px 12px;font-weight:700;font-size:12.5px;cursor:pointer;background:var(--blue-soft);color:var(--blue-dark);text-decoration:none;display:inline-block}
+.mini.ghost{background:#fff;border-color:#d6dcea;color:var(--ink-dim)}
+.mini.danger{background:#fff;border-color:#f6c9c4;color:var(--bad)}
+.hint2{font-size:12px;color:var(--ink-dim)}
+.warnbox{background:#fff6e5;border:1px solid #f5d9a8;color:#7a4a00;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600}
+.miss{display:inline-block;font-size:10.5px;font-weight:700;color:#7a4a00;background:#fff0dc;border-radius:999px;padding:1px 8px;vertical-align:1px;margin-inline-start:4px}
+
+.contact{border-top:1px solid #f0f2f7;padding:10px 0 4px}
+.contact:first-of-type{border-top:0}
+.contact .who{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.contact .nm{font-weight:700;font-size:14.5px}
+.contact .rl{font-size:12.5px;color:var(--ink-dim)}
+.phone{display:flex;align-items:center;gap:8px;padding:7px 0}
+.phone .num{flex:1;min-width:0;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.phone .ty{display:table;margin-top:2px;font-size:10.5px;font-weight:700;color:var(--ink-dim);background:#eef0f5;border-radius:999px;padding:1px 8px}
+.act{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;border:1px solid transparent;cursor:pointer;flex:none;text-decoration:none}
+.act svg{width:19px;height:19px}
+.act.call{background:var(--blue-soft);color:var(--blue)}
+.act.wa{background:#e3f7ea;color:#128c4b}
+.act.del{background:transparent;color:var(--ink-mute)}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(16,20,32,.5);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);display:none;align-items:flex-end;z-index:20}
+.sheet-bg.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;margin:0 auto;border-radius:18px 18px 0 0;padding:10px 18px calc(var(--safe-bottom) + 18px);display:flex;flex-direction:column;gap:14px;max-height:92vh;overflow-y:auto;animation:up .24s var(--ease-out);box-shadow:0 -12px 40px rgba(16,24,40,.25)}
+@keyframes up{from{transform:translateY(28px);opacity:.6}to{transform:none;opacity:1}}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:#d6dcea;margin:0 auto}
+.sheet h3{font-size:17px;font-weight:700;color:var(--blue-dark)}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--line)}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:9px 6px;font-weight:700;font-size:13px;color:var(--ink-dim);cursor:pointer}
+.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(16,24,40,.12)}
+.sheet select{width:100%;border:1px solid #d6dcea;border-radius:10px;padding:12px;font-size:15px;background:#fff}
+.row2{display:flex;gap:10px}.row2 .btn{flex:1}
+
+.daycard{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 15px 15px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);overflow:hidden}
+.daycard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue)}
+.daycard .st-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.daycard .big-t{font-size:19px;font-weight:800;letter-spacing:-.2px}
+.daycard .sub{font-size:12.5px;color:var(--ink-dim);font-weight:600}
+.btn-green{background:var(--good);color:#fff}
+.btn-red{background:var(--bad);color:#fff}
+.btn-outline-red{background:#fff;color:var(--bad);border-color:#f0b4ad}
+.linkbtn{border:0;background:none;color:var(--blue);font-weight:700;font-size:12.5px;padding:2px 0;cursor:pointer;text-align:start}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 6px 7px;text-align:center}
+.stats b{display:block;font-size:20px;font-weight:800;color:var(--blue-dark);font-variant-numeric:tabular-nums;line-height:1.2}
+.stats span{font-size:10px;color:var(--ink-dim);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.banner{border-radius:12px;padding:12px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid;text-align:start;width:100%;font:inherit;box-shadow:var(--shadow)}
+.banner.orange{background:#fff6e5;border-color:#f5d9a8;color:#7a4a00}
+.banner.blue{background:#eef2fc;border-color:#c7d2f0;color:var(--blue-dark)}
+.banner .grow{flex:1;min-width:0}
+.banner b{display:block;font-size:14.5px;color:var(--ink);margin:1px 0}
+.banner small{display:block;font-size:12px;font-weight:600}
+.pill{font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;flex:none}
+.pill.o{background:#c26401;color:#fff}.pill.b{background:var(--blue);color:#fff}
+.vrow{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #f0f2f7}
+.vrow:first-of-type{border-top:0}
+.vrow .tm{font-weight:800;font-size:13px;color:var(--blue-dark);min-width:56px;font-variant-numeric:tabular-nums}
+.vrow .nm{font-weight:700;font-size:13.5px}
+.vrow .dt{font-size:12px;color:var(--ink-dim)}
+.chip-s{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;flex:none}
+.cs-ok{background:var(--green-soft);color:#0b7a44}.cs-open{background:var(--blue-soft);color:var(--blue-dark)}
+.cs-auto{background:#fff0dc;color:#9a4d00}.cs-pend{background:#fff6cc;color:#7a5a00}.cs-no{background:#eef0f5;color:var(--ink-dim)}
+
+.stepbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 15px;display:flex;flex-direction:column;gap:11px;box-shadow:var(--shadow)}
+.stepbox h2{font-size:14.5px;font-weight:700;color:var(--blue-dark);display:flex;align-items:center;gap:0 9px;flex-wrap:wrap}
+.stepbox h2 .ar{flex-basis:100%;margin-inline-start:33px;font-size:12.5px;margin-top:-1px}
+.stepbox h2:has(.n){display:grid;grid-template-columns:24px 1fr;column-gap:9px;align-items:center}
+.stepbox h2:has(.n) .ar{grid-column:2;margin:0}
+.stepbox h2 .n{width:24px;height:24px;border-radius:50%;background:var(--blue-soft);color:var(--blue-dark);font-size:12px;font-weight:800;display:grid;place-items:center;flex:none;border:1px solid #c7d2f0}
+.stepbox h2 .n.done{background:var(--good);border-color:var(--good);color:#fff}
+.opt{display:flex;align-items:center;gap:11px;border:1px solid #d6dcea;border-radius:10px;padding:11px 12px;cursor:pointer;background:#fff;width:100%;text-align:start;font:inherit;transition:border-color .12s, background .12s}
+.opt.on{border-color:var(--blue);background:#eef2fc;box-shadow:0 0 0 1px var(--blue) inset}
+.opt.off{opacity:.45;cursor:default}
+.opt .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink-mute);flex:none}
+.opt.on .dot{border:6px solid var(--blue)}
+.opt .box{width:18px;height:18px;border-radius:5px;border:2px solid var(--ink-mute);flex:none;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}
+.opt.on .box{background:var(--blue);border-color:var(--blue)}
+.opt .grow{flex:1;min-width:0}
+.opt b{display:block;font-size:14px}
+.opt small{display:block;font-size:12px;color:var(--ink-dim)}
+.dashed{border:1px dashed #9fb0da;color:var(--blue);background:#f7f9fe;border-radius:10px;padding:11px 12px;font-weight:700;font-size:13.5px;cursor:pointer;width:100%;text-align:start}
+.gps{border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;display:flex;gap:10px;align-items:center;border:1px solid}
+.gps.wait{background:var(--bg);color:var(--ink-dim);border-color:var(--line)}
+.gps.ok{background:var(--green-soft);color:#0b6b3c;border-color:#b9e3cc}
+.gps.bad{background:#fdecea;color:#a32d2d;border-color:#f6c9c4}
+.gps .grow{flex:1}
+.gps .spin{display:inline-block;border-color:rgba(107,115,135,.25);border-top-color:var(--ink-dim)}
+.photo-slot{display:flex;gap:14px;align-items:center}
+.photo-slot > div{flex:1}
+.photo-slot .ph{width:84px;height:84px;border-radius:12px;background:var(--bg);border:1px dashed #cfd6e6;display:grid;place-items:center;color:var(--ink-mute);font-size:11px;text-align:center;flex:none}
+.photo-slot > img{width:84px;height:84px;object-fit:cover;border-radius:12px;flex:none}
+.thumb{position:relative;flex:none;display:inline-block}
+.thumb img{width:84px;height:84px;object-fit:cover;border-radius:12px;display:block;border:1px solid var(--line)}
+.thumb-x{position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:var(--bad);color:#fff;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.bigtimer{font-size:46px;font-weight:800;color:var(--blue-dark);text-align:center;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.1}
+textarea.ta{width:100%;border:1px solid #d6dcea;border-radius:10px;padding:12px;font-size:15px;min-height:96px;resize:vertical}
+textarea.ta:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,51,160,.12)}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.chips-wrap .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.footer-bar{padding:12px 14px calc(var(--safe-bottom) + 12px);background:#fff;border-top:1px solid var(--line);flex:none;box-shadow:0 -2px 10px rgba(16,24,40,.05)}
+
+#cam{position:fixed;inset:0;background:#0b0e14;z-index:40;display:none;flex-direction:column;color:#fff}
+#cam.on{display:flex}
+#cam .cbar{display:flex;align-items:center;gap:10px;padding:calc(var(--safe-top) + 10px) 14px 10px}
+#cam .cbar .t{flex:1;text-align:center}
+#cam .cbar b{display:block;font-size:15px}
+#cam .cbar small{font-size:11.5px;opacity:.7}
+#cam .cx{width:40px;height:40px;border-radius:10px;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer}
+#cam .view{flex:1;position:relative;overflow:hidden;background:#000}
+#cam video,#cam .view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cam .stamp{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.55);border-radius:8px;padding:5px 9px;font-size:11px;line-height:1.45;white-space:pre}
+#cam .cfoot{padding:16px 16px calc(var(--safe-bottom) + 18px);display:flex;flex-direction:column;align-items:center;gap:10px}
+#cam .shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:6px solid rgba(255,255,255,.35);cursor:pointer;box-shadow:0 0 0 2px #fff}
+#cam .shutter:disabled{opacity:.4}
+#cam .note{font-size:12px;opacity:.7;text-align:center}
+#cam .row2{width:100%}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -202,28 +339,7 @@ button,input{font:inherit;color:inherit}
     </div>
     <button class="link-out" id="logoutBtn" type="button">Sign out</button>
   </header>
-  <main class="content">
-    <div class="card">
-      <div class="row"><h2>Connected<span class="ar">متصل</span></h2><span class="tag ok">Online</span></div>
-      <dl class="kv">
-        <dt>Server date</dt><dd id="srvDate">—</dd>
-        <dt>Code</dt><dd id="myCode">—</dd>
-        <dt>Branch</dt><dd id="myBranch">—</dd>
-      </dl>
-    </div>
-    <div class="card soon">
-      <div class="row"><h2>Punch in<span class="ar">تسجيل الحضور</span></h2><span class="tag">Phase 2</span></div>
-      <p>Steering wheel and odometer photo, GPS and time.</p>
-    </div>
-    <button class="card cust" type="button" data-go="list" style="gap:4px">
-      <div class="row" style="width:100%"><h2>My List<span class="ar">قائمتي</span></h2><span class="tag ok">Open</span></div>
-      <p>Your SMAN List with balances, due dates and last invoices.</p>
-    </button>
-    <div class="card soon">
-      <div class="row"><h2>Visits<span class="ar">الزيارات</span></h2><span class="tag">Phase 2</span></div>
-      <p>Location, live photo, companions, result and follow-up.</p>
-    </div>
-  </main>
+  <main class="content" id="homeBody"></main>
   <nav class="tabs" aria-label="Main">
     <button type="button" data-go="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
     <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
@@ -234,6 +350,7 @@ button,input{font:inherit;color:inherit}
 <section id="list" class="screen" aria-label="My List">
   <header class="subtop">
     <div class="t"><h1>My List<span class="ar">قائمتي</span></h1><small id="listSub">&nbsp;</small></div>
+    <button class="icon-btn" id="pdfBtn" type="button" aria-label="PDF" style="width:auto;padding:0 12px;font-weight:700;font-size:13px">PDF</button>
     <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
   </header>
   <main class="content" id="listBody"></main>
@@ -251,6 +368,43 @@ button,input{font:inherit;color:inherit}
   </header>
   <main class="content" id="custBody"></main>
 </section>
+
+
+<!-- Punch in / out -->
+<section id="punch" class="screen" aria-label="Punch">
+  <header class="subtop"><button class="icon-btn" id="punchBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="t"><h1 id="punchTitle">Punch in</h1><small id="punchSub"></small></div></header>
+  <main class="content" id="punchBody"></main>
+  <div class="footer-bar"><button class="btn btn-green" type="button" id="punchGo" style="width:100%"><span class="spin"></span><span id="punchGoLabel">Punch in</span></button></div>
+</section>
+
+<!-- Start visit -->
+<section id="vstart" class="screen" aria-label="Start visit">
+  <header class="subtop"><button class="icon-btn" id="vsBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="t"><h1>Start visit<span class="ar">بدء الزيارة</span></h1><small id="vsTitle"></small></div></header>
+  <main class="content" id="vsBody"></main>
+  <div class="footer-bar"><button class="btn btn-primary" type="button" id="vsGo" style="width:100%" disabled><span class="spin"></span>Start visit · بدء الزيارة</button></div>
+</section>
+
+<!-- Visit in progress -->
+<section id="visit" class="screen" aria-label="Visit">
+  <header class="subtop"><button class="icon-btn" id="visitBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="t"><h1 id="visitTitle">Visit in progress</h1><small id="visitSub"></small></div></header>
+  <main class="content" id="visitBody"></main>
+  <div class="footer-bar" id="visitFoot"><button class="btn btn-red" type="button" id="visitEnd" style="width:100%">End visit · إنهاء الزيارة</button></div>
+</section>
+
+<!-- Live camera -->
+<div id="cam" role="dialog" aria-modal="true" aria-label="Camera">
+  <div class="cbar"><button class="cx" type="button" id="camClose" aria-label="Close">✕</button><div class="t"><b id="camTitle"></b><small id="camSub"></small></div><span style="width:40px"></span></div>
+  <div class="view"><video id="camVideo" playsinline muted autoplay></video><img id="camShot" alt=""><div class="stamp" id="camStamp"></div></div>
+  <div class="cfoot">
+    <div id="camLive" style="display:flex;flex-direction:column;align-items:center;gap:10px"><button class="shutter" type="button" id="camShutter" aria-label="Take photo" disabled></button><div class="note">Live camera only — gallery is not available · كاميرا مباشرة فقط</div></div>
+    <div id="camReview" class="row2" style="display:none"><button class="btn btn-quiet" type="button" id="camRetake">Retake · إعادة</button><button class="btn btn-primary" type="button" id="camUse">Use photo · استخدام</button></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="sheetBg" aria-hidden="true"><div class="sheet" role="dialog" aria-modal="true" id="sheet"></div></div>
 
 <script>/* AUTO-EXTRACTED from the live Al-Howail dashboard — do not edit by hand. */
 
@@ -618,6 +772,491 @@ function loadSalesmanData(payload){
   hasCollectionDataInRange = function(s, e){ return colT.some(function(t){ return t >= s && t <= e; }); };
 }
 </script>
+<script>/* AUTO-EXTRACTED from the live Al-Howail dashboard: the SAME print code the dashboard uses. Do not edit by hand. */
+const DashPrint = (function(){
+let lang = 'en';
+
+const I18N = {
+en: {
+  appTitle:'Al-Howail — Sales Performance Dashboard', appSub:'Live from Google Sheets · All Invoice New',
+  dataThrough:'Data through', synced:'Synced', fullscreen:'Full screen', exitFullscreen:'Exit full screen',
+  refresh:'Refresh data', refreshing:'Refreshing…', loadingData:'Loading your sales data…', tryAgain:'Try again',
+  branch:'Branch', salesman:'Salesman', type:'Type', from:'From', to:'To', cashCredit:'Cash + Credit', cash:'Cash', credit:'Credit',
+  includeAdj:'Include return/adjustment lines', clearFilters:'Clear filters', allBranches:'All branches', allSalesmen:'All salesmen', allBrands:'All brands',
+  selectAll:'Select all', clear:'Clear', search:'Search…', rows:'rows', prev:'‹ Prev', next:'Next ›', page:'Page',
+  tabOverview:'Overview', tabBranches:'Branches', tabSalesmen:'Salesmen', tabCustomers:'Customers', tabProducts:'Products', tabDiscounts:'Discounts', tabCollection:'Collection', tabTargets:'Targets',
+  withRollover:'With rollover', withoutRollover:'Without rollover', quarterly:'Quarterly', monthly:'Monthly', yearly:'Yearly', addTarget:'+ Add target', editTarget:'Edit target', deleteTarget:'Delete',
+  targetName:'Name (salesman or branch)', assignedCodes:'Codes counted toward this target', quarter:'Quarter', day:'day',
+  targetType:'Type', typeSalesman:'Salesman', typeBranch:'Branch', typeAll:'All', typeSalesmenView:'Salesmen', typeBranchesView:'Branches',
+  smanCodeCol:'Code', close:'Close', shareOfTotal:'Share of total', codeNameCol:'Name',
+  exportExcel:'📊 Export to Excel', smanNameCol:'Salesman', exportLibMissing:'Export library failed to load — check your connection and try again.',
+  targetAmount:'Target amount (SAR, w/o VAT)', cancel:'Cancel', save:'Save', achieved:'Achieved', ofTarget:'of target', noTargetsYet:'No targets set for this period yet.',
+  targetMet:'Target met', targetMissed:'Target missed', totalTargets:'Targets this period', avgAchievement:'Average achievement', targetsMet:'Targets met',
+  confirmDeleteTarget:'Delete this target? This cannot be undone.', selectAtLeastOneCode:'Select at least one code for this target.', enterTargetName:'Enter a name for this target.',
+  savingTarget:'Saving…', targetSaveFailed:'Could not save target.', targetsReport:'Target Progress Report',
+  savedViews:'Views', saveCurrentView:'Save current view…', noSavedViews:'No saved views yet.', viewNamePrompt:'Name this view',
+  cmdpPlaceholder:'Jump to a tab, salesman, branch, customer, or action…', cmdpNoResults:'No matches.', cmdpTabs:'Tabs', cmdpActions:'Actions', cmdpSalesmen:'Salesmen', cmdpBranches:'Branches', cmdpCustomers:'Customers',
+  actClearFilters:'Clear all filters', actRefresh:'Refresh data', actPrint:'Print current view', actToggleLang:'Switch language', actLogout:'Log out',
+  noDataForFilters:'No data matches your current filters.', tryClearingFilters:'Try widening the date range or clearing filters.',
+  salesWoVat:'Sales w/o VAT', invoices:'Invoices', avgInvoice:'Avg invoice', vatAmount:'VAT amount', totalDiscount:'Total discount', creditShare:'Credit share',
+  monthlyTrendTitle:'Monthly sales w/o VAT — cash vs credit vs total', monthlyTrendHint:'hover a month to see all three',
+  mixTitle:'Cash vs credit mix', histTitle:'Invoice size distribution', newRepTitle:'New vs repeat customers',
+  arAgingTitle:'AR aging', topOverdueTitle:'Top overdue', byBranch:'By branch', bySalesman:'By salesman', byCustomer:'By customer',
+  overdueReportTab:'Overdue report', overdueSingleBranchHint:'Select exactly one branch for its own detailed view',
+  overdueCustomersCol:'Overdue customers', oldestOverdueCol:'Oldest overdue (days)', branchesInView:'Branches in view', totalOverdueCol:'Total overdue',
+  agingBreakdown:'Aging breakdown', agingMatrixTitle:'Aging by branch', agingCurrent:'Current', agingBucket1_30:'1–30 days',
+  agingBucket31_60:'31–60 days', agingBucket61_90:'61–90 days', agingBucket90plus:'90+ days',
+  ofBranchBalance:'of branch balance', ofCompanyOverdue:'of total overdue',
+  overdue:'Overdue', due:'Due (not yet overdue)', expectedNext7:'Expected collections (next 7 days)', collectedRange:'Collected (in range)',
+  branchesTitle:'Sales w/o VAT by branch', branchesHint:'click a bar or row to drill in', custStatusTitle:'Customer collection status', custStatusBranchHint:'for the selected branch',
+  top10SmanTitle:'Top 10 salesmen', top10SmanHint:'click a bar to drill in', allSmanTitle:'All salesmen', allSmanHint:'click a row to drill in · code shown is the combined salesman code',
+  custStatusSmanHint:'for the selected salesman', salesmanReport:'Salesman report',
+  customersTitle:'Customers', customersHint:'search by name or customer number · click a row for purchase history',
+  catTitle:'Sales w/o VAT by category', brandTitle:'Sales w/o VAT by brand', brandHint:'inferred from product code',
+  allProductsTitle:'All products', allProductsHint:'search by product ID or description',
+  discRateTitle:'Discount rate by month', discByBranchTitle:'Discount by branch', discBySmanTitle:'Discount by salesman', discByRowHint:'click a row to drill in',
+  discPctLabel:'Discount / sales w/o VAT',
+  branchCol:'Branch', salesmanCol:'Salesman', codeCol:'Code', invsCol:'Invoices', custsCol:'Customers', mixCol:'Mix', balanceCol:'Balance', overdueCol:'Overdue', overduePctCol:'Overdue %',
+  tabReports:'Reports', watchlistThreshold:'Watchlist threshold (SAR)', printReport:'🖨 Print report',
+  printBranchReport:'🖨 Branch report', branchManagerReport:'Branch Manager Report', salesSinceStartOfYear:'Sales since start of year',
+  branchReportTab:'Branch report', customerListReportTab:'Customer list', summaryReportTab:'Summary report',
+  targetReportTab:'Target report', reportsLandingTitle:'Choose a report', backToReports:'← Back to reports',
+  branchReportDesc:'Deep dive into one or more branches', customerListReportDesc:'Filterable customer roster, any branch',
+  overdueReportDesc:'Aging breakdown, company-wide or per branch', summaryReportDesc:'Executive overview across all branches',
+  targetReportDesc:'Branch and salesman targets vs. actuals',
+  fromCol:'From', toCol:'To', custTypeAll:'All customers', custTypeLost:'Lost only', custTypeOverdue:'Overdue only', custTypeBoth:'Lost or overdue',
+  upcoming7DaysTitle:'Collections expected in the next 7 days', dueDateCol:'Due date', daysUntilDueCol:'Days until due',
+  noUpcomingCollections:'No collections expected in the next 7 days.', customerRosterTitle:'Full customer list',
+  brPage1Label:'Page 1 — Overview', brPage1bLabel:'Page 2 — Salesman performance', brPage2Label:'Page 3 — Upcoming collections', brPage3Label:'Page 4 — Customer roster',
+  totalCustomersCol:'Total customers', salesmanPerformanceTitle:'Salesman performance', salesPerformance:'Sales performance', collectionPerformance:'Collection performance',
+  overdueDaysCol:'Days overdue', exportBranchList:'📊 Export customer list',
+  salesThisMonth:'Sales this month', collectionThisMonth:'Collection this month', includeFullCustomerList:'Include full customer list',
+  salesWholePeriod:'Sales — whole period', collectedWholePeriod:'Collected — whole period', lostCustomersCol:'Lost customers',
+  salesSelectedPeriod:'Sales — selected period', collectionSelectedPeriod:'Collection — selected period', noPriorPeriodData:'No data for prior period', lastInvoiceDateCol:'Last invoice date',
+  statusNewCustomer:'New Customer', newCustomersCol:'New Customers', newCustomersOnlyLabel:'New customers only', reportNewCustomersSection:'New customers this month', firstInvoiceDateCol:'First invoice date', firstInvoiceAmountCol:'First invoice amount', showNewCustomersLabel:'Show new customers list',
+  reportComparePastPeriod:'Compare to (past period):', reportPriorAuto:'↺ Auto-calculate',
+  tabFollowUps:'Follow-ups', followUpsDesc:"Customers you're personally tracking for re-engagement — stored only in this browser, separate from every report.",
+  tabPriceIntel:'Price Intelligence',
+  pricePos_VeryLow:'Very Low', pricePos_Low:'Low', pricePos_BelowAverage:'Below Average', pricePos_Average:'Average',
+  pricePos_AboveAverage:'Above Average', pricePos_High:'High', pricePos_VeryHigh:'Very High',
+  priceIntelDesc:'Price benchmarking across all customers, computed directly from invoice data — search a customer or a product.',
+  priceIntelCustomerSearch:'Customer search', priceIntelProductSearch:'Product search',
+  priceIntelSearchCustPlaceholder:'Search by customer code or name…', priceIntelSearchProdPlaceholder:'Search by product code or name…',
+  priceIntelNoSelection:'Search and select a customer or product above to see its price analysis.',
+  priceIntelProductCol:'Product', priceIntelCustPriceCol:'Customer price', priceIntelMinCol:'Min', priceIntelAvgCol:'Average', priceIntelMedianCol:'Median', priceIntelMaxCol:'Max',
+  priceIntelDiffCol:'Difference', priceIntelDiffPctCol:'Difference %', priceIntelPositionCol:'Price position', priceIntelQtyCol:'Quantity',
+  priceIntelTotalProducts:'Total products', priceIntelTotalQty:'Total quantity', priceIntelTotalSales:'Total sales',
+  priceIntelBelowAvgKpi:'Products below average', priceIntelAroundAvgKpi:'Products around average', priceIntelAboveAvgKpi:'Products above average',
+  priceIntelAvgDiffKpi:'Average price difference', priceIntelTotalCustomers:'Total customers',
+  priceIntelMonthlyTitle:'Monthly comparison', priceIntelHistoryTitle:'Price history', priceIntelViewHistory:'View history',
+  priceIntelTrendChart:'Price trend vs. benchmark average', priceIntelExportPdf:'Export PDF', priceIntelExportExcel:'Export to Excel',
+  priceIntelBenchmarkNote:'Benchmark is calculated from every other customer\'s purchases of the same product in the same filtered period.',
+  priceIntelNoBenchmark:'No other customer bought this in the selected period', priceIntelBackToProducts:'← Back to product list',
+  priceIntelSelectedPeriod:'Selected period',
+  priceIntelKpiSummary:'KPI summary', priceIntelMonthlyAnalysis:'Monthly analysis', priceIntelDetailedTransactions:'Detailed transactions',
+  priceIntelCustomerPriceAnalysis:'Customer Price Analysis', priceIntelProductPriceAnalysis:'Product Price Analysis',
+  priceIntelMarketQtyCol:'Market quantity',
+  followUpAdd:'Follow up', followUpAddSelected:'Add to follow-ups', followUpTracked:'In follow-ups', followUpOpenHint:'Open in Follow-ups to add notes', followUpOpen:'Open',
+  followUpsActiveTab:'Active', followUpsArchivedTab:'Archived',
+  followUpPhone:'Phone', followUpPhone2:'Alternate phone', followUpAddress:'Address', followUpAddressPlaceholder:'Street, city, area…', followUpContactName:'Contact name', followUpContactNamePlaceholder:'Who did you speak with?', followUpReason:'Reason', followUpReasonPlaceholder:'Why did they stop buying?', followUpStatus:'Status', followUpCalled:'Called', followUpTotalSalesCol:'Total sales',
+  followUpDeleteNote:'Delete note', followUpDeleteNoteConfirm:'Delete this note? This cannot be undone.',
+  followUpLog:'Notes log', followUpAddNote:'Add note', followUpNotePlaceholder:'What did the salesman say?',
+  statusInProgress:'In progress', statusGiveUp:'Give up', statusClosed:'Closed', statusActiveAgainFu:'Active', followUpAutoNote:'automatic — customer is currently active',
+  followUpArchive:'Archive', followUpUnarchive:'Unarchive', followUpDeletePermanently:'Delete permanently',
+  followUpDeleteConfirm:'Delete this follow-up and all its notes permanently? This cannot be undone.',
+  followUpBulkDeleteConfirm:'Delete {n} selected follow-ups and all their notes permanently? This cannot be undone.',
+  followUpExport:'Export backup', followUpExportExcel:'Export to Excel', followUpImport:'Import backup',
+  followUpImportConfirm:'Importing will replace all follow-up data currently stored in this browser with the contents of the file. Continue?',
+  followUpImportError:'Could not read that file — please choose a valid Follow-ups backup (.json) file.',
+  followUpEmpty:'No follow-ups yet. Open a customer in the Customers tab and click "Follow up" to add one.', followUpEmptyArchived:'No archived follow-ups.',
+  followUpNoNotesYet:'No notes yet.', followUpAddedOn:'Added', followUpPrint:'Print statement + notes',
+  followUpNotesForPrint:'Follow-up notes', followUpReasonForPrint:'Reason for not buying again',
+  allStatuses:'All statuses', daysAgo:'days ago', daysOverdueSuffix:'days overdue', daysUntilDueSuffix:'days until due',
+  blacklistedCol:'Blacklisted', showCustomerList:'Show customer list', statusMixTitle:'Customer status mix', yes:'Yes', no:'No',
+  selectBranchesPrompt:'Select branches', selectAtLeastOneBranch:'Select at least one branch first.',
+  salesCol:'Sales', lastPurchaseCol:'Last purchase', paymentDueCol:'Payment due',
+  reportBranchSection:'Branch performance', reportWatchlistSection:'Salesmen below threshold',
+  collectedCol:'Collected', changeCol:'Change', vsPrior:'vs prior period', vsPriorYear:'vs same period last year', branchesGrown:'Branches grown', dataAsOf:'Data as of', noPriorYearData:'No data for the same period last year',
+  vsPriorMonth:'vs same period last month', noPriorMonthData:'No data for the same period last month',
+  reportPage1Label:'Page 1 — Executive summary', reportPage2Label:'Page 2 — Branch performance', reportPage3Label:'Page 3 — Salesmen below target', reportPage4Label:'Page 4 — New customers',
+  reportTitle:'Performance report',
+  reportAutoSummary:'{grown} of {total} branches grew this period. Overdue makes up {overduePct}% of open balances. {watchCount} salesmen are below the watchlist threshold.',
+  under:'under', noOneBelowThreshold:'No one is below the threshold this period.', highlightedInRed:'(below threshold shown in red)',
+  collectionTypeExplainer:'Overdue collection = money collected against invoices already past due. Current collection = collected before the due date.',
+  bySalesman:'By salesman', overdueCollection:'Overdue collection', currentCollection:'Current collection',
+  priorPeriodCol:'Prior period', currentPeriodCol:'Current period', ofTotal:'of', belowThreshold:'below threshold', salesTrendCol:'Sales trend (prior → current)',
+  partialPeriodNote:'This period is still in progress ({elapsed} of {total} days). To compare fairly, it is measured against the same {elapsed} days of {priorLabel}, not the full prior period.',
+  custCol:'Customer', custNoCol:'Cust No', custSalesCol:'Total / this month', firstPurchase:'First purchase', statusCol:'Status', dueCol:'Due', daysSinceCol:'Days since last inv', creditLimitCol:'Credit limit',
+  rowNumCol:'#', nextDueCol:'Due since / on', numClients:'Number of clients',
+  productCol:'Product', qtyCol:'Qty', discountCol:'Discount', rateCol:'Rate',
+  statusOverdueCollection:'Overdue collection', statusDueCollection:'Due collection', statusAtRisk:'At risk of churn',
+  statusActive:'Active / regular', statusLost:'Lost / inactive', statusStale:'Stale / prior year only',
+  statusNew:'New', statusRepeat:'Repeat', statusPaid:'Paid', statusNoInvoice:'No invoice (has balance)',
+  customersInView:'Customers in view', top10Customers:'Top 10 customers', ofSalesWoVat:'of sales w/o VAT',
+  totalSalesLifetime:'Total sales (lifetime)', thisMonthSales:"This month's sales", totalBalance:'Total balance', totalOverdue:'Total overdue', totalDue:'Total due',
+  overduePct:'Overdue %', lostCustomers:'Lost customers', accountStatement:'Account statement', custNoLabel:'Cust No',
+  branchLbl:'Branch', salesmanLbl:'Salesman', statusLbl:'Status', alsoInvoicedUnder:'Also invoiced under', sameCustNote:'— same customer number, name was updated over time.',
+  creditLimit:'Credit limit', terms:'Terms', invoicesTitle:'Invoices', open:'open', invoiceCol:'Invoice', dateCol:'Date', amountCol:'Amount',
+  noInvoicesFound:'No invoices found.', morePaidNotShown:'more paid invoices not shown.', recentPayments:'Recent payments', againstInvoice:'Against invoice', appliedCol:'Applied', typeCol:'Type',
+  print:'🖨 Print', chipBranch:'Branch:', chipSalesman:'Salesman:', chipType:'Type:', chipCustomer:'Customer:', chipDateRange:'Dates:', chipAdjIncluded:'Including return/adjustment lines',
+  momComparing:'Comparing', momNote:'(equal-length periods, since the current month may be partial)',
+  arNote:'Overdue is calculated from invoice date + credit term days vs. today. These are the top 5 — click a row to jump to it, or open the Branches, Salesmen, or Customers tab for the full list with Overdue % (sortable, click any column header).',
+  selectBranchHint:'Select a single branch above to see its customer collection status.',
+  selectSmanHint:"Select a single salesman above to see their customer book — who's overdue, due, at risk, or lost.",
+  filteredMatchNote:"Showing this customer's invoices within your current filters — matches the Invoices count in the table above.",
+  fullHistoryNote:"Showing this customer's full history, ignoring the filters above.",
+  showFullHistory:'Show full history instead', showFilteredOnly:'Show filtered only',
+  footer:'Data reflects your Google Sheet as of the "Data through" date above · click Refresh to pull any newly uploaded invoices.',
+  newFirstTime:'first-time invoices', repeatInvoices:'repeat invoices in this view.', current:'Current', totalLbl:'Total',
+  signIn:'Welcome back', signInSubtitle:'Sign in to view your sales dashboard', username:'Username', password:'Password', logIn:'Log in', logout:'Log out',
+  showPassword:'Show password', hidePassword:'Hide password',
+  invalidCreds:'Incorrect username or password.', loginRequired:'Please sign in to continue.',
+  collectionSchedule:'Collection schedule', callToday:'Call today', noCollectionsScheduled:'Nothing scheduled for collection.', noneScheduled:'None scheduled.', dueToday:'Due today',
+  exportSelectedPdf:'Export as PDF', generatingPdf:'Generating PDFs…', overdueInvoices:'Open invoices',
+  selectedForExport:'Selected for export', addToExport:'Add to export selection',
+  langBtn:'🌐 العربية',
+},
+ar: {
+  appTitle:'الحويل — لوحة أداء المبيعات', appSub:'مباشر من Google Sheets · All Invoice New',
+  dataThrough:'البيانات حتى', synced:'آخر تحديث', fullscreen:'ملء الشاشة', exitFullscreen:'إغلاق ملء الشاشة',
+  refresh:'تحديث البيانات', refreshing:'جارٍ التحديث…', loadingData:'جارٍ تحميل بيانات المبيعات…', tryAgain:'إعادة المحاولة',
+  branch:'الفرع', salesman:'المندوب', type:'النوع', from:'من', to:'إلى', cashCredit:'نقدًا + آجل', cash:'نقدًا', credit:'آجل',
+  includeAdj:'تضمين سطور المرتجعات/التسويات', clearFilters:'مسح الفلاتر', allBranches:'كل الفروع', allSalesmen:'كل المناديب', allBrands:'كل الماركات',
+  selectAll:'تحديد الكل', clear:'مسح', search:'بحث…', rows:'صف', prev:'‹ السابق', next:'التالي ›', page:'صفحة',
+  tabOverview:'نظرة عامة', tabBranches:'الفروع', tabSalesmen:'المناديب', tabCustomers:'العملاء', tabProducts:'المنتجات', tabDiscounts:'الخصومات', tabCollection:'التحصيل', tabTargets:'المستهدفات',
+  withRollover:'مع الترحيل', withoutRollover:'بدون ترحيل', quarterly:'ربع سنوي', monthly:'شهري', yearly:'سنوي', addTarget:'+ إضافة مستهدف', editTarget:'تعديل المستهدف', deleteTarget:'حذف',
+  targetName:'الاسم (مندوب أو فرع)', assignedCodes:'الأكواد المحسوبة لهذا المستهدف', quarter:'الربع', day:'يوم',
+  targetType:'النوع', typeSalesman:'مندوب', typeBranch:'فرع', typeAll:'الكل', typeSalesmenView:'المناديب', typeBranchesView:'الفروع',
+  smanCodeCol:'الكود', close:'إغلاق', shareOfTotal:'النسبة من الإجمالي', codeNameCol:'الاسم',
+  exportExcel:'📊 تصدير إلى إكسل', smanNameCol:'المندوب', exportLibMissing:'تعذر تحميل مكتبة التصدير — تحقق من الاتصال وحاول مرة أخرى.',
+  targetAmount:'قيمة المستهدف (ريال، بدون ضريبة)', cancel:'إلغاء', save:'حفظ', achieved:'المحقق', ofTarget:'من المستهدف', noTargetsYet:'لا توجد مستهدفات لهذه الفترة بعد.',
+  targetMet:'تم تحقيق المستهدف', targetMissed:'لم يتحقق المستهدف', totalTargets:'مستهدفات هذه الفترة', avgAchievement:'متوسط التحقيق', targetsMet:'مستهدفات محققة',
+  confirmDeleteTarget:'حذف هذا المستهدف؟ لا يمكن التراجع.', selectAtLeastOneCode:'اختر كودًا واحدًا على الأقل لهذا المستهدف.', enterTargetName:'أدخل اسمًا لهذا المستهدف.',
+  savingTarget:'جاري الحفظ…', targetSaveFailed:'تعذر حفظ المستهدف.', targetsReport:'تقرير تقدّم المستهدفات',
+  savedViews:'العروض', saveCurrentView:'حفظ العرض الحالي…', noSavedViews:'لا توجد عروض محفوظة بعد.', viewNamePrompt:'اسم هذا العرض',
+  cmdpPlaceholder:'انتقل إلى تبويب أو مندوب أو فرع أو عميل أو إجراء…', cmdpNoResults:'لا نتائج.', cmdpTabs:'التبويبات', cmdpActions:'إجراءات', cmdpSalesmen:'المناديب', cmdpBranches:'الفروع', cmdpCustomers:'العملاء',
+  actClearFilters:'مسح كل الفلاتر', actRefresh:'تحديث البيانات', actPrint:'طباعة العرض الحالي', actToggleLang:'تغيير اللغة', actLogout:'تسجيل الخروج',
+  noDataForFilters:'لا توجد بيانات مطابقة للفلاتر الحالية.', tryClearingFilters:'جرّب توسيع النطاق الزمني أو مسح الفلاتر.',
+  salesWoVat:'المبيعات بدون ضريبة', invoices:'الفواتير', avgInvoice:'متوسط الفاتورة', vatAmount:'قيمة الضريبة', totalDiscount:'إجمالي الخصم', creditShare:'نسبة الآجل',
+  monthlyTrendTitle:'المبيعات الشهرية بدون ضريبة — نقدًا مقابل آجل مقابل الإجمالي', monthlyTrendHint:'مرّر فوق الشهر لرؤية الثلاثة',
+  mixTitle:'نسبة النقدي إلى الآجل', histTitle:'توزيع أحجام الفواتير', newRepTitle:'عملاء جدد مقابل متكررين',
+  arAgingTitle:'أعمار المديونية', topOverdueTitle:'أعلى المديونيات المتأخرة', byBranch:'حسب الفرع', bySalesman:'حسب المندوب', byCustomer:'حسب العميل',
+  overdueReportTab:'تقرير المتأخرات', overdueSingleBranchHint:'اختر فرعًا واحدًا فقط لعرض تفصيلي خاص به',
+  overdueCustomersCol:'عملاء متأخرون', oldestOverdueCol:'أقدم تأخير (يوم)', branchesInView:'الفروع المعروضة', totalOverdueCol:'إجمالي المتأخر',
+  agingBreakdown:'تفصيل الأعمار', agingMatrixTitle:'الأعمار حسب الفرع', agingCurrent:'حالي', agingBucket1_30:'١–٣٠ يوم',
+  agingBucket31_60:'٣١–٦٠ يوم', agingBucket61_90:'٦١–٩٠ يوم', agingBucket90plus:'+٩٠ يوم',
+  ofBranchBalance:'من رصيد الفرع', ofCompanyOverdue:'من إجمالي المتأخر',
+  overdue:'متأخرة', due:'مستحقة (لم تتأخر بعد)', expectedNext7:'التحصيلات المتوقعة (خلال ٧ أيام)', collectedRange:'المُحصّل (ضمن النطاق)',
+  branchesTitle:'المبيعات بدون ضريبة حسب الفرع', branchesHint:'انقر على عمود أو صف للتفاصيل', custStatusTitle:'حالة تحصيل العملاء', custStatusBranchHint:'للفرع المحدد',
+  top10SmanTitle:'أفضل ١٠ مناديب', top10SmanHint:'انقر على عمود للتفاصيل', allSmanTitle:'كل المناديب', allSmanHint:'انقر على صف للتفاصيل · الكود المعروض هو الكود الموحّد للمندوب',
+  custStatusSmanHint:'للمندوب المحدد', salesmanReport:'تقرير المندوب',
+  customersTitle:'العملاء', customersHint:'ابحث بالاسم أو رقم العميل · انقر على صف لعرض سجل المشتريات',
+  catTitle:'المبيعات بدون ضريبة حسب الفئة', brandTitle:'المبيعات بدون ضريبة حسب الماركة', brandHint:'مستنتجة من كود المنتج',
+  allProductsTitle:'كل المنتجات', allProductsHint:'ابحث برقم المنتج أو الوصف',
+  discRateTitle:'نسبة الخصم الشهرية', discByBranchTitle:'الخصم حسب الفرع', discBySmanTitle:'الخصم حسب المندوب', discByRowHint:'انقر على صف للتفاصيل',
+  discPctLabel:'الخصم / المبيعات بدون ضريبة',
+  branchCol:'الفرع', salesmanCol:'المندوب', codeCol:'الكود', invsCol:'الفواتير', custsCol:'العملاء', mixCol:'النسبة', balanceCol:'الرصيد', overdueCol:'المتأخر', overduePctCol:'نسبة التأخر',
+  tabReports:'التقارير', watchlistThreshold:'حد المراقبة (ريال)', printReport:'🖨 طباعة التقرير',
+  printBranchReport:'🖨 تقرير الفرع', branchManagerReport:'تقرير مدير الفرع', salesSinceStartOfYear:'المبيعات منذ بداية العام',
+  branchReportTab:'تقرير الفرع', customerListReportTab:'قائمة العملاء', summaryReportTab:'التقرير الملخص',
+  targetReportTab:'تقرير الأهداف', reportsLandingTitle:'اختر تقريرًا', backToReports:'← العودة إلى التقارير',
+  branchReportDesc:'تعمق في فرع واحد أو أكثر', customerListReportDesc:'قائمة عملاء قابلة للتصفية، أي فرع',
+  overdueReportDesc:'تفصيل الأعمار، على مستوى الشركة أو لكل فرع', summaryReportDesc:'نظرة تنفيذية عامة على جميع الفروع',
+  targetReportDesc:'أهداف الفروع والمناديب مقابل الفعلي',
+  fromCol:'من', toCol:'إلى', custTypeAll:'كل العملاء', custTypeLost:'المفقودون فقط', custTypeOverdue:'المتأخرون فقط', custTypeBoth:'مفقود أو متأخر',
+  upcoming7DaysTitle:'التحصيلات المتوقعة خلال ٧ أيام', dueDateCol:'تاريخ الاستحقاق', daysUntilDueCol:'الأيام حتى الاستحقاق',
+  noUpcomingCollections:'لا توجد تحصيلات متوقعة خلال ٧ أيام.', customerRosterTitle:'قائمة العملاء الكاملة',
+  brPage1Label:'صفحة ١ — نظرة عامة', brPage1bLabel:'صفحة ٢ — أداء المناديب', brPage2Label:'صفحة ٣ — التحصيلات القادمة', brPage3Label:'صفحة ٤ — قائمة العملاء',
+  totalCustomersCol:'إجمالي العملاء', salesmanPerformanceTitle:'أداء المناديب', salesPerformance:'أداء المبيعات', collectionPerformance:'أداء التحصيل',
+  overdueDaysCol:'أيام التأخير', exportBranchList:'📊 تصدير قائمة العملاء',
+  salesThisMonth:'مبيعات هذا الشهر', collectionThisMonth:'تحصيل هذا الشهر', includeFullCustomerList:'تضمين قائمة العملاء الكاملة',
+  salesWholePeriod:'المبيعات — كامل الفترة', collectedWholePeriod:'المحصّل — كامل الفترة', lostCustomersCol:'العملاء المفقودون',
+  salesSelectedPeriod:'المبيعات — الفترة المحددة', collectionSelectedPeriod:'التحصيل — الفترة المحددة', noPriorPeriodData:'لا توجد بيانات للفترة السابقة', lastInvoiceDateCol:'تاريخ آخر فاتورة',
+  statusNewCustomer:'عميل جديد', newCustomersCol:'عملاء جدد', newCustomersOnlyLabel:'العملاء الجدد فقط', reportNewCustomersSection:'عملاء جدد هذا الشهر', firstInvoiceDateCol:'تاريخ أول فاتورة', firstInvoiceAmountCol:'مبلغ أول فاتورة', showNewCustomersLabel:'إظهار قائمة العملاء الجدد',
+  reportComparePastPeriod:'قارن بـ (الفترة السابقة):', reportPriorAuto:'↺ احتساب تلقائي',
+  tabFollowUps:'المتابعة', followUpsDesc:'عملاء تتابعهم شخصيًا لإعادة التواصل معهم — تُحفظ فقط في هذا المتصفح، ومنفصلة تمامًا عن أي تقرير.',
+  tabPriceIntel:'ذكاء التسعير',
+  pricePos_VeryLow:'منخفض جدًا', pricePos_Low:'منخفض', pricePos_BelowAverage:'أقل من المتوسط', pricePos_Average:'متوسط',
+  pricePos_AboveAverage:'أعلى من المتوسط', pricePos_High:'مرتفع', pricePos_VeryHigh:'مرتفع جدًا',
+  priceIntelDesc:'مقارنة الأسعار بين جميع العملاء، محسوبة مباشرة من بيانات الفواتير — ابحث عن عميل أو منتج.',
+  priceIntelCustomerSearch:'بحث عن عميل', priceIntelProductSearch:'بحث عن منتج',
+  priceIntelSearchCustPlaceholder:'ابحث برقم العميل أو الاسم…', priceIntelSearchProdPlaceholder:'ابحث بكود المنتج أو الاسم…',
+  priceIntelNoSelection:'ابحث واختر عميلًا أو منتجًا أعلاه لعرض تحليل الأسعار.',
+  priceIntelProductCol:'المنتج', priceIntelCustPriceCol:'سعر العميل', priceIntelMinCol:'الأدنى', priceIntelAvgCol:'المتوسط', priceIntelMedianCol:'الوسيط', priceIntelMaxCol:'الأعلى',
+  priceIntelDiffCol:'الفرق', priceIntelDiffPctCol:'الفرق %', priceIntelPositionCol:'موقع السعر', priceIntelQtyCol:'الكمية',
+  priceIntelTotalProducts:'إجمالي المنتجات', priceIntelTotalQty:'إجمالي الكمية', priceIntelTotalSales:'إجمالي المبيعات',
+  priceIntelBelowAvgKpi:'منتجات أقل من المتوسط', priceIntelAroundAvgKpi:'منتجات حول المتوسط', priceIntelAboveAvgKpi:'منتجات أعلى من المتوسط',
+  priceIntelAvgDiffKpi:'متوسط فرق السعر', priceIntelTotalCustomers:'إجمالي العملاء',
+  priceIntelMonthlyTitle:'المقارنة الشهرية', priceIntelHistoryTitle:'سجل الأسعار', priceIntelViewHistory:'عرض السجل',
+  priceIntelTrendChart:'اتجاه السعر مقابل متوسط السوق', priceIntelExportPdf:'تصدير PDF', priceIntelExportExcel:'تصدير إلى إكسل',
+  priceIntelBenchmarkNote:'يُحسب متوسط السوق من مشتريات جميع العملاء الآخرين لنفس المنتج خلال نفس الفترة المحددة.',
+  priceIntelNoBenchmark:'لم يشترِ أي عميل آخر هذا المنتج خلال الفترة المحددة', priceIntelBackToProducts:'← العودة إلى قائمة المنتجات',
+  priceIntelSelectedPeriod:'الفترة المحددة',
+  priceIntelKpiSummary:'ملخص المؤشرات', priceIntelMonthlyAnalysis:'التحليل الشهري', priceIntelDetailedTransactions:'تفاصيل المعاملات',
+  priceIntelCustomerPriceAnalysis:'تحليل أسعار العميل', priceIntelProductPriceAnalysis:'تحليل أسعار المنتج',
+  priceIntelMarketQtyCol:'كمية السوق',
+  followUpAdd:'متابعة', followUpAddSelected:'إضافة إلى المتابعة', followUpTracked:'ضمن المتابعة', followUpOpenHint:'افتح صفحة المتابعة لإضافة الملاحظات', followUpOpen:'فتح',
+  followUpsActiveTab:'نشطة', followUpsArchivedTab:'مؤرشفة',
+  followUpPhone:'الهاتف', followUpPhone2:'هاتف بديل', followUpAddress:'العنوان', followUpAddressPlaceholder:'الشارع، المدينة، المنطقة…', followUpContactName:'اسم جهة الاتصال', followUpContactNamePlaceholder:'مع من تحدثت؟', followUpReason:'السبب', followUpReasonPlaceholder:'لماذا توقف عن الشراء؟', followUpStatus:'الحالة', followUpCalled:'تم الاتصال', followUpTotalSalesCol:'إجمالي المبيعات',
+  followUpDeleteNote:'حذف الملاحظة', followUpDeleteNoteConfirm:'هل تريد حذف هذه الملاحظة؟ لا يمكن التراجع عن هذا.',
+  followUpLog:'سجل الملاحظات', followUpAddNote:'إضافة ملاحظة', followUpNotePlaceholder:'ماذا قال المندوب؟',
+  statusInProgress:'قيد المتابعة', statusGiveUp:'تم التخلي', statusClosed:'مغلقة', statusActiveAgainFu:'نشط', followUpAutoNote:'تلقائي — العميل نشط حاليًا',
+  followUpArchive:'أرشفة', followUpUnarchive:'إلغاء الأرشفة', followUpDeletePermanently:'حذف نهائي',
+  followUpDeleteConfirm:'هل تريد حذف هذه المتابعة وكل ملاحظاتها نهائيًا؟ لا يمكن التراجع عن هذا.',
+  followUpBulkDeleteConfirm:'هل تريد حذف {n} متابعة محددة وكل ملاحظاتها نهائيًا؟ لا يمكن التراجع عن هذا.',
+  followUpExport:'تصدير نسخة احتياطية', followUpExportExcel:'تصدير إلى إكسل', followUpImport:'استيراد نسخة احتياطية',
+  followUpImportConfirm:'سيؤدي الاستيراد إلى استبدال جميع بيانات المتابعة المخزنة حاليًا في هذا المتصفح بمحتوى الملف. هل تريد المتابعة؟',
+  followUpImportError:'تعذّرت قراءة الملف — الرجاء اختيار ملف نسخة احتياطية صالح (.json).',
+  followUpEmpty:'لا توجد متابعات بعد. افتح عميلًا من تبويب العملاء واضغط "متابعة" لإضافته.', followUpEmptyArchived:'لا توجد متابعات مؤرشفة.',
+  followUpNoNotesYet:'لا توجد ملاحظات بعد.', followUpAddedOn:'أُضيف في', followUpPrint:'طباعة كشف الحساب + الملاحظات',
+  followUpNotesForPrint:'ملاحظات المتابعة', followUpReasonForPrint:'سبب التوقف عن الشراء',
+  allStatuses:'كل الحالات', daysAgo:'يومًا مضت', daysOverdueSuffix:'يوم تأخير', daysUntilDueSuffix:'يوم حتى الاستحقاق',
+  blacklistedCol:'قائمة سوداء', showCustomerList:'إظهار قائمة العملاء', statusMixTitle:'توزيع حالات العملاء', yes:'نعم', no:'لا',
+  selectBranchesPrompt:'اختر الفروع', selectAtLeastOneBranch:'اختر فرعًا واحدًا على الأقل.',
+  salesCol:'المبيعات', lastPurchaseCol:'آخر شراء', paymentDueCol:'موعد السداد',
+  reportBranchSection:'أداء الفروع', reportWatchlistSection:'المناديب تحت الحد',
+  collectedCol:'المحصّل', changeCol:'التغير', vsPrior:'مقابل الفترة السابقة', vsPriorYear:'مقابل نفس الفترة من العام الماضي', branchesGrown:'فروع نمت', dataAsOf:'البيانات كما في', noPriorYearData:'لا توجد بيانات لنفس الفترة من العام الماضي',
+  vsPriorMonth:'مقابل نفس الفترة من الشهر الماضي', noPriorMonthData:'لا توجد بيانات لنفس الفترة من الشهر الماضي',
+  reportPage1Label:'صفحة ١ — الملخص التنفيذي', reportPage2Label:'صفحة ٢ — أداء الفروع', reportPage3Label:'صفحة ٣ — المناديب تحت الهدف', reportPage4Label:'صفحة ٤ — عملاء جدد',
+  reportTitle:'تقرير الأداء',
+  reportAutoSummary:'{grown} من {total} فروع نمت هذه الفترة. المتأخر يشكل {overduePct}% من الأرصدة المفتوحة. {watchCount} مندوب تحت حد المراقبة.',
+  under:'أقل من', noOneBelowThreshold:'لا يوجد أحد تحت الحد هذه الفترة.', highlightedInRed:'(الأقل من الحد باللون الأحمر)',
+  collectionTypeExplainer:'تحصيل المتأخر = المبالغ المحصّلة من فواتير تجاوزت تاريخ الاستحقاق. التحصيل الحالي = ما تم تحصيله قبل الاستحقاق.',
+  bySalesman:'حسب المندوب', overdueCollection:'تحصيل متأخر', currentCollection:'تحصيل حالي',
+  priorPeriodCol:'الفترة السابقة', currentPeriodCol:'الفترة الحالية', ofTotal:'من', belowThreshold:'تحت الحد', salesTrendCol:'اتجاه المبيعات (سابق ← حالي)',
+  partialPeriodNote:'هذه الفترة لا تزال جارية ({elapsed} من {total} يومًا). للمقارنة العادلة، تتم مقارنتها بنفس {elapsed} يومًا من {priorLabel}، وليس الفترة السابقة كاملة.',
+  custCol:'العميل', custNoCol:'رقم العميل', custSalesCol:'الإجمالي / هذا الشهر', firstPurchase:'أول شراء', statusCol:'الحالة', dueCol:'المستحق', daysSinceCol:'أيام منذ آخر فاتورة', creditLimitCol:'الحد الائتماني',
+  rowNumCol:'#', nextDueCol:'تاريخ الاستحقاق', numClients:'عدد العملاء',
+  productCol:'المنتج', qtyCol:'الكمية', discountCol:'الخصم', rateCol:'النسبة',
+  statusOverdueCollection:'تحصيل متأخر', statusDueCollection:'تحصيل مستحق', statusAtRisk:'معرض للفقد',
+  statusActive:'نشط / منتظم', statusLost:'مفقود / غير نشط', statusStale:'قديم / سنة سابقة فقط',
+  statusNew:'جديد', statusRepeat:'متكرر', statusPaid:'مدفوعة', statusNoInvoice:'لا توجد فاتورة (له رصيد)',
+  customersInView:'العملاء ضمن العرض', top10Customers:'أفضل ١٠ عملاء', ofSalesWoVat:'من المبيعات بدون ضريبة',
+  totalSalesLifetime:'إجمالي المبيعات (منذ البداية)', thisMonthSales:'مبيعات هذا الشهر', totalBalance:'إجمالي الرصيد', totalOverdue:'إجمالي المتأخر', totalDue:'إجمالي المستحق',
+  overduePct:'نسبة التأخر', lostCustomers:'عملاء مفقودون', accountStatement:'كشف حساب العميل', custNoLabel:'رقم العميل',
+  branchLbl:'الفرع', salesmanLbl:'المندوب', statusLbl:'الحالة', alsoInvoicedUnder:'فوتر أيضًا باسم', sameCustNote:'— نفس رقم العميل، تم تحديث الاسم بمرور الوقت.',
+  creditLimit:'الحد الائتماني', terms:'مدة السماح', invoicesTitle:'الفواتير', open:'مفتوحة', invoiceCol:'الفاتورة', dateCol:'التاريخ', amountCol:'المبلغ',
+  noInvoicesFound:'لا توجد فواتير.', morePaidNotShown:'فاتورة مدفوعة أخرى غير معروضة.', recentPayments:'آخر التحصيلات', againstInvoice:'مقابل فاتورة', appliedCol:'المُطبّق', typeCol:'النوع',
+  print:'🖨 طباعة', chipBranch:'الفرع:', chipSalesman:'المندوب:', chipType:'النوع:', chipCustomer:'العميل:', chipDateRange:'التواريخ:', chipAdjIncluded:'شامل سطور المرتجع/التسوية',
+  momComparing:'مقارنة', momNote:'(فترات متساوية الطول، لأن الشهر الحالي قد يكون غير مكتمل)',
+  arNote:'تُحسب المديونية المتأخرة من تاريخ الفاتورة + مدة السماح مقارنة باليوم الحالي. هذه أعلى ٥ فقط — انقر على صف للانتقال إليه، أو افتح تبويب الفروع أو المناديب أو العملاء لرؤية القائمة الكاملة مع نسبة التأخر (قابلة للفرز بالنقر على أي عنوان عمود).',
+  selectBranchHint:'اختر فرعًا واحدًا أعلاه لعرض حالة تحصيل عملائه.',
+  selectSmanHint:'اختر مندوبًا واحدًا أعلاه لعرض عملائه — المتأخر والمستحق والمعرض للفقد والمفقود.',
+  filteredMatchNote:'يعرض فواتير هذا العميل ضمن الفلاتر الحالية — مطابق لعدد الفواتير في الجدول أعلاه.',
+  fullHistoryNote:'يعرض كامل سجل هذا العميل، بصرف النظر عن الفلاتر أعلاه.',
+  showFullHistory:'عرض السجل الكامل', showFilteredOnly:'عرض المُفلتر فقط',
+  footer:'تعكس البيانات ملف Google Sheet كما في تاريخ "البيانات حتى" أعلاه · انقر تحديث لجلب أي فواتير مضافة حديثًا.',
+  newFirstTime:'فاتورة عميل جديد', repeatInvoices:'فاتورة متكررة ضمن هذا العرض.', current:'حالي', totalLbl:'الإجمالي',
+  signIn:'أهلاً بعودتك', signInSubtitle:'سجّل الدخول لعرض لوحة المبيعات', username:'اسم المستخدم', password:'كلمة المرور', logIn:'دخول', logout:'تسجيل الخروج',
+  showPassword:'إظهار كلمة المرور', hidePassword:'إخفاء كلمة المرور',
+  invalidCreds:'اسم المستخدم أو كلمة المرور غير صحيحة.', loginRequired:'يرجى تسجيل الدخول للمتابعة.',
+  collectionSchedule:'جدول التحصيل', callToday:'اتصل اليوم', noCollectionsScheduled:'لا يوجد تحصيل مجدول.', noneScheduled:'لا يوجد.', dueToday:'مستحق اليوم',
+  exportSelectedPdf:'تصدير PDF', generatingPdf:'جارٍ إنشاء ملفات PDF…', overdueInvoices:'الفواتير المفتوحة',
+  selectedForExport:'محدد للتصدير', addToExport:'إضافة إلى التصدير',
+  langBtn:'🌐 English',
+}
+};
+
+const STATUS_KEY = {
+  'Overdue collection':'statusOverdueCollection', 'Due collection':'statusDueCollection',
+  'At risk of churn':'statusAtRisk', 'Active / regular':'statusActive',
+  'Lost / inactive':'statusLost', 'Stale / prior year only':'statusStale',
+  'New':'statusNew', 'Repeat':'statusRepeat', 'Paid':'statusPaid', 'No invoice':'statusNoInvoice',
+  'Blacklisted':'blacklistedCol', 'New Customer':'statusNewCustomer'
+};
+
+function t(key){ return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+
+function statusLabel(s){ return t(STATUS_KEY[s]||s); }
+
+function money(v, dec){ dec = dec===undefined?0:dec; return 'SAR ' + Number(v||0).toLocaleString(undefined,{minimumFractionDigits:dec, maximumFractionDigits:dec}); }
+
+function num(v){ return Number(v||0).toLocaleString(); }
+
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function periodCompareLine(priorValue, changePct, labelKey, noDataKey, hasData){
+  if(hasData===false || priorValue==null) return `<span style="color:var(--ink-mute);">${t(noDataKey)}</span>`;
+  return reportPctBadge(changePct)+' '+t(labelKey)+' ('+money(priorValue)+')';
+}
+
+function buildBranchBarChartSVG(branchRows, valueFmt){
+  const fmt = valueFmt || money;
+  if(!branchRows.length) return `<div style="color:var(--ink-mute); font-size:12px;">${t('noDataForFilters')}</div>`;
+  const W = Math.max(650, branchRows.length*80);
+  const H = 260;
+  const padTop = 30, padBottom = 70, padLeft = 75, padRight = 20;
+  const plotW = W - padLeft - padRight;
+  const plotH = H - padTop - padBottom;
+  const maxVal = Math.max(1, ...branchRows.map(r=>r.sales));
+  const gap = plotW / branchRows.length;
+  const barW = Math.min(60, gap*0.55);
+
+  const gridLines = [0,0.25,0.5,0.75,1].map(f=>{
+    const y = padTop + plotH*(1-f);
+    return `<line x1="${padLeft}" y1="${y}" x2="${W-padRight}" y2="${y}" stroke="#e1e0d9" stroke-width="1"/>
+      <text x="${padLeft-8}" y="${y+3}" text-anchor="end" font-size="9" fill="#6b7387">${escapeHtml(fmt(maxVal*f))}</text>`;
+  }).join('');
+
+  const bars = branchRows.map((r,i)=>{
+    const barH = maxVal>0 ? (r.sales/maxVal)*plotH : 0;
+    const x = padLeft + gap*i + (gap-barW)/2;
+    const yTop = padTop + (plotH-barH);
+    const labelY = padTop + plotH + 16;
+    return `<rect x="${x}" y="${yTop}" width="${barW}" height="${barH}" rx="3" fill="#0033a0"></rect>
+      <text x="${x+barW/2}" y="${yTop-6}" text-anchor="middle" font-size="10" font-weight="700" fill="#1c2333">${escapeHtml(fmt(r.sales))}</text>
+      <text x="${x+barW/2}" y="${labelY}" text-anchor="end" font-size="9" fill="#374151" transform="rotate(-35 ${x+barW/2} ${labelY})">${escapeHtml(r.branch)}</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; max-height:260px; display:block;" role="img" aria-label="Bar chart of sales without VAT per branch for the current period">
+    ${gridLines}
+    ${bars}
+  </svg>`;
+}
+
+function formatLastPurchaseCell(r){
+  if(r.lastInvoiceDate==null) return '—';
+  return `${fmtDate(r.lastInvoiceDate)}<br><span style="color:var(--ink-mute); font-size:10px;">${r.daysSince==null?'':num(r.daysSince)+' '+t('daysAgo')}</span>`;
+}
+
+function formatPaymentDueCell(r){
+  if(r.overdueDays!=null) return `<span style="color:#a32d2d; font-weight:700;">${fmtDate(r.nextDueDate)}<br>${num(r.overdueDays)} ${t('daysOverdueSuffix')}</span>`;
+  if(r.nextDueDate!=null && r.daysUntilDue===0) return `${fmtDate(r.nextDueDate)}<br><span style="color:var(--yellow-dark); font-weight:700;">${t('dueToday')}</span>`;
+  if(r.nextDueDate!=null && r.daysUntilDue!=null) return `${fmtDate(r.nextDueDate)}<br><span style="color:var(--ink-mute); font-size:10px;">${num(r.daysUntilDue)} ${t('daysUntilDueSuffix')}</span>`;
+  return '—';
+}
+
+function buildSmanReportPrintHTML(d){
+  const kpiCard = (label,val,sub,danger,extraClass)=>`<div class="kpi ${danger?'danger':''} ${extraClass||''}"><div class="label">${label}</div><div class="value">${val}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+  // SMAN List: CUSTOMER = number + name combined into one column; DUE DATE/STATUS shows the actual
+  // due date plus days-overdue/days-remaining/"due today" (via the same centralized formatPaymentDueCell
+  // used elsewhere); LAST INVOICE DATE shows the real date, not a day count.
+  const rowsHtml = d.custs.map((c,i)=>`<tr>
+    <td class="num">${i+1}</td>
+    <td style="${c.status==='New Customer'?'color:var(--blue-dark); font-weight:700;':(c.status==='Overdue collection'?'color:var(--bad); font-weight:700;':'')}">${statusLabel(c.status)}</td>
+    <td>${escapeHtml(c.custNo)} — ${escapeHtml(c.cust)}</td>
+    <td class="num" style="line-height:1.3;">
+      <div style="font-weight:700;">${money(c.branchTotalSales)}</div>
+      <div style="font-size:9.5px; color:var(--ink-mute); font-weight:400;">${money(c.branchMonthSales)}</div>
+    </td>
+    <td class="num" style="${c.overdue>0?'color:var(--bad); font-weight:700;':''}">${money(c.overdue)}</td>
+    <td class="num">${money(c.due)}</td>
+    <td class="num">${formatPaymentDueCell(c)}</td>
+    <td class="num">${formatLastPurchaseCell(c)}</td>
+  </tr>`).join('');
+  return `
+    <div class="sman-report-page">
+    <div style="margin-bottom:14px;">
+      <h3 style="margin:0 0 4px; color:var(--blue-dark);">${t('salesmanReport')} — ${d.smanName}</h3>
+      <div class="n">(${d.smanCode}) · ${d.branch}</div>
+    </div>
+    <div class="kpis kpis-compact" style="margin-bottom:16px;">
+      ${kpiCard(t('totalSalesLifetime'), money(d.totalSales))}
+      ${kpiCard(t('thisMonthSales'), money(d.curMonthSales), periodCompareLine(d.priorMonthSales, d.monthChangePct, 'vsPriorMonth', 'noPriorMonthData', d.monthPriorHasData))}
+      ${kpiCard(t('collectedCol'), money(d.collected), `<span style="color:#a32d2d; font-weight:600;">${t('overdueCol')} ${money(d.overdueCollAmt)} (${d.overdueCollPct.toFixed(0)}%)</span> · <span style="color:#1a7f4e; font-weight:600;">${t('current')} ${money(d.currentCollAmt)} (${d.currentCollPct.toFixed(0)}%)</span>`)}
+      ${kpiCard(t('collectionThisMonth'), money(d.collectedThisMonth), `<span style="color:#a32d2d; font-weight:600;">${t('overdueCol')} ${money(d.overdueCollThisMonthAmt)} (${d.overdueCollThisMonthPct.toFixed(0)}%)</span> · <span style="color:#1a7f4e; font-weight:600;">${t('current')} ${money(d.currentCollThisMonthAmt)} (${d.currentCollThisMonthPct.toFixed(0)}%)</span>`)}
+      ${kpiCard(t('balanceCol'), d.overdueTotal>0 ? `<span style="color:var(--yellow-dark);">${money(d.overdueTotal+d.dueTotal)}</span>` : money(d.overdueTotal+d.dueTotal), `<span style="font-weight:600;">${t('dueCol')} ${money(d.dueTotal)}</span> · <span style="${d.overdueTotal>0?'color:#a32d2d; font-weight:700;':'font-weight:600;'}">${t('overdueCol')} ${money(d.overdueTotal)} (${(d.overdueTotal+d.dueTotal? d.overdueTotal/(d.overdueTotal+d.dueTotal)*100:0).toFixed(0)}%)</span>`, false, d.overdueTotal>0?'accent':'')}
+      ${kpiCard(t('newCustomersCol'), num(d.newCustomersThisMonth), d.newCustPriorHasData ? `${d.newCustChangeAmt>=0?'▲':'▼'} ${Math.abs(d.newCustChangeAmt)} ${t('vsPriorMonth')} (${num(d.newCustomersLastMonth)})` : t('noPriorMonthData'), false, 'accent')}
+      ${kpiCard(t('lostCustomers'), num(d.lostCount), `${d.lostPct.toFixed(0)}% ${t('ofTotal')} ${num(d.custs.length)}`, d.lostPct>10)}
+      ${kpiCard(t('numClients'), num(d.custs.length))}
+    </div>
+    <div style="font-size:10px; color:var(--ink-mute); margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;">${t('salesSinceStartOfYear')}</div>
+    ${buildBranchBarChartSVG(d.monthlySeries.map(m=>({branch:m.monthName, sales:m.sales})))}
+    <table class="sman-cust-table">
+      <thead><tr><th>${t('rowNumCol')}</th><th>${t('statusCol')}</th><th>${t('custCol')}</th><th class="num">${t('custSalesCol')}</th><th class="num">${t('overdueCol')}</th><th class="num">${t('dueCol')}</th><th class="num">${t('nextDueCol')}</th><th class="num">${t('lastInvoiceDateCol')}</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    </div>`;
+}
+
+function buildCustomerStatementHTML(custNo, opts){
+  opts = opts || {};
+  const custInvRows = rawRows.filter(r=>r[F.custNo]===custNo && !r._isAdj);
+  const invMap = new Map();
+  custInvRows.forEach(r=>{
+    if(!invMap.has(r[F.inv])) invMap.set(r[F.inv], {time:r._time, branch:r[F.branch], sman:displaySmanName(r[F.newId],r[F.smanName]), type:r[F.type], net:0});
+    invMap.get(r[F.inv]).net += Number(r[F.net])||0;
+  });
+  const dueByInv = new Map();
+  rawDue.filter(r=>r[FD.custNo]===custNo).forEach(r=> dueByInv.set(String(r[FD.invNo]), r));
+  dueByInv.forEach((r,invNo)=>{
+    if(!invMap.has(invNo)) invMap.set(invNo, {time:r._time, branch:r[FD.branch], sman:displaySmanName(r[FD.newId],r[FD.smanName]), type:null, net:0});
+  });
+
+  const allInv = [...invMap.entries()].map(([inv,v])=>{
+    const d = dueByInv.get(String(inv));
+    let status='Paid', tag='', amount=v.net;
+    if(d){
+      amount = Number(d[FD.balance])||0;
+      if(d._overdueNum>0){ status='Overdue'; tag=d._overdueNum+'d overdue'; }
+      else { status='Due'; tag=d._daysDueNum+'d until due'; }
+    }
+    return {inv, time:v.time, branch:v.branch, sman:v.sman, type:v.type, sales:v.net, amount, status, tag};
+  }).sort((a,b)=>(b.time||0)-(a.time||0));
+
+  const openInv = allInv.filter(r=>r.status!=='Paid');
+  const paidInv = allInv.filter(r=>r.status==='Paid');
+  const paidShown = paidInv.slice(0,15);
+  const pays = rawColl.filter(r=>r[FC.custNo]===custNo).sort((a,b)=>(b._time||0)-(a._time||0)).slice(0,15);
+
+  const ar = computeCustomerAR().get(custNo);
+  const totalSales = custInvRows.reduce((a,r)=>a+(Number(r[F.net])||0),0);
+  const nameHistory = [...new Set(custInvRows.map(r=>r[F.custName]).filter(Boolean))];
+  const displayName = displayCustName(custNo, custNo);
+  const statusColor = s => s==='Overdue' ? 'color:var(--bad); font-weight:700;' : s==='Due' ? 'color:var(--yellow-dark); font-weight:700;' : 'color:var(--good);';
+
+  return `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <h3>${t('accountStatement')} — ${displayName} <span class="n">${t('custNoLabel')} ${custNo}</span></h3>
+      ${opts.headerButtons || ''}
+    </div>
+    ${ar ? `<div class="n" style="margin-bottom:10px;">${t('branchLbl')}: <b>${ar.branch||'—'}</b> · ${t('salesmanLbl')}: <b>${ar.sman||'—'} (${ar.smanCode||'—'})</b> · ${t('statusLbl')}: <b style="${statusColor(ar.overdue>0?'Overdue':ar.due>0?'Due':'')}">${statusLabel(ar.status)}</b></div>` : ''}
+    ${nameHistory.length>1 ? `<div class="n" style="margin-bottom:10px;">${t('alsoInvoicedUnder')}: ${nameHistory.filter(n=>n!==displayName).join(', ')} ${t('sameCustNote')}</div>` : ''}
+    <div class="kpis" style="margin-bottom:14px;">
+      <div class="kpi"><div class="label">${t('totalSalesLifetime')}</div><div class="value">${money(totalSales)}</div></div>
+      <div class="kpi danger"><div class="label">${t('totalBalance')}</div><div class="value">${money((ar?ar.overdue:0)+(ar?ar.due:0))}</div></div>
+      <div class="kpi danger"><div class="label">${t('overdue')}</div><div class="value">${money(ar?ar.overdue:0)}</div></div>
+      <div class="kpi"><div class="label">${t('due')}</div><div class="value">${money(ar?ar.due:0)}</div></div>
+      <div class="kpi"><div class="label">${t('creditLimit')}</div><div class="value">${ar&&ar.credit?money(ar.credit):'—'}</div></div>
+      <div class="kpi"><div class="label">${t('terms')}</div><div class="value">${ar&&ar.terms?ar.terms+'d':'—'}</div></div>
+    </div>
+    <h3>${t('invoicesTitle')} ${openInv.length?`<span class="n">${openInv.length} ${t('open')}</span>`:''}</h3>
+    <table>
+      <thead><tr><th>${t('invoiceCol')}</th><th>${t('dateCol')}</th><th>${t('branchCol')}</th><th class="num">${t('amountCol')}</th><th>${t('statusCol')}</th></tr></thead>
+      <tbody>
+      ${allInv.length===0 ? `<tr><td colspan="5" style="color:var(--ink-mute);">${t('noInvoicesFound')}</td></tr>` : ''}
+      ${openInv.map(r=>`<tr><td>${r.inv}</td><td>${r.time?new Date(r.time).toLocaleDateString():'—'}</td><td>${r.branch}</td><td class="num">${money(r.amount)}</td><td style="${statusColor(r.status)}">${statusLabel(r.status)} (${r.tag})</td></tr>`).join('')}
+      ${paidShown.map(r=>`<tr><td>${r.inv}</td><td>${r.time?new Date(r.time).toLocaleDateString():'—'}</td><td>${r.branch}</td><td class="num">${money(r.amount)}</td><td style="${statusColor(r.status)}">${statusLabel('Paid')}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    ${paidInv.length>paidShown.length ? `<div class="n" style="margin-top:6px;">+${paidInv.length-paidShown.length} ${t('morePaidNotShown')}</div>` : ''}
+    ${pays.length ? `<h3 style="margin-top:16px;">${t('recentPayments')}</h3><table>
+      <thead><tr><th>${t('dateCol')}</th><th>${t('againstInvoice')}</th><th class="num">${t('appliedCol')}</th><th>${t('typeCol')}</th></tr></thead>
+      <tbody>
+      ${pays.map(r=>`<tr><td>${r._time?new Date(r._time).toLocaleDateString():'—'}</td><td>${r[FC.invNo]}</td><td class="num">${money(r[FC.applied])}</td><td>${r[FC.type]||''}</td></tr>`).join('')}
+      </tbody>
+    </table>` : ''}
+    ${opts.extraSection || ''}
+  `;
+}
+
+function safeFileName(s){
+  return String(s).replace(/[\/\\:*?"<>|]/g, '-').trim();
+}
+
+function reportPctBadge(v){
+  const cls = v>=0 ? 'met' : 'miss';
+  const arrow = v>=0 ? '▲' : '▼';
+  return `<span class="tpct ${cls}">${arrow}${Math.abs(v).toFixed(0)}%</span>`;
+}
+
+function fmtDate(t){ return t==null ? '—' : new Date(t).toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}); }
+return { setLang: function(l){ lang = l === "ar" ? "ar" : "en"; }, getLang: function(){ return lang; }, t: t,
+  smanList: buildSmanReportPrintHTML, statement: buildCustomerStatementHTML, fileName: safeFileName,
+  css: "\n  :root{\n    --blue:#0033a0; --blue-dark:#00206b; --yellow:#ffd400; --yellow-dark:#e0b800;\n    --bg:#eef1f7; --panel:#ffffff; --line:#e2e6ee; --ink:#1c2333; --ink-dim:#6b7387; --ink-mute:#9aa1b3;\n    --good:#0f9d58; --bad:#d93025;\n    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);\n    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);\n  }\n  *{box-sizing:border-box;}\n  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); font-size:14.5px; -webkit-font-smoothing:antialiased;}\n  :lang(ar){ font-family:'Noto Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; }\n\n  header{background:linear-gradient(135deg, rgba(0,51,160,.92) 0%, rgba(0,32,107,.92) 100%); backdrop-filter:blur(14px) saturate(160%); -webkit-backdrop-filter:blur(14px) saturate(160%); color:#fff; padding:18px 28px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; position:sticky; top:0; z-index:30; box-shadow:0 2px 10px rgba(0,0,0,.15); border-bottom:1px solid rgba(255,255,255,.12); overflow:hidden;}\n  #headerBgCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; }\n  header > *{ position:relative; z-index:1; }\n  @media (prefers-reduced-transparency: reduce){ header{background:linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%); backdrop-filter:none;} }\n  header img{height:100px; background:#fff; border-radius:12px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,.2);}\n  header .title h1{margin:0; font-size:26px; font-weight:700; letter-spacing:.2px;}\n  header .title .sub{font-size:13px; color:#cfd9f5; margin-top:3px;}\n  header .spacer{flex:1;}\n  header .badges{display:flex; flex-direction:column; align-items:flex-end; gap:3px; margin-right:6px;}\n  .data-through{background:#fff; color:var(--blue-dark); font-weight:700; font-size:13px; padding:6px 14px; border-radius:20px;}\n  .last-sync{font-size:11px; color:#cfd9f5;}\n  #refreshBtn{background:var(--yellow); color:var(--blue-dark); border:none; font-weight:700; padding:10px 18px; border-radius:8px; font-size:14px; display:flex; align-items:center; gap:8px;}\n  #refreshBtn:hover{background:var(--yellow-dark);}\n  #refreshBtn:disabled{opacity:.75; cursor:default;}\n  #fullscreenBtn, #langBtn{background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.45); font-weight:600; padding:10px 16px; border-radius:8px; font-size:13.5px; transition:background 140ms var(--ease-out);}\n  #fullscreenBtn:hover, #langBtn:hover{background:rgba(255,255,255,.28);}\n\n  main{padding:18px 28px 60px;}\n\n  .spinner{width:14px; height:14px; border:2px solid rgba(0,0,0,.25); border-top-color:var(--blue-dark); border-radius:50%; display:inline-block; animation:spin .7s linear infinite; vertical-align:-2px;}\n  .spinner-lg{width:36px; height:36px; border:4px solid var(--line); border-top-color:var(--blue); border-radius:50%; margin:0 auto; animation:spin .8s linear infinite;}\n  @keyframes spin{to{transform:rotate(360deg);}}\n\n  #initialLoad{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:60px 20px; text-align:center; color:var(--ink-dim); font-size:14px;}\n\n  #loginScreen{\n    display:flex; justify-content:center; align-items:center;\n    min-height:calc(100vh - 138px);\n    margin:-18px -28px -60px;\n    position:relative; overflow:hidden; border-radius:0; padding:40px 20px;\n    background:\n      radial-gradient(circle at 18% 18%, rgba(255,212,0,.16), transparent 42%),\n      radial-gradient(circle at 82% 78%, rgba(255,255,255,.12), transparent 48%),\n      linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);\n  }\n  #loginBgCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; }\n  .login-card{\n    position:relative; z-index:1; background:var(--panel); border-radius:18px; padding:38px 32px 32px;\n    width:100%; max-width:352px; box-shadow:0 26px 60px -14px rgba(0,20,70,.4), 0 2px 8px rgba(0,0,0,.06);\n    text-align:center; animation: loginCardIn 420ms var(--ease-out) both;\n  }\n  @keyframes loginCardIn{ from{ opacity:0; transform:translateY(14px) scale(.97); } to{ opacity:1; transform:none; } }\n  @media (prefers-reduced-motion: reduce){ .login-card{ animation:none; } }\n  .login-logo{ height:56px; margin-bottom:8px; }\n  .login-card h2{ margin:14px 0 4px; font-size:19px; font-weight:800; color:var(--blue-dark); }\n  .login-card .subtitle{ margin:0 0 24px; font-size:13px; color:var(--ink-dim); }\n  .login-field{ margin-top:16px; text-align:left; }\n  .login-field label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-dim); margin:0 0 6px; letter-spacing:.2px; }\n  .input-wrap{ position:relative; }\n  .input-wrap .field-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-mute); pointer-events:none; display:flex; }\n  #loginUser, #loginPass{\n    width:100%; padding:11px 14px 11px 36px; font-size:14.5px; background:#fbfcfe;\n    border:1.5px solid var(--line); border-radius:10px;\n    transition:border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out), background 140ms var(--ease-out);\n  }\n  #loginUser:focus, #loginPass:focus{ outline:none; border-color:var(--blue); box-shadow:0 0 0 4px rgba(0,51,160,.12); background:#fff; }\n  #loginPass{ padding-right:36px; }\n  .login-field.has-error #loginUser, .login-field.has-error #loginPass{ border-color:var(--bad); background:#fff6f5; }\n  .login-field.has-error #loginUser:focus, .login-field.has-error #loginPass:focus{ box-shadow:0 0 0 4px rgba(217,48,37,.12); }\n  .pw-toggle{ position:absolute; right:3px; top:50%; transform:translateY(-50%); background:none; border:none; padding:6px; border-radius:6px; color:var(--ink-mute); cursor:pointer; display:flex; }\n  .pw-toggle:hover{ color:var(--ink-dim); background:rgba(0,0,0,.045); }\n  .login-card button.primary{\n    width:100%; margin-top:22px; padding:13px; font-size:15px; border:none; border-radius:10px;\n    background:linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);\n    box-shadow:0 8px 20px -6px rgba(0,51,160,.45);\n    display:flex; align-items:center; justify-content:center; gap:8px;\n    transition:transform 140ms var(--ease-out), box-shadow 140ms var(--ease-out);\n  }\n  .login-card button.primary:hover{ box-shadow:0 10px 26px -6px rgba(0,51,160,.55); transform:translateY(-1px); }\n  @media (prefers-reduced-motion: reduce){ .login-card button.primary:hover{ transform:none; } }\n  #loginErr{ display:flex; align-items:center; justify-content:center; gap:6px; color:var(--bad); font-size:12.5px; font-weight:600; margin-top:14px; min-height:1px; }\n  #dashboardContent{display:none;}\n\n  #reportsLanding{\n    position:relative; overflow:hidden; border-radius:18px; padding:48px 24px;\n    background:\n      radial-gradient(circle at 18% 18%, rgba(255,212,0,.16), transparent 42%),\n      radial-gradient(circle at 82% 78%, rgba(255,255,255,.12), transparent 48%),\n      linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);\n    margin-bottom:20px;\n  }\n  #reportsLandingBgCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; }\n  .reports-landing-inner{ position:relative; z-index:1; }\n  .reports-landing-title{ text-align:center; color:#fff; font-size:20px; font-weight:800; margin:0 0 28px; letter-spacing:.2px; }\n  .report-card-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:18px; max-width:1020px; margin:0 auto; }\n  .report-card{\n    background:var(--panel); border-radius:14px; padding:26px 18px; text-align:center; cursor:pointer;\n    box-shadow:0 16px 36px -12px rgba(0,20,70,.35), 0 2px 8px rgba(0,0,0,.06);\n    transition:transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out);\n  }\n  .report-card:hover{ transform:translateY(-3px); box-shadow:0 22px 44px -12px rgba(0,20,70,.45), 0 2px 8px rgba(0,0,0,.08); }\n  .report-card:active{ transform:translateY(-1px) scale(.99); }\n  .report-card-icon{ display:flex; align-items:center; justify-content:center; width:56px; height:56px; margin:0 auto 14px; border-radius:50%; background:rgba(0,51,160,.08); color:var(--blue); }\n  .report-card-icon svg{ width:28px; height:28px; }\n  .report-card-title{ font-size:15px; font-weight:800; color:var(--blue-dark); margin-bottom:6px; }\n  .report-card-desc{ font-size:12px; color:var(--ink-dim); line-height:1.4; }\n  .report-back-btn{ margin-bottom:14px; }\n\n  :root{ --sidebar-w:212px; --sidebar-w-collapsed:64px; }\n  .app-shell{display:flex; align-items:flex-start;}\n  .sidebar{\n    --sb-border:rgba(255,255,255,.14); --sb-bg-elev:rgba(255,255,255,.08);\n    --sb-text:#cfd9f7; --sb-text-hover:#ffffff; --sb-hover-bg:rgba(255,255,255,.10);\n    --sb-active-bg:rgba(255,255,255,.16); --sb-active-text:#ffffff;\n    position:fixed; top:0; left:0; bottom:0; height:100vh; width:var(--sidebar-w);\n    background:\n      radial-gradient(circle at 15% 8%, rgba(255,212,0,.10), transparent 42%),\n      linear-gradient(165deg, var(--blue) 0%, var(--blue-dark) 100%);\n    border-right:1px solid var(--sb-border);\n    box-shadow:2px 0 16px -8px rgba(8,12,28,.35); overflow-y:auto; overflow-x:hidden;\n    z-index:40; transition:width 200ms var(--ease-out);\n  }\n  .sidebar.collapsed{width:var(--sidebar-w-collapsed);}\n  .sidebar-toggle{\n    width:calc(100% - 20px); margin:14px 10px 8px; display:flex; align-items:center; gap:10px; background:var(--sb-bg-elev); border:none;\n    border-radius:8px; padding:9px 12px; font-size:15px; cursor:pointer;\n    color:var(--sb-text); transition:color 140ms var(--ease-out), background 140ms var(--ease-out);\n  }\n  .sidebar-toggle:hover{color:var(--sb-text-hover); background:var(--sb-hover-bg);}\n  .sidebar.collapsed .sidebar-toggle{width:44px; margin:14px auto 8px; justify-content:center;}\n  .side-nav{display:flex; flex-direction:column; padding:10px 10px 14px; border-top:1px solid var(--sb-border); margin-top:2px;}\n  .side-nav-divider{height:1px; background:var(--sb-border); margin:8px 4px;}\n  .content-col{flex:1; min-width:0; margin-left:var(--sidebar-w); transition:margin-left 200ms var(--ease-out);}\n  body.sidebar-collapsed .content-col{margin-left:var(--sidebar-w-collapsed);}\n  header{margin-left:var(--sidebar-w); transition:margin-left 200ms var(--ease-out);}\n  body.sidebar-collapsed header{margin-left:var(--sidebar-w-collapsed);}\n  body:not(.dashboard-active) header{margin-left:0;}\n  .side-nav-icon{display:flex; align-items:center; justify-content:center; width:20px; height:20px; flex-shrink:0;}\n  .side-nav-icon svg{width:18px; height:18px;}\n  .side-nav-label{overflow:hidden; text-overflow:ellipsis;}\n  .tab-btn{\n    display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:none;\n    border:none; border-left:3px solid transparent;\n    border-radius:8px; padding:10px 12px 10px 9px; margin-bottom:3px;\n    font-size:13.5px; font-weight:600; color:var(--sb-text); cursor:pointer; white-space:nowrap; overflow:hidden;\n    transition:color 140ms var(--ease-out), background 140ms var(--ease-out), border-color 140ms var(--ease-out);\n  }\n  .tab-btn:active{transform:scale(0.98);}\n  .tab-btn.active{color:var(--sb-active-text); background:var(--sb-active-bg); border-left-color:var(--yellow);}\n  .tab-btn:hover:not(.active){color:var(--sb-text-hover); background:var(--sb-hover-bg);}\n  .sidebar.collapsed .side-nav-label{display:none;}\n  .sidebar.collapsed .tab-btn{justify-content:center; padding:10px 0; gap:0; border-left:none;}\n  @media (prefers-reduced-motion: reduce){ .sidebar, .content-col, header{transition:none;} }\n  @media(max-width:900px){\n    .app-shell{flex-direction:column;}\n    .sidebar{position:static; width:100% !important; height:auto; margin-bottom:14px; box-shadow:none; border-right:none; border-bottom:1px solid var(--sb-border);}\n    .content-col{margin-left:0 !important;}\n    header{margin-left:0 !important;}\n    .sidebar.collapsed .side-nav{display:flex;}\n    .side-nav{flex-direction:row; flex-wrap:wrap;}\n    .side-nav-divider{display:none;}\n    .sidebar.collapsed .side-nav-label{display:inline;}\n    .sidebar.collapsed .tab-btn{justify-content:flex-start; padding:10px 12px; gap:11px;}\n    .sidebar-toggle{display:none;}\n  }\n\n  .toolbar{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:10px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,.04);}\n  .tb-group{display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding-right:18px; border-right:1px solid var(--line);}\n  .tb-group:last-child{border-right:none; padding-right:0;}\n  @media(max-width:700px){ .tb-group{border-right:none; padding-right:0; width:100%; padding-bottom:10px; border-bottom:1px solid var(--line);} .tb-group:last-child{border-bottom:none; padding-bottom:0;} }\n  .toolbar label{font-size:12.5px; color:var(--ink-dim); margin-right:2px; font-weight:600;}\n  select, input[type=date], input[type=text], textarea, button{\n    font-family:inherit; font-size:13.5px; border:1px solid var(--line); border-radius:6px; padding:7px 10px; background:#fff; color:var(--ink);\n  }\n  textarea{resize:vertical; line-height:1.45;}\n  button{cursor:pointer; font-weight:600; transition:transform 100ms var(--ease-out);}\n  button:active{transform:scale(0.97);}\n  @media (prefers-reduced-motion: reduce){ button:active{transform:none;} }\n  button.primary{background:var(--blue); color:#fff; border-color:var(--blue);}\n  button.primary:hover{background:var(--blue-dark);}\n  button.ghost{background:#fff; color:var(--ink-dim);}\n  .chk{display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--ink-dim);}\n  #err{color:var(--bad); font-size:13px; margin-bottom:10px; white-space:pre-wrap;}\n\n  .msel{position:relative; display:inline-block;}\n  .msel-btn{min-width:150px; text-align:left; display:inline-flex; justify-content:space-between; align-items:center; gap:10px;}\n  .msel-btn::after{content:'\u25be'; font-size:10px; color:var(--ink-mute);}\n  .msel-panel{position:absolute; top:calc(100% + 4px); left:0; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.14); padding:8px; min-width:280px; max-width:min(90vw, 400px); max-height:340px; overflow-y:auto; z-index:50; opacity:0; transform:scale(0.96) translateY(-4px); transform-origin:top left; pointer-events:none; visibility:hidden; transition:opacity 140ms var(--ease-out), transform 140ms var(--ease-out), visibility 140ms;}\n  .msel-panel.open{opacity:1; transform:scale(1) translateY(0); pointer-events:auto; visibility:visible;}\n  @media (prefers-reduced-motion: reduce){ .msel-panel{transition:opacity 100ms; transform:none;} }\n  .msel-opt{display:flex; align-items:center; gap:8px; padding:7px 6px; font-size:13.5px; line-height:1.35; border-radius:5px; cursor:pointer;}\n  .msel-opt:hover{background:#f2f4fa;}\n  .msel-opt input{margin:0; flex-shrink:0;}\n  .msel-opt span, .msel-opt{word-break:break-word;}\n  .msel-actions{display:flex; justify-content:space-between; padding:2px 6px 8px; border-bottom:1px solid var(--line); margin-bottom:6px; font-size:12px;}\n  .msel-actions button{border:none; background:none; color:var(--blue); font-weight:700; cursor:pointer; padding:0;}\n\n  #chips{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; min-height:1px;}\n  .chip{background:#e7ecfa; color:var(--blue-dark); font-size:12.5px; font-weight:600; padding:5px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:6px;}\n  .chip b{cursor:pointer; font-weight:800;}\n\n  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:8px;}\n  .kpi{\n    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:17px 19px 18px;\n    position:relative; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.04);\n    overflow:hidden; transition:transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);\n  }\n  .kpi::before{content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--blue); border-radius:12px 12px 0 0;}\n  .kpi.accent::before{background:var(--yellow-dark);}\n  .kpi.danger::before{background:var(--bad);}\n  .kpi.danger .value{color:var(--bad);}\n  .kpi:hover{ transform:translateY(-3px); box-shadow:0 12px 24px -8px rgba(16,24,40,.14), 0 4px 8px rgba(16,24,40,.06); border-color:#d6dcea; }\n  @media (prefers-reduced-motion: reduce){ .kpi:hover{ transform:none; } }\n  .kpi .label{font-size:11.5px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.45px; font-weight:700;}\n  .kpi .value{font-size:25px; font-weight:800; margin-top:8px; color:var(--blue); letter-spacing:-.3px; font-variant-numeric:tabular-nums; line-height:1.15;}\n  .kpi .sub{font-size:11.5px; color:var(--ink-mute); margin-top:4px;}\n  /* Compact variant for report layouts with many KPI cards side by side (e.g. the salesman report,\n     which has 8) - scoped to a wrapper class so every other report's KPI cards stay full-size. */\n  .kpis-compact .kpi{ padding:10px 12px 11px; border-radius:9px; }\n  .kpis-compact .kpi::before{ height:2px; border-radius:9px 9px 0 0; }\n  .kpis-compact .kpi .label{ font-size:9.5px; letter-spacing:.3px; }\n  .kpis-compact .kpi .value{ font-size:16px; margin-top:4px; }\n  .kpis-compact .kpi .sub{ font-size:9.5px; margin-top:2px; }\n  .mom{display:inline-block; font-size:11.5px; font-weight:700; margin-top:5px; padding:2px 7px; border-radius:4px;}\n  .mom.up{color:var(--good); background:#e6f6ec;}\n  .mom.down{color:var(--bad); background:#fbe9e7;}\n  #momNote{font-size:12px; color:var(--ink-mute); margin:6px 0 16px;}\n\n  .grid2{display:grid; grid-template-columns:1.4fr 1fr; gap:16px; margin-bottom:16px;}\n  .grid2even{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}\n  @media(max-width:900px){.grid2, .grid2even{grid-template-columns:1fr;}}\n\n  .card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:18px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.04); transition:box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);}\n  .card h3{margin:0 0 14px; font-size:14.5px; color:var(--blue-dark); font-weight:700; letter-spacing:-.1px;}\n  .card h3 .n{color:var(--ink-mute); font-weight:400; font-size:12px;}\n\n  .tbl-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:8px;}\n  .tbl-scroll table{min-width:640px;}\n  table{width:100%; border-collapse:collapse; font-size:13px;}\n  th,td{padding:9px 10px; text-align:left; border-bottom:1px solid var(--line);}\n  th{color:var(--ink-dim); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.35px; cursor:pointer; user-select:none; white-space:nowrap;}\n  .tbl-scroll thead th{position:sticky; top:0; z-index:2; background:var(--panel); box-shadow:0 1px 0 var(--line);}\n  td.num, th.num{text-align:right; font-variant-numeric:tabular-nums;}\n  tr.clickable{cursor:pointer; transition:background 120ms var(--ease-out);}\n  tr.clickable:hover td{background:#eef2fc;}\n  tr.clickable:active td{background:#e0e7fa;}\n\n  .kpi-skel{background:linear-gradient(100deg, var(--line) 30%, #eef1f7 45%, var(--line) 60%); background-size:250% 100%; animation:skelShimmer 1.3s ease-in-out infinite; border-radius:6px;}\n  @keyframes skelShimmer{ 0%{background-position:120% 0;} 100%{background-position:-20% 0;} }\n  @media (prefers-reduced-motion: reduce){ .kpi-skel{animation:none; background:var(--line);} }\n\n  .tbl-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px;}\n  .tbl-search{flex:1; max-width:260px;}\n  .tbl-count{font-size:12px; color:var(--ink-mute);}\n  .tbl-pager{display:flex; justify-content:center; align-items:center; gap:14px; margin-top:12px; font-size:12.5px; color:var(--ink-dim);}\n  .tbl-pager button:disabled{opacity:.4; cursor:default;}\n\n  .note{background:#fff9e0; border:1px solid #f0dd8c; border-radius:10px; padding:15px 18px; font-size:13px; color:#5c4d0a; line-height:1.7;}\n  .note b{color:#3d3200;}\n  .note ul{margin:6px 0 0; padding-left:18px;}\n\n  .collect-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:10px; margin-bottom:18px; }\n  .collect-card{ background:var(--panel); border:2px solid var(--line); border-radius:10px; padding:12px 10px; cursor:pointer; text-align:center; transition:border-color 120ms var(--ease-out), transform 100ms var(--ease-out); }\n  .collect-card:hover{ border-color:var(--blue); }\n  .collect-card:active{ transform:scale(0.97); }\n  .collect-card.selected{ border-color:var(--blue); background:#eef2fc; box-shadow:0 2px 8px rgba(0,51,160,.12); }\n  .collect-card.danger.selected{ border-color:var(--bad); background:#fdecea; }\n  .collect-card.warn.selected{ border-color:var(--yellow-dark); background:#fff9e0; }\n  .collect-card-label{ font-size:11px; font-weight:700; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.3px; margin-bottom:6px; }\n  .collect-card-val{ font-size:16px; font-weight:700; color:var(--blue); }\n  .collect-card.danger .collect-card-val{ color:var(--bad); }\n  .collect-card.warn .collect-card-val{ color:var(--yellow-dark); }\n  .collect-card-count{ font-size:11px; color:var(--ink-mute); margin-top:3px; }\n\n  .mini-row{display:flex; justify-content:space-between; padding:6px 2px; border-bottom:1px solid var(--line); cursor:pointer; font-size:12.5px; gap:8px; transition:background 100ms var(--ease-out);}\n  .mini-row:hover{background:#f2f4fa;}\n  .mini-row:active{background:#e6ebf7;}\n  .mini-row:hover{background:#eef2fc;}\n  .mini-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;}\n  .mini-val{font-weight:700; color:var(--bad); white-space:nowrap;}\n\n  .tab-panel{display:none;}\n  .tab-panel.active{display:block; animation: tabFade 220ms var(--ease-out);}\n  @keyframes tabFade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }\n  @media (prefers-reduced-motion: reduce){ .tab-panel.active{animation:none;} }\n\n  footer{text-align:center; font-size:11.5px; color:var(--ink-mute); padding:20px;}\n\n  @media print{\n    header, .toolbar, #chips, .sidebar, footer, .modal-overlay, .no-print { display:none !important; }\n    body { background:#fff; }\n    main { padding:0; }\n    .card, .kpi { box-shadow:none; border:1px solid #ccc; }\n    .tab-panel{ display:none !important; }\n    .tab-panel.active{ display:block !important; }\n    .tab-panel.active > *{ display:none !important; }\n    .tab-panel.active .print-area{ display:block !important; }\n    table thead{ display:table-header-group; }\n    table tbody tr{ page-break-inside:avoid; }\n    .sman-report-page{ page-break-after:always; }\n    .sman-report-page:last-child{ page-break-after:auto; }\n    .sman-cust-table{ font-size:10.5px; }\n    .sman-cust-table th, .sman-cust-table td{ padding:4px 5px; }\n    .sman-cust-table th{ font-size:8.5px; }\n  }\n\n  @media(max-width:700px){\n    header{padding:14px 16px;} header img{height:64px;} header .title h1{font-size:19px;}\n    main{padding:14px 16px 40px;}\n    #loginScreen{ margin:-14px -16px -40px; min-height:calc(100vh - 100px); }\n  }\n\n  /* Command palette */\n  .cmdp-overlay{position:fixed; inset:0; background:rgba(16,20,32,.5); backdrop-filter:blur(2px); z-index:100; display:none; align-items:flex-start; justify-content:center; padding-top:12vh;}\n  .cmdp-overlay.open{display:flex;}\n  .cmdp{width:100%; max-width:560px; background:var(--panel); border-radius:14px; box-shadow:0 24px 60px -12px rgba(0,0,0,.35); overflow:hidden; animation:cmdpIn 160ms var(--ease-out);}\n  @keyframes cmdpIn{ from{opacity:0; transform:translateY(-8px) scale(.98);} to{opacity:1; transform:none;} }\n  .cmdp-input{width:100%; border:none; border-bottom:1px solid var(--line); padding:16px 18px; font-size:15px; outline:none; font-family:inherit;}\n  .cmdp-list{max-height:360px; overflow-y:auto; padding:6px;}\n  .cmdp-item{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13.5px;}\n  .cmdp-item .cmdp-tag{font-size:10.5px; color:var(--ink-mute); text-transform:uppercase; letter-spacing:.3px;}\n  .cmdp-item.sel{background:var(--bg);}\n  .cmdp-empty{padding:24px; text-align:center; color:var(--ink-mute); font-size:13px;}\n  .cmdp-hint{padding:8px 14px; border-top:1px solid var(--line); font-size:11px; color:var(--ink-mute); display:flex; gap:14px;}\n  .cmdp-hint kbd{background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:1px 5px; font-family:inherit;}\n\n  /* Saved views */\n  .views-menu{position:relative;}\n  .views-panel{position:absolute; top:calc(100% + 4px); right:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.14); padding:8px; min-width:240px; z-index:50; opacity:0; visibility:hidden; transform:scale(.96) translateY(-4px); transform-origin:top right; transition:opacity 140ms var(--ease-out), transform 140ms var(--ease-out), visibility 140ms;}\n  .views-panel.open{opacity:1; visibility:visible; transform:none;}\n  .views-panel .vp-row{display:flex; align-items:center; justify-content:space-between; padding:7px 9px; border-radius:6px; font-size:13px; cursor:pointer;}\n  .views-panel .vp-row:hover{background:var(--bg);}\n  .views-panel .vp-del{color:var(--ink-mute); font-weight:800; padding:0 4px;}\n  .views-panel .vp-del:hover{color:var(--bad);}\n  .views-panel .vp-save{display:flex; gap:6px; padding:6px; border-top:1px solid var(--line); margin-top:4px;}\n  .views-panel .vp-save input{flex:1; min-width:0;}\n\n  /* Empty state */\n  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:36px 20px; color:var(--ink-mute);}\n  .empty-state .es-icon{font-size:26px; margin-bottom:8px; opacity:.6;}\n  .empty-state .es-msg{font-size:13px; max-width:320px;}\n\n  /* Insights panel */\n\n\n  @media print{\n    .print-filter-summary{ display:block !important; font-size:11px; color:#555; margin-bottom:10px; }\n    body.hide-generic-print-summary .print-filter-summary{ display:none !important; }\n  }\n  .print-filter-summary{ display:none; }\n  /* Targets */\n  .seg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden;}\n  .seg-btn{background:#fff; border:none; border-right:1px solid var(--line); padding:8px 14px; font-size:13px; cursor:pointer; color:var(--ink-dim);}\n  .seg-btn:last-child{border-right:none;}\n  .seg-btn.active{background:var(--blue); color:#fff; font-weight:700;}\n  .tbar-wrap{background:var(--bg); border-radius:5px; height:7px; overflow:hidden; min-width:90px;}\n  .tbar{height:100%; border-radius:5px; background:var(--blue); transition:width 500ms var(--ease-out);}\n  .tbar.met{background:var(--good);}\n  .tbar.over90{background:var(--yellow-dark);}\n  .tpct{font-weight:700; font-variant-numeric:tabular-nums;}\n  .tpct.met{color:var(--good);}\n  .tpct.miss{color:var(--bad);}\n  .tedit{background:none; border:none; color:var(--ink-mute); cursor:pointer; font-size:13px; padding:2px 6px; border-radius:5px;}\n  .tc-tag-inline{font-size:10px; text-transform:uppercase; letter-spacing:.3px; color:var(--blue); background:#eef2fc; padding:2px 6px; border-radius:4px; font-weight:700;}\n  #branchDetailSelectBtn.active-select{background:#eef2fc; border-color:var(--blue); color:var(--blue); font-weight:700;}\n  .tedit:hover{color:var(--blue); background:var(--bg);}\n\n  .modal-overlay{position:fixed; inset:0; background:rgba(16,20,32,.5); z-index:110; display:none; align-items:center; justify-content:center; padding:20px;}\n  .modal-overlay.open{display:flex;}\n  .modal{width:100%; max-width:660px; max-height:90vh; overflow-y:auto; background:var(--panel); border-radius:14px; padding:30px 34px; box-shadow:0 24px 60px -12px rgba(0,0,0,.35); animation:cmdpIn 160ms var(--ease-out);}\n  .modal h3{margin:0 0 20px; font-size:18px; color:var(--blue-dark);}\n  .form-row{margin-bottom:16px;}\n\n  /* Follow-ups: status pills, modal layout, icon actions */\n  .fu-pill{display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:20px; font-size:11.5px; font-weight:700; white-space:nowrap;}\n  .fu-pill::before{content:''; width:6px; height:6px; border-radius:50%; background:currentColor;}\n  .fu-pill.progress{background:#fff4d6; color:#8a5b00;}\n  .fu-pill.giveup{background:#eceef3; color:#5b6172;}\n  .fu-pill.active-again{background:#e3f7ec; color:#0f7a44;}\n  .fu-pill.closed{background:#e3ecfb; color:#1a4c9e;}\n  .fu-modal-header{display:flex; align-items:flex-start; gap:14px; margin-bottom:18px;}\n  .fu-avatar{width:46px; height:46px; border-radius:11px; background:linear-gradient(135deg, var(--blue), var(--blue-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; flex-shrink:0; letter-spacing:.3px;}\n  .fu-modal-title{font-size:17px; font-weight:800; color:var(--blue-dark); margin-bottom:5px;}\n  .fu-modal-meta{font-size:12px; color:var(--ink-mute); line-height:1.6;}\n  .fu-section{margin-bottom:18px;}\n  .fu-section-label{font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-mute); font-weight:800; margin-bottom:8px;}\n  .fu-grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}\n  .fu-field label{display:block; font-size:12px; color:var(--ink-dim); margin-bottom:6px; font-weight:700;}\n  .fu-field input[type=text], .fu-field select, .fu-field textarea{width:100%; box-sizing:border-box;}\n  .fu-auto-badge{display:flex; align-items:center; gap:8px; padding:8px 0;}\n  .fu-log-box{max-height:220px; overflow-y:auto; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:4px 14px;}\n  .fu-log-entry{display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--line);}\n  .fu-log-entry:last-child{border-bottom:none;}\n  .fu-log-dot{width:7px; height:7px; border-radius:50%; background:var(--blue); margin-top:6px; flex-shrink:0;}\n  .fu-log-date{font-size:11px; color:var(--ink-mute); margin-bottom:3px; font-weight:600;}\n  .fu-log-text{font-size:13.5px; color:var(--ink); line-height:1.45;}\n  .fu-log-empty{padding:18px 0; text-align:center; color:var(--ink-mute); font-size:13px;}\n  .fu-note-row{display:flex; gap:8px; margin-top:10px;}\n  .fu-icon-btn{display:inline-flex; align-items:center; gap:6px;}\n  .fu-icon-btn svg{width:15px; height:15px; flex-shrink:0;}\n  .fu-danger{color:var(--bad); border-color:#f3c6c2;}\n  .fu-danger:hover{background:#fdf1f0;}\n  .fu-table-name{color:var(--blue); font-weight:700; text-decoration:none;}\n  .fu-table-name:hover{text-decoration:underline;}\n  .form-row label{display:block; font-size:12px; font-weight:700; color:var(--ink-dim); margin-bottom:5px;}\n  .form-row input, .form-row select{width:100%;}\n  .codes-check-list{max-height:320px; overflow-y:auto; overflow-x:hidden; border:1px solid var(--line); border-radius:8px; padding:4px;}\n  .codes-check-list label{display:flex; align-items:flex-start; gap:9px; font-size:13.5px; font-weight:400; color:var(--ink); padding:9px 10px; border-radius:6px; line-height:1.4; cursor:pointer; transition:background 120ms var(--ease-out);}\n  .codes-check-list label:hover{background:var(--bg);}\n  .codes-check-list input[type=checkbox]{width:auto; flex:0 0 auto; margin-top:2.5px; cursor:pointer;}\n  .codes-check-list label span{flex:1 1 auto; min-width:0; overflow-wrap:anywhere;}\n  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:16px;}\n",
+  fonts: "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap\" rel=\"stylesheet\">" };
+})();
+</script>
 <script>
 'use strict';
 /* ===== Logo (stored once) ===== */
@@ -655,12 +1294,12 @@ const store = {
 };
 
 /* ===== API ===== */
-class ApiError extends Error { constructor(code){ super(code); this.code = code; } }
+class ApiError extends Error { constructor(code, detail){ super(code); this.code = code; this.detail = detail; } }
 
-async function api(action, payload = {}) {
+async function api(action, payload = {}, timeoutMs) {
   if (!API_URL || API_URL.startsWith('PASTE_')) throw new ApiError('NOT_CONFIGURED');
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs || REQUEST_TIMEOUT_MS);
   let res;
   try {
     // text/plain body = no CORS preflight (Apps Script can't answer OPTIONS)
@@ -678,7 +1317,7 @@ async function api(action, payload = {}) {
     if (data.error === 'SESSION_EXPIRED' || data.error === 'ACCOUNT_INACTIVE') {
       if (action !== 'login') signOutLocal(data.error);
     }
-    throw new ApiError(data.error || 'DEFAULT');
+    throw new ApiError(data.error || 'DEFAULT', data.detail);
   }
   return data;
 }
@@ -703,14 +1342,13 @@ function renderHome(){
   $('hello').append(`${en}${firstName(u.name) ? ', ' + firstName(u.name) : ''}`);
   const s = document.createElement('span'); s.className = 'ar'; s.textContent = ar; $('hello').append(s);
   $('whoLine').textContent = [u.code ? 'Code ' + u.code : '', u.branch, u.role === 'ADMIN' ? 'Coordinator' : ''].filter(Boolean).join('  |  ');
-  $('srvDate').textContent = t.date || '—';
-  $('myCode').textContent = u.code || '—';
-  $('myBranch').textContent = u.branch || '—';
   show('home');
+  renderDay();
+  loadDay();
 }
 
 function signOutLocal(reason){
-  state.token = null; state.user = null; list.report = null; list.filter = 'ALL'; list.q = '';
+  state.token = null; state.user = null; list.report = null; list.filter = 'ALL'; list.q = ''; field.contacts = []; field.phones = []; field.locations = []; field.visits = []; currentCust = null; if (typeof day !== 'undefined') { day.data = null; day.answered.clear(); clearInterval(day.timer); }
   store.del(TOKEN_KEY);
   store.del(USER_KEY);
   showLoginMsg(reason ? errText(reason) : null);
@@ -751,11 +1389,13 @@ async function boot(){
 async function verifySession(firstTime){
   try {
     const r = await api('me');
-    state.user = r.user; state.settings = r.settings; state.serverTime = r.serverTime;
+    state.user = r.user; state.settings = r.settings; state.serverTime = r.serverTime; syncClock(r.serverTime);
     store.set(USER_KEY, JSON.stringify(r.user));
     if (document.getElementById('home').classList.contains('on')) renderHome();
   } catch (e) {
-    if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;   // api() already signed out
+    if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
+    list.error = errText(e.code);
+    if (quiet) { if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay(); return; }   // api() already signed out
     if (firstTime) { showLoginMsg(errText(e.code)); show('login'); }
     else toast(errText(e.code));
   }
@@ -838,18 +1478,24 @@ function stateHTML(kind, msg){
   return `<div class="state"><b>${esc(msg[0])}</b><span dir="rtl">${esc(msg[1])}</span><button class="btn btn-quiet" type="button" id="retryList">Try again · إعادة المحاولة</button></div>`;
 }
 
-async function loadList(force){
+async function loadList(force, quiet){
   if (list.loading) return;
   if (list.report && !force) { renderList(); return; }
   list.loading = true;
   $('refreshBtn').disabled = true;
   if (!list.report) $('listBody').innerHTML = stateHTML('loading');
+  if (!quiet) show('list');
   try {
     const payload = await api('myList');
     loadSalesmanData(payload);                                 // dashboard engine
+    const f = payload.field || {};
+    field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || [];
+    if (day.data && day.data.visits) mergeVisits(day.data.visits);
     list.report = getSalesmanReportData(String(state.user.code));
+    list.error = null;
     list.loadedAt = Date.now();
     renderList();
+    if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay();
   } catch (e) {
     if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
     if (list.report) { renderList(); toast(errText(e.code)); }
@@ -903,13 +1549,13 @@ function renderCustRows(){
   $('custList').innerHTML = rows.map(c => {
     const due = dueText(c);
     return `<button type="button" class="cust" data-c="${esc(c.custNo)}">
-      <div class="h"><span class="n">${esc(c.custNo)} — ${esc(c.cust)}</span>${stChip(c.status)}</div>
+      <div class="h"><span class="n">${esc(c.custNo)} — ${esc(c.cust)}${phonesOf(c.custNo).length ? '' : ' <span class="miss">No phone · بدون رقم</span>'}</span>${stChip(c.status)}</div>
       <dl class="grid">
         <dt>Overdue / Current</dt><dd><span class="${c.overdue > 0 ? 'red' : ''}">${SAR.format(Math.round(c.overdue))}</span> / ${SAR.format(Math.round(c.due))}</dd>
         <dt>Due date</dt><dd class="${due.cls}">${esc(due.t)}</dd>
         <dt>Last invoice</dt><dd>${esc(lastInvText(c))}</dd>
         <dt>Sales</dt><dd>${money(c.branchTotalSales)} <span style="color:var(--muted);font-weight:400">· month ${SAR.format(Math.round(c.branchMonthSales))}</span></dd>
-      </dl></button>`;
+      </dl>${(v => `<div class="count ${v.cls}" style="font-size:12px">${esc(v.t)}</div>`)(visitLine(c))}</button>`;
   }).join('');
   $('custList').querySelectorAll('.cust').forEach(b => b.addEventListener('click', () => openCustomer(b.dataset.c)));
 }
@@ -920,6 +1566,7 @@ function openCustomer(custNo){
   $('custTitle').textContent = `${c.custNo} — ${c.cust}`;
   $('custSub').textContent = `${c.branch || ''}${c.terms ? ' · ' + c.terms + ' days credit' : ''}`;
   $('custBody').innerHTML = `
+    <div class="row2"><button class="btn btn-quiet" type="button" id="custStmt">Statement · كشف</button><button class="btn btn-primary" type="button" id="custStart">Start visit · بدء زيارة</button></div>
     <div class="card">
       <div class="row"><span class="count">Code and name are read-only · للقراءة فقط</span>${stChip(c.status)}</div>
       <div class="big" style="margin-top:6px;color:#7A5A00">${money(c.total)}</div>
@@ -939,11 +1586,151 @@ function openCustomer(custNo){
         ${c.isNewCustomer ? `<dt>First invoice</dt><dd>${fmtD(c.firstInvoiceDate)} · ${money(c.firstInvoiceAmount)}</dd>` : ''}
       </dl>
     </div>
-    <div class="card next"><h2>Contacts & phones<span class="ar">جهات الاتصال</span></h2><p>Adding contacts and phone numbers comes in the next step.</p></div>
-    <div class="card next"><h2>Locations<span class="ar">المواقع</span></h2><p>Head office, warehouse and other locations come with the visit phase.</p></div>`;
+    <div class="card" id="contactsCard"></div>
+    <div class="card" id="locCard"></div>
+    <div class="card" id="histCard"></div>`;
+  currentCust = c;
+  renderContacts();
+  renderLocations(c);
+  renderHistory(c);
+  $('custStart').onclick = () => startVisitFlow(c);
+  $('custStmt').onclick = () => statementExport(c);
   show('cust');
   $('custBody').scrollTop = 0;
 }
+
+
+/* ===== Contacts & phones ===== */
+Object.assign(ERR, {
+  BAD_PHONE:         ['That phone number is not valid. Use 05XXXXXXXX, 01XXXXXXXX or +country code.', 'رقم غير صحيح. استخدم 05XXXXXXXX أو 01XXXXXXXX أو رمز الدولة.'],
+  DUPLICATE_PHONE:   ['This number is already saved for this customer.', 'هذا الرقم محفوظ بالفعل لهذا العميل.'],
+  NAME_REQUIRED:     ['Enter the contact name.', 'أدخل اسم جهة الاتصال.'],
+  NOT_YOUR_CUSTOMER: ['This customer is not in your list.', 'هذا العميل ليس في قائمتك.'],
+  NOT_FOUND:         ['This item was already removed. Refresh and try again.', 'تم حذف هذا العنصر بالفعل. حدّث الصفحة.']
+});
+const field = { contacts: [], phones: [], locations: [], visits: [] };
+let currentCust = null;
+const I_CALL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>';
+const I_WA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>';
+const I_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+
+const custNoOfKey = k => String(k || '').split('|')[1];
+const phonesOf = custNo => field.phones.filter(p => custNoOfKey(p.CustomerKey) === String(custNo));
+const contactsOf = custNo => field.contacts.filter(c => custNoOfKey(c.CustomerKey) === String(custNo));
+function fmtPhone(n){ n = String(n); return /^05\d{8}$/.test(n) ? n.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3') : /^0\d{9}$/.test(n) ? n.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3') : n; }
+function waLink(n){ n = String(n); const d = n.startsWith('+') ? n.slice(1) : n.startsWith('0') ? '966' + n.slice(1) : n; return 'https://wa.me/' + d.replace(/\D/g, ''); }
+const TYPE_AR = { Mobile: 'جوال', WhatsApp: 'واتساب', Office: 'مكتب' };
+
+function setFieldForCustomer(custNo, data){
+  field.contacts = field.contacts.filter(c => custNoOfKey(c.CustomerKey) !== String(custNo)).concat(data.contacts || []);
+  field.phones = field.phones.filter(p => custNoOfKey(p.CustomerKey) !== String(custNo)).concat(data.phones || []);
+}
+
+function phoneRow(p){
+  const canWa = p.Type !== 'Office' && /^(05\d{8}|\+\d{8,15})$/.test(String(p.Number));
+  return `<div class="phone">
+    <span class="num"><span dir="ltr">${esc(fmtPhone(p.Number))}</span><span class="ty">${esc(p.Type)} · ${esc(TYPE_AR[p.Type] || '')}</span></span>
+    <a class="act call" href="tel:${esc(p.Number)}" aria-label="Call">${I_CALL}</a>
+    ${canWa ? `<a class="act wa" href="${esc(waLink(p.Number))}" target="_blank" rel="noopener" aria-label="WhatsApp">${I_WA}</a>` : ''}
+    <button class="act del" type="button" data-delphone="${esc(p.PhoneID)}" aria-label="Delete number">${I_DEL}</button>
+  </div>`;
+}
+
+function renderContacts(){
+  const c = currentCust; if (!c) return;
+  const contacts = contactsOf(c.custNo), phones = phonesOf(c.custNo);
+  const loose = phones.filter(p => !p.ContactID || !contacts.some(x => x.ContactID === p.ContactID));
+  const warn = !contacts.length ? `<div class="warnbox">No contact yet. Add the person you deal with and their number.<div dir="rtl">لا توجد جهة اتصال. أضف الشخص الذي تتعامل معه ورقمه.</div></div>`
+             : !phones.length ? `<div class="warnbox">No phone number yet. Add at least one.<div dir="rtl">لا يوجد رقم هاتف. أضف رقمًا واحدًا على الأقل.</div></div>` : '';
+  $('contactsCard').innerHTML = `
+    <div class="sec-h"><h2>Contacts & phones<span class="ar">جهات الاتصال</span></h2><button class="mini" type="button" id="addContact">+ Contact</button></div>
+    ${warn}
+    ${contacts.map(ct => `<div class="contact">
+      <div class="who"><div><div class="nm">${esc(ct.Name)}</div>${ct.Role ? `<div class="rl">${esc(ct.Role)}</div>` : ''}</div>
+        <div style="display:flex;gap:2px;flex:none"><button class="mini ghost" type="button" data-editc="${esc(ct.ContactID)}">Edit</button><button class="mini danger" type="button" data-delc="${esc(ct.ContactID)}">Delete</button></div></div>
+      ${phones.filter(p => p.ContactID === ct.ContactID).map(phoneRow).join('')}
+      <button class="mini ghost" type="button" data-addp="${esc(ct.ContactID)}" style="padding-left:0">+ Add number · إضافة رقم</button>
+    </div>`).join('')}
+    ${loose.length ? `<div class="contact"><div class="rl" style="font-weight:700">Company numbers · أرقام الشركة</div>${loose.map(phoneRow).join('')}</div>` : ''}`;
+  $('addContact').onclick = () => contactForm(null);
+  $('contactsCard').querySelectorAll('[data-editc]').forEach(b => b.onclick = () => contactForm(contacts.find(x => x.ContactID === b.dataset.editc)));
+  $('contactsCard').querySelectorAll('[data-addp]').forEach(b => b.onclick = () => phoneForm(b.dataset.addp));
+  $('contactsCard').querySelectorAll('[data-delc]').forEach(b => b.onclick = () => {
+    const ct = contacts.find(x => x.ContactID === b.dataset.delc);
+    if (confirm(`Delete ${ct.Name} and their numbers?\nحذف ${ct.Name} وأرقامه؟`)) mutate('deleteContact', { contactId: ct.ContactID });
+  });
+  $('contactsCard').querySelectorAll('[data-delphone]').forEach(b => b.onclick = () => {
+    const p = phones.find(x => x.PhoneID === b.dataset.delphone);
+    if (confirm(`Delete ${fmtPhone(p.Number)}?\nحذف الرقم؟`)) mutate('deletePhone', { phoneId: p.PhoneID });
+  });
+}
+
+async function mutate(action, payload, btn){
+  const c = currentCust;
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+  try {
+    const r = await api(action, Object.assign({ custNo: c.custNo, branch: c.branch }, payload));
+    setFieldForCustomer(c.custNo, r);
+    closeSheet();
+    renderContacts();
+    if (list.report) renderCustRows();
+    return true;
+  } catch (e) {
+    const box = document.getElementById('sheetMsg');
+    if (box && $('sheetBg').classList.contains('on')) { box.textContent = ''; box.append(errText(e.code)[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = errText(e.code)[1]; box.append(a); box.classList.add('on'); }
+    else toast(errText(e.code));
+    return false;
+  } finally {
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+  }
+}
+
+function openSheet(html){ $('sheetBg').onclick = null; $('sheet').innerHTML = '<div class="grab"></div>' + html; $('sheetBg').classList.add('on'); $('sheetBg').setAttribute('aria-hidden', 'false'); const f = $('sheet').querySelector('input'); if (f) setTimeout(() => f.focus(), 60); }
+function closeSheet(){ $('sheetBg').classList.remove('on'); $('sheetBg').setAttribute('aria-hidden', 'true'); }
+$('sheetBg').addEventListener('click', e => { if (e.target === $('sheetBg')) closeSheet(); });
+
+function typeSeg(sel){ return `<div class="seg" id="typeSeg">${['Mobile','WhatsApp','Office'].map(t => `<button type="button" data-t="${t}" class="${t === sel ? 'on' : ''}">${t} · ${TYPE_AR[t]}</button>`).join('')}</div>`; }
+function wireSeg(){ $('typeSeg').querySelectorAll('button').forEach(b => b.onclick = () => { $('typeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); }); }
+const segVal = () => ($('typeSeg').querySelector('.on') || {}).dataset.t || 'Mobile';
+
+function contactForm(ct){
+  const edit = !!ct;
+  openSheet(`<h3>${edit ? 'Edit contact · تعديل' : 'New contact · جهة اتصال جديدة'}</h3>
+    <div class="field"><label for="fName"><span>Name</span><span>الاسم</span></label><div class="input"><input id="fName" maxlength="80" value="${edit ? esc(ct.Name) : ''}" autocomplete="off"></div></div>
+    <div class="field"><label for="fRole"><span>Job title (optional)</span><span>الوظيفة</span></label><div class="input"><input id="fRole" maxlength="60" value="${edit ? esc(ct.Role) : ''}" placeholder="Purchasing manager, accountant…" autocomplete="off"></div></div>
+    ${edit ? '' : `<div class="field"><label for="fPhone"><span>Phone number</span><span>رقم الهاتف</span></label><div class="input"><input id="fPhone" type="tel" inputmode="tel" placeholder="05X XXX XXXX" autocomplete="off"></div></div>${typeSeg('Mobile')}`}
+    <div class="msg err" id="sheetMsg" role="alert"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
+  if (!edit) wireSeg();
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = () => {
+    const name = $('fName').value.trim();
+    if (!name) { showSheetMsg(errText('NAME_REQUIRED')); return; }
+    const payload = { name, role: $('fRole').value.trim() };
+    if (edit) payload.contactId = ct.ContactID;
+    else if ($('fPhone').value.trim()) { payload.phone = $('fPhone').value.trim(); payload.phoneType = segVal(); }
+    mutate('saveContact', payload, $('fSave'));
+  };
+}
+
+function phoneForm(contactId){
+  const contacts = contactsOf(currentCust.custNo);
+  openSheet(`<h3>Add number · إضافة رقم</h3>
+    <div class="field"><label for="fNum"><span>Phone number</span><span>رقم الهاتف</span></label><div class="input"><input id="fNum" type="tel" inputmode="tel" placeholder="05X XXX XXXX" autocomplete="off"></div></div>
+    ${typeSeg('Mobile')}
+    <div class="field"><label for="fWho"><span>Belongs to</span><span>يخص</span></label>
+      <select id="fWho"><option value="">Company (no contact) · الشركة</option>${contacts.map(c => `<option value="${esc(c.ContactID)}" ${c.ContactID === contactId ? 'selected' : ''}>${esc(c.Name)}</option>`).join('')}</select></div>
+    <div class="msg err" id="sheetMsg" role="alert"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
+  wireSeg();
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = () => {
+    const number = $('fNum').value.trim();
+    if (!number) { showSheetMsg(errText('BAD_PHONE')); return; }
+    mutate('savePhone', { number, type: segVal(), contactId: $('fWho').value }, $('fSave'));
+  };
+}
+function showSheetMsg(msg){ const box = $('sheetMsg'); box.textContent = ''; box.append(msg[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = msg[1]; box.append(a); box.classList.add('on'); }
 
 /* ===== Navigation & small toast ===== */
 function go(where){
@@ -958,10 +1745,650 @@ function toast(msg){
   if (!t) { t = document.createElement('div'); t.id = 'toast';
     t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);background:#141A33;color:#fff;border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:600;z-index:9;display:none';
     document.body.appendChild(t); }
-  t.textContent = msg[0] + ' · ' + msg[1]; t.style.display = 'block';
+  t.textContent = ''; t.append(msg[0]); const a = document.createElement('div'); a.dir = 'rtl'; a.style.cssText = 'opacity:.85;margin-top:2px'; a.textContent = msg[1]; t.append(a); t.style.display = 'block';
   clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
 
+
+/* ======================= Phase 2: day, punch, visits, companions ======================= */
+Object.assign(ERR, {
+  NOT_PUNCHED_IN:        ['Punch in first to start visits.', 'سجّل الحضور أولًا لبدء الزيارات.'],
+  DAY_CLOSED:            ['You already punched out today. The day is closed.', 'تم تسجيل الانصراف اليوم. اليوم مغلق.'],
+  ALREADY_PUNCHED_IN:    ['You already punched in today.', 'تم تسجيل الحضور اليوم بالفعل.'],
+  DAY_OFF:               ['Today is set as a day off. Change the day status to Field Work first.', 'اليوم مسجّل كإجازة. غيّر الحالة إلى عمل ميداني أولًا.'],
+  VISIT_OPEN:            ['You have a visit in progress. End it first.', 'لديك زيارة جارية. أنهِها أولًا.'],
+  JOINT_VISIT_OPEN:      ['You are in a joint visit. Wait until it ends.', 'أنت في زيارة مشتركة. انتظر حتى تنتهي.'],
+  KM_LOWER:              ['Odometer is lower than this morning.', 'قراءة العداد أقل من الصباح.'],
+  BAD_KM:                ['Enter the odometer reading in km (numbers only).', 'أدخل قراءة العداد بالكيلومتر (أرقام فقط).'],
+  NO_PHOTO:              ['Take the photo first.', 'التقط الصورة أولًا.'],
+  PHOTO_TOO_BIG:         ['The photo is too large. Retake it.', 'الصورة كبيرة جدًا. أعد التقاطها.'],
+  NO_GPS:                ['No GPS location. Turn on location and try again.', 'لا يوجد موقع. فعّل الموقع وحاول مرة أخرى.'],
+  GPS_WEAK:              ['GPS signal is weak. Step outside or wait a moment, then retry.', 'إشارة الموقع ضعيفة. اخرج قليلًا أو انتظر ثم أعد المحاولة.'],
+  GPS_DENIED:            ['Location is blocked for this app. Allow location in the browser settings.', 'الموقع محظور. اسمح بالموقع من إعدادات المتصفح.'],
+  GPS_TIMEOUT:           ['Could not get your location in time. Try again.', 'تعذّر تحديد موقعك. حاول مرة أخرى.'],
+  CAMERA_DENIED:         ['Camera is blocked for this app. Allow the camera in the browser settings.', 'الكاميرا محظورة. اسمح بالكاميرا من إعدادات المتصفح.'],
+  CAMERA_UNAVAILABLE:    ['The camera could not be opened on this device.', 'تعذّر فتح الكاميرا على هذا الجهاز.'],
+  TOO_FAR:               ['You are too far from this location.', 'أنت بعيد عن هذا الموقع.'],
+  LOCATION_EXISTS:       ['This location is already saved here.', 'هذا الموقع محفوظ بالفعل.'],
+  LOCATION_NOT_FOUND:    ['This location no longer exists. Pick another one.', 'هذا الموقع لم يعد موجودًا.'],
+  BAD_LOCATION_TYPE:     ['Pick the location type.', 'اختر نوع الموقع.'],
+  COMPANION_UNAVAILABLE: ['A selected teammate is not available now.', 'أحد الزملاء المختارين غير متاح الآن.'],
+  BAD_RESULT:            ['Pick the visit result.', 'اختر نتيجة الزيارة.'],
+  DESCRIPTION_REQUIRED:  ['Describe what happened (at least a few words).', 'اكتب ما حدث في الزيارة.'],
+  NEXT_ACTION_REQUIRED:  ['Enter the next action.', 'أدخل الإجراء التالي.'],
+  BAD_NEXT_DATE:         ['Next visit date must be from today up to 6 months ahead (or leave it empty).', 'موعد الزيارة القادمة خلال 6 أشهر أو اتركه فارغًا.'],
+  ALREADY_ENDED:         ['This visit was already closed.', 'تم إغلاق هذه الزيارة بالفعل.'],
+  INVITE_CLOSED:         ['This invitation was already answered.', 'تم الرد على هذه الدعوة.'],
+  INVITE_EXPIRED:        ['Too late to confirm this visit.', 'انتهى وقت تأكيد هذه الزيارة.'],
+  BAD_STATUS:            ['Pick a day status.', 'اختر حالة اليوم.']
+});
+/** Error text, using the server's details when it sends them (distance, accuracy…). */
+function errMsg(e){
+  const d = e && e.detail;
+  if (e && e.code === 'TOO_FAR' && d) return [`You are ${fmtDist(d.distanceM)} from this location. Allowed: ${d.radiusM} m (GPS ±${d.accuracy} m).`, `أنت على بعد ${fmtDist(d.distanceM)} من الموقع. المسموح ${d.radiusM} م.`];
+  if (e && e.code === 'GPS_WEAK' && d) return [`GPS accuracy is ±${d.accuracy} m (needs ±${d.max} m or better). Step outside or wait, then retry.`, `دقة الموقع ±${d.accuracy} م. اخرج قليلًا أو انتظر ثم أعد المحاولة.`];
+  if (e && e.code === 'KM_LOWER' && d) return [`Odometer must be at least ${SAR.format(d.inKm)} km (this morning).`, `يجب ألا تقل القراءة عن ${SAR.format(d.inKm)} كم.`];
+  if (e && e.code === 'COMPANION_UNAVAILABLE' && d && d.name) return [`${d.name} is not available now (not punched in or in another visit).`, `${d.name} غير متاح الآن.`];
+  return errText(e && e.code);
+}
+function msgInto(el, m){ el.textContent = ''; el.append(m[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = m[1]; el.append(a); el.classList.add('on'); }
+
+/* ---------- time (Riyadh, UTC+3 all year) ---------- */
+const RIY = 3 * 3600000;
+let serverOffset = 0;
+const nowS = () => Date.now() + serverOffset;
+function syncClock(st){ if (st && st.iso) { const t = Date.parse(st.iso + '+03:00'); if (!isNaN(t)) serverOffset = t - Date.now(); } }
+const toMs = v => v == null ? null : (typeof v === 'number' ? v : Date.parse(v));
+function hm(v){ const ms = toMs(v); if (ms == null || isNaN(ms)) return '—'; const d = new Date(ms + RIY); let h = d.getUTCHours(); const m = String(d.getUTCMinutes()).padStart(2, '0'); const ap = h < 12 ? 'AM' : 'PM'; h = h % 12 || 12; return `${h}:${m} ${ap}`; }
+function dayShort(v){ const ms = toMs(v); if (ms == null || isNaN(ms)) return '—'; const d = new Date(ms + RIY); return `${String(d.getUTCDate()).padStart(2, '0')} ${MON[d.getUTCMonth()]}`; }
+function riyDate(ms){ const d = new Date(ms + RIY); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
+function dateLabel(s){ if (!s) return '—'; const p = String(s).split('-'); return `${p[2]} ${MON[Number(p[1]) - 1]} ${p[0]}`; }
+const dur = min => min == null ? '—' : `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+const fmtDist = m => m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
+
+/* ---------- GPS ---------- */
+function getGps(){
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new ApiError('NO_GPS'));
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: Math.round(p.coords.accuracy), at: Date.now() }),
+      e => reject(new ApiError(e.code === 1 ? 'GPS_DENIED' : e.code === 3 ? 'GPS_TIMEOUT' : 'NO_GPS')),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+}
+function distM(a, b){
+  const R = 6371000, r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+const maxAcc = () => (state.settings && state.settings.maxGpsAccuracy) || 150;
+const mapUrl = (lat, lng) => `https://www.google.com/maps?q=${lat},${lng}`;
+
+/* ---------- Live camera (no gallery: the photo can only come from this camera view) ---------- */
+const Cam = {
+  stream: null, resolve: null, stampFn: null,
+  open(title, sub, stampFn){
+    this.stampFn = stampFn;
+    $('camTitle').textContent = title; $('camSub').textContent = sub || '';
+    $('camShot').style.display = 'none'; $('camVideo').style.display = 'block';
+    $('camLive').style.display = 'flex'; $('camReview').style.display = 'none';
+    $('cam').classList.add('on');
+    this.tickStamp();
+    return new Promise(async (resolve) => {
+      this.resolve = resolve;
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new ApiError('CAMERA_UNAVAILABLE');
+        this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+        $('camVideo').srcObject = this.stream;
+        await $('camVideo').play().catch(() => {});
+        $('camShutter').disabled = false;
+      } catch (e) {
+        if (window.__DEMO_CAMERA) { this.stream = null; $('camShutter').disabled = false; window.__DEMO_CAMERA($('camVideo')); return; }
+        this.finish(null);
+        toast(errText(e && e.name === 'NotAllowedError' ? 'CAMERA_DENIED' : (e.code || 'CAMERA_UNAVAILABLE')));
+      }
+    });
+  },
+  tickStamp(){ clearInterval(this._t); const f = () => { $('camStamp').textContent = (this.stampFn ? this.stampFn() : []).join('\n'); }; f(); this._t = setInterval(f, 1000); },
+  capture(){
+    const v = $('camVideo'), w0 = v.videoWidth || (window.__DEMO_CAMERA ? 1280 : 0), h0 = v.videoHeight || (window.__DEMO_CAMERA ? 960 : 0);
+    if (!w0) return;
+    const scale = Math.min(1, 1280 / Math.max(w0, h0)), w = Math.round(w0 * scale), h = Math.round(h0 * scale);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    if (v.videoWidth) g.drawImage(v, 0, 0, w, h); else if (window.__DEMO_DRAW) window.__DEMO_DRAW(g, w, h);
+    const lines = this.stampFn ? this.stampFn() : [];
+    const fs = Math.max(14, Math.round(w / 48)), pad = Math.round(fs * .6), lh = Math.round(fs * 1.35);
+    g.font = `600 ${fs}px Cairo, system-ui, sans-serif`;
+    const bw = Math.max(...lines.map(l => g.measureText(l).width), 0) + pad * 2, bh = lines.length * lh + pad * 1.2;
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(pad, h - bh - pad, bw, bh);
+    g.fillStyle = '#fff'; lines.forEach((l, i) => g.fillText(l, pad * 2, h - bh - pad + pad * .6 + fs + i * lh));
+    this.shot = c.toDataURL('image/jpeg', 0.72);
+    $('camShot').src = this.shot; $('camShot').style.display = 'block'; $('camVideo').style.display = 'none';
+    $('camLive').style.display = 'none'; $('camReview').style.display = 'flex';
+    clearInterval(this._t); $('camStamp').textContent = '';
+  },
+  retake(){ this.shot = null; $('camShot').style.display = 'none'; $('camVideo').style.display = 'block'; $('camLive').style.display = 'flex'; $('camReview').style.display = 'none'; this.tickStamp(); },
+  finish(result){
+    clearInterval(this._t);
+    if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+    $('camVideo').srcObject = null;
+    $('cam').classList.remove('on');
+    const r = this.resolve; this.resolve = null; if (r) r(result);
+  }
+};
+
+/* ---------- Day (Home) ---------- */
+const day = { data: null, loading: false, answered: new Set(), timer: null };
+
+async function loadDay(){
+  if (!state.user || !state.user.code) { renderDay(); return; }
+  if (day.loading) return;
+  day.loading = true;
+  try {
+    const r = await api('today');
+    applyDay(r);
+  } catch (e) {
+    if (e.code !== 'SESSION_EXPIRED' && e.code !== 'ACCOUNT_INACTIVE') { renderDay(errText(e.code)); }
+  } finally { day.loading = false; }
+}
+function applyDay(r){
+  day.data = r; syncClock(r.serverTime);
+  if (r.visits) mergeVisits(r.visits);
+  renderDay();
+  if ($('visit').classList.contains('on')) renderVisit();
+  const inv = (r.invites || []).find(i => !day.answered.has(i.visitId));
+  if (inv && !$('sheetBg').classList.contains('on') && !$('cam').classList.contains('on')) inviteSheet(inv);
+}
+
+function renderDay(errorMsg){
+  const body = $('homeBody'); if (!body) return;
+  const u = state.user || {};
+  const listCard = homeCustomersHtml();
+  if (!u.code) { body.innerHTML = `<div class="card"><h2>Coordinator account<span class="ar">حساب المنسق</span></h2><p>Punch in and visits are for salesman accounts.</p></div>`; return; }
+  const d = day.data;
+  if (!d) { body.innerHTML = errorMsg ? `<div class="state"><b>${esc(errorMsg[0])}</b><span dir="rtl">${esc(errorMsg[1])}</span><button class="btn btn-quiet" type="button" onclick="loadDay()">Try again · إعادة المحاولة</button></div>${listCard}` : `<div class="state"><span class="spin"></span><b>Loading today…</b></div>`; return; }
+  const a = d.attendance, st = d.dayStatus ? d.dayStatus.status : '', off = st && (state.settings && state.settings.noPunchStatuses || []).includes(st);
+  let dayHtml;
+  if (!a && off) {
+    dayHtml = `<div class="st-line"><div><div class="sub">Today · اليوم</div><div class="big-t">${esc(st)}</div></div><button class="mini" type="button" id="chgStatus">Change · تغيير</button></div>
+      <div class="sub">No punch in needed today.</div>`;
+  } else if (!a) {
+    dayHtml = `<div class="st-line"><div><div class="sub">Today · اليوم</div><div class="big-t">Not punched in yet</div></div></div>
+      <button class="btn btn-green" type="button" id="punchInBtn">Punch in · تسجيل الحضور</button>
+      <button class="linkbtn" type="button" id="chgStatus">Not in the field today? Set day status · لست في الميدان اليوم؟</button>`;
+  } else if (!a.outTime) {
+    dayHtml = `<div class="st-line"><div><div class="sub">${esc(st || 'Field Work')} · عمل ميداني</div><div class="big-t" style="color:var(--green)">Punched in ${hm(a.inTime)}</div><div class="sub">Odometer ${SAR.format(a.inKm || 0)} km</div></div></div>
+      <div class="stats"><div><b>${d.summary.visits}</b><span>Visits · زيارات${d.summary.joint ? ` (${d.summary.joint} joint)` : ''}</span></div><div><b>${dur(d.summary.minutes)}</b><span>In visits · وقت</span></div><div><b>${d.summary.firstVisit ? hm(d.summary.firstVisit).replace(/ (AM|PM)/, '') : '—'}</b><span>First visit · أول</span></div></div>
+      <button class="btn btn-outline-red" type="button" id="punchOutBtn">Punch out · تسجيل الانصراف</button>`;
+  } else {
+    const km = a.outKm != null && a.inKm != null ? a.outKm - a.inKm : null;
+    dayHtml = `<div class="st-line"><div><div class="sub">Day closed · اليوم مغلق</div><div class="big-t">${hm(a.inTime)} → ${hm(a.outTime)}${a.outType === 'AUTO' ? ' (auto)' : ''}</div><div class="sub">${d.summary.visits} visit${d.summary.visits === 1 ? '' : 's'} · ${dur(d.summary.minutes)} in visits${km != null ? ` · ${SAR.format(km)} km` : ''}</div></div></div>`;
+  }
+  let banners = '';
+  if (d.openVisit) banners += `<button class="banner orange" type="button" data-openvisit="1"><div class="grow"><small>Visit in progress · زيارة جارية</small><b>${esc(d.openVisit.custNo)} — ${esc(d.openVisit.customerName)}</b><small>${esc(d.openVisit.locationType)} · started ${hm(d.openVisit.start)}</small></div><span class="pill o">Open</span></button>`;
+  if (d.jointVisit) banners += `<button class="banner blue" type="button" data-openvisit="1"><div class="grow"><small>Joint visit with ${esc(d.jointVisit.ownerName)} · زيارة مشتركة</small><b>${esc(d.jointVisit.custNo)} — ${esc(d.jointVisit.customerName)}</b><small>${esc(d.jointVisit.locationType)} · started ${hm(d.jointVisit.start)}</small></div><span class="pill b">Joint</span></button>`;
+  (d.invites || []).forEach(i => { banners += `<button class="banner blue" type="button" data-invite="${esc(i.visitId)}"><div class="grow"><small>${esc(i.ownerName)} added you to a visit · دعوة زيارة</small><b>${esc(i.custNo)} — ${esc(i.customerName)}</b><small>${esc(i.locationType)} · started ${hm(i.start)}</small></div><span class="pill b">Confirm</span></button>`; });
+  const vis = (d.visits || []).slice().reverse();
+  const visHtml = vis.length ? `<div class="card"><h2>Today's visits<span class="ar">زيارات اليوم</span></h2>${vis.map(v => {
+      const joint = v.salesmanId !== u.id;
+      const chip = !v.end ? '<span class="chip-s cs-open">Open</span>' : v.endType === 'AUTO-CLOSED' ? '<span class="chip-s cs-auto">Auto-closed</span>' : '<span class="chip-s cs-ok">Closed</span>';
+      return `<div class="vrow"><div class="tm">${hm(v.start).replace(/ (AM|PM)/, '')}<div class="dt">${v.durationMin != null ? dur(v.durationMin) : ''}</div></div><div style="flex:1;min-width:0"><div class="nm">${esc(v.custNo)} — ${esc(v.customerName)}</div><div class="dt">${esc(v.locationType)}${v.result ? ' · ' + esc(v.result) : ''}${joint ? ' · joint with ' + esc(v.ownerName) : (v.companions.filter(c => c.status === 'CONFIRMED').length ? ' · with ' + v.companions.filter(c => c.status === 'CONFIRMED').map(c => esc(c.name)).join(', ') : '')}</div></div>${chip}</div>`; }).join('')}</div>` : '';
+  body.innerHTML = `${banners}<div class="daycard">${dayHtml}</div>${visHtml}${listCard}`;
+  const on = (id, f) => { const el = $(id); if (el) el.onclick = f; };
+  on('punchInBtn', () => openPunch('in'));
+  on('punchOutBtn', () => openPunch('out'));
+  on('chgStatus', statusSheet);
+  body.querySelectorAll('[data-openvisit]').forEach(b => b.onclick = () => { show('visit'); renderVisit(); });
+  body.querySelectorAll('[data-invite]').forEach(b => b.onclick = () => inviteSheet((d.invites || []).find(i => i.visitId === b.dataset.invite)));
+  body.querySelectorAll('[data-fu]').forEach(b => b.onclick = () => openCustomer(b.dataset.fu));
+  if (!list.report && !list.loading && u.code) loadList(false, true);     // fill "My customers" in the background
+}
+
+/* ---------- Home: my customers + follow-ups (from the same SMAN List data) ---------- */
+function followUpsDue(){
+  if (!list.report) return [];
+  const today = riyDate(nowS()), out = [];
+  list.report.custs.forEach(c => {
+    const vs = visitsOf(c.custNo), last = vs.find(v => v.end);
+    if (last && last.nextVisitDate && last.nextVisitDate <= today && !vs.some(v => toMs(v.start) > toMs(last.start))) out.push({ c, v: last });
+  });
+  return out.sort((a, b) => a.v.nextVisitDate.localeCompare(b.v.nextVisitDate));
+}
+function homeCustomersHtml(){
+  const d = list.report;
+  if (!d && list.error) return `<div class="card"><div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2></div><div class="warnbox">${esc(list.error[0])}<div dir="rtl">${esc(list.error[1])}</div></div><button class="btn btn-quiet" type="button" data-go="list" style="margin-top:10px">Try again · إعادة المحاولة</button></div>`;
+  if (!d) return `<div class="card"><div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2></div><div class="gps wait"><span class="spin"></span><span class="grow">Loading your customers… · جاري التحميل</span></div></div>`;
+  const noPhone = d.custs.filter(c => !phonesOf(c.custNo).length).length, fu = followUpsDue(), today = riyDate(nowS());
+  const bal = d.overdueTotal + d.dueTotal;
+  const fuHtml = fu.length ? `<div class="card"><div class="sec-h"><h2>Follow-ups due<span class="ar">متابعات مستحقة</span></h2><span class="tag" style="background:#fdecea;color:#a32d2d">${fu.length}</span></div>
+      ${fu.slice(0, 6).map(({ c, v }) => `<button type="button" class="vrow" data-fu="${esc(c.custNo)}" style="width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:start;cursor:pointer;font:inherit">
+        <div class="tm ${v.nextVisitDate < today ? 'red' : ''}">${dayShort(atMidday(v.nextVisitDate))}</div>
+        <div style="flex:1;min-width:0"><div class="nm">${esc(c.custNo)} — ${esc(c.cust)}</div><div class="dt">${esc(v.nextAction || v.result || '')}</div></div></button>`).join('')}
+      ${fu.length > 6 ? `<p class="hint2" style="margin-top:6px">+${fu.length - 6} more in My List</p>` : ''}</div>` : '';
+  return `<div class="card">
+      <div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2><button class="mini" type="button" data-go="list">Open list ›</button></div>
+      <div class="stats">
+        <div><b>${d.custs.length}</b><span>Customers</span></div>
+        <div><b style="color:#8a6d00;font-size:15px;line-height:1.55">${SAR.format(Math.round(bal))}</b><span>Balance SAR</span></div>
+        <div><b style="color:var(--bad);font-size:15px;line-height:1.55">${SAR.format(Math.round(d.overdueTotal))}</b><span>Overdue SAR</span></div>
+      </div>
+      <div class="lines" style="margin-top:12px">
+        <dt>Missing phone number · بدون رقم</dt><dd class="${noPhone ? 'warn' : ''}">${noPhone}</dd>
+        <dt>Follow-ups due · متابعات</dt><dd class="${fu.length ? 'red' : ''}">${fu.length}</dd>
+        <dt>New customers this month</dt><dd>${d.newCustomersThisMonth}</dd>
+      </div></div>${fuHtml}`;
+}
+const atMidday = s => Date.parse(s + 'T12:00:00+03:00');
+
+function statusSheet(){
+  const list = (state.settings && state.settings.dayStatuses) || ['Field Work', 'Leave', 'Travel', 'Training', 'Sick', 'Out of Service'];
+  const cur = day.data && day.data.dayStatus ? day.data.dayStatus.status : '';
+  openSheet(`<h3>Today's status · حالة اليوم</h3>
+    <div class="chips-wrap" id="stChips">${list.map(s => `<button type="button" class="chip ${s === cur ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    <div class="field"><label for="stNote"><span>Note (optional)</span><span>ملاحظة</span></label><div class="input"><input id="stNote" maxlength="200" value="${esc(day.data && day.data.dayStatus ? day.data.dayStatus.note : '')}"></div></div>
+    <div class="msg err" id="sheetMsg"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
+  let pick = cur;
+  $('stChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { pick = b.dataset.s; $('sheetMsg').classList.remove('on'); $('stChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = async () => {
+    if (!pick) { msgInto($('sheetMsg'), errText('BAD_STATUS')); return; }
+    await busy($('fSave'), async () => { applyDay(await api('setDayStatus', { status: pick, note: $('stNote').value.trim() })); closeSheet(); }, $('sheetMsg'));
+  };
+}
+
+/** Runs an action with a spinner on the button; shows errors in box (or a toast). */
+async function busy(btn, fn, box){
+  if (btn) { if (btn.disabled) return; btn.disabled = true; btn.classList.add('loading'); }
+  try { await fn(); return true; }
+  catch (e) { if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return false; const m = errMsg(e); if (box) msgInto(box, m); else toast(m); await recover(e); return false; }
+  finally { if (btn) { btn.disabled = false; btn.classList.remove('loading'); } }
+}
+/** If a request actually went through but the answer was lost (bad network), re-sync instead of repeating. */
+async function recover(e){
+  if (['VISIT_OPEN', 'ALREADY_PUNCHED_IN', 'DAY_CLOSED', 'ALREADY_ENDED', 'JOINT_VISIT_OPEN', 'INVITE_CLOSED', 'TIMEOUT', 'NETWORK'].includes(e.code)) {
+    try { applyDay(await api('today')); } catch (x) {}
+  }
+}
+
+/* ---------- Punch in / out ---------- */
+const punch = { mode: 'in', photo: null, gps: null, gpsErr: null, gpsBusy: false };
+function openPunch(mode){
+  Object.assign(punch, { mode, photo: null, gps: null, gpsErr: null });
+  $('punchTitle').textContent = mode === 'in' ? 'Punch in · تسجيل الحضور' : 'Punch out · تسجيل الانصراف';
+  $('punchSub').textContent = dateLabel(day.data ? day.data.date : riyDate(nowS()));
+  show('punch'); renderPunch(); punchGps();
+}
+async function punchGps(){
+  punch.gpsBusy = true; punch.gpsErr = null; renderPunch();
+  try { punch.gps = await getGps(); if (punch.gps.accuracy > maxAcc()) punch.gpsErr = { code: 'GPS_WEAK', detail: { accuracy: punch.gps.accuracy, max: maxAcc() } }; }
+  catch (e) { punch.gps = null; punch.gpsErr = e; }
+  punch.gpsBusy = false; renderPunch();
+}
+function gpsBox(g, err, busyNow, okText){
+  if (busyNow) return `<div class="gps wait"><span class="spin"></span><span class="grow">Getting your location… · جاري تحديد الموقع</span></div>`;
+  if (err) { const m = errMsg(err); return `<div class="gps bad"><span class="grow">${esc(m[0])}<span class="ar-line" dir="rtl">${esc(m[1])}</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`; }
+  if (g) return `<div class="gps ok"><span class="grow">✓ ${okText || 'Location captured'} · ±${g.accuracy} m</span><button class="mini ghost" type="button" data-regps="1">Refresh</button></div>`;
+  return '';
+}
+function renderPunch(){
+  const a = day.data && day.data.attendance, out = punch.mode === 'out', s = day.data ? day.data.summary : null;
+  const kmVal = $('pKm') ? $('pKm').value : '';
+  $('punchBody').innerHTML = `
+    ${out && a ? `<div class="stepbox"><h2>Today's summary · ملخص اليوم</h2><dl class="lines" style="margin:0">
+      <dt>Punched in</dt><dd>${hm(a.inTime)}</dd><dt>Visits</dt><dd>${s.visits}${s.joint ? ` (${s.joint} joint)` : ''}</dd>
+      <dt>Time in visits</dt><dd>${dur(s.minutes)}</dd><dt>Morning odometer</dt><dd>${SAR.format(a.inKm || 0)} km</dd></dl></div>` : ''}
+    <div class="stepbox"><h2><span class="n ${punch.photo ? 'done' : ''}">1</span>Photo of steering wheel + odometer<span class="ar">صورة المقود والعداد</span></h2>
+      <div class="photo-slot">${punch.photo ? `<span class="thumb"><img src="${punch.photo}" alt=""><button type="button" class="thumb-x" id="pDel" aria-label="Delete photo">✕</button></span>` : '<div class="ph">No photo</div>'}
+        <div style="flex:1"><button class="btn ${punch.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="pPhoto">${punch.photo ? 'Retake · إعادة' : 'Open camera · الكاميرا'}</button><div class="hint2" style="margin-top:6px">Live camera only. Make sure the km reading is readable.</div></div></div></div>
+    <div class="stepbox"><h2><span class="n">2</span>Odometer reading<span class="ar">قراءة العداد</span></h2>
+      <div class="input"><input id="pKm" inputmode="numeric" placeholder="e.g. 48215" value="${esc(kmVal)}" autocomplete="off"><span style="padding:0 14px;color:var(--muted);font-weight:600">km</span></div>
+      <div class="hint2" id="kmHint"></div></div>
+    <div class="stepbox"><h2><span class="n ${punch.gps && !punch.gpsErr ? 'done' : ''}">3</span>Location<span class="ar">الموقع</span></h2>${gpsBox(punch.gps, punch.gpsErr, punch.gpsBusy)}</div>
+    <div class="msg err" id="punchMsg"></div>`;
+  $('pPhoto').onclick = async () => {
+    const shot = await Cam.open(out ? 'Punch out photo' : 'Punch in photo', 'Steering wheel + odometer · المقود والعداد', () => stampLines(out ? 'PUNCH OUT' : 'PUNCH IN', punch.gps));
+    if (shot) { punch.photo = shot; renderPunch(); }
+  };
+  if ($('pDel')) $('pDel').onclick = () => { punch.photo = null; renderPunch(); };
+  const kmIn = $('pKm');
+  const hint = () => { if (!out || !a) return; const v = Number(kmIn.value.replace(/[,\s]/g, '')); $('kmHint').textContent = v && a.inKm != null && v >= a.inKm ? `= ${SAR.format(v - a.inKm)} km today · اليوم` : ''; };
+  kmIn.oninput = hint; hint();
+  $('punchBody').querySelectorAll('[data-regps]').forEach(b => b.onclick = punchGps);
+  $('punchGo').className = 'btn ' + (out ? 'btn-red' : 'btn-green');
+  $('punchGoLabel').textContent = out ? 'Punch out · تسجيل الانصراف' : 'Punch in · تسجيل الحضور';
+}
+function stampLines(what, g){
+  const u = state.user || {}, t = nowS();
+  return [`${dateLabel(riyDate(t))} · ${hm(t)} (server)`, g ? `${g.lat.toFixed(5)}, ${g.lng.toFixed(5)} · ±${g.accuracy} m` : 'GPS: locating…', `${what} · Salesman ${u.code || ''}`];
+}
+async function submitPunch(){
+  const box = $('punchMsg'); box.classList.remove('on');
+  if (!punch.photo) return msgInto(box, errText('NO_PHOTO'));
+  const km = $('pKm').value.trim();
+  if (!/^[\d,\s]+$/.test(km)) return msgInto(box, errText('BAD_KM'));
+  if (!punch.gps || Date.now() - punch.gps.at > 180000) await punchGps();
+  if (!punch.gps || punch.gpsErr) return msgInto(box, errMsg(punch.gpsErr || { code: 'NO_GPS' }));
+  const g = punch.gps;
+  await busy($('punchGo'), async () => {
+    const r = await api(punch.mode === 'in' ? 'punchIn' : 'punchOut', { lat: g.lat, lng: g.lng, accuracy: g.accuracy, km, photo: punch.photo }, 60000);
+    applyDay(r); renderHome();
+    toast(punch.mode === 'in' ? ['Punched in. Have a good day.', 'تم تسجيل الحضور.'] : ['Punched out. The day is closed.', 'تم تسجيل الانصراف.']);
+  }, box);
+}
+
+/* ---------- Visit history helpers (customer card + list rows) ---------- */
+function mergeVisits(views){
+  field.visits = field.visits || [];
+  views.forEach(v => {
+    const rec = { visitId: v.visitId, custNo: v.custNo, salesmanName: v.ownerName, start: v.start, end: v.end, durationMin: v.durationMin, endType: v.endType,
+      locationType: v.locationType, result: v.result, description: v.description, nextAction: v.nextAction, nextVisitDate: v.nextVisitDate };
+    const i = field.visits.findIndex(x => x.visitId === v.visitId);
+    if (i >= 0) field.visits[i] = rec; else field.visits.push(rec);
+  });
+}
+function visitsOf(custNo){ return (field.visits || []).filter(v => String(v.custNo) === String(custNo)).sort((a, b) => toMs(b.start) - toMs(a.start)); }
+function visitLine(c){
+  const vs = visitsOf(c.custNo), warn = (state.settings && state.settings.lastVisitWarnDays) || 30;
+  if (!vs.length) return { t: 'No visit in the last 120 days', cls: 'red' };
+  const last = vs[0], days = Math.floor((nowS() - toMs(last.start)) / 86400000);
+  const next = vs.find(v => v.nextVisitDate);
+  return { t: `Last visit ${days === 0 ? 'today' : days + ' days ago'}${next ? ' · Next ' + dateLabel(next.nextVisitDate) : ''}`, cls: days > warn ? 'red' : '' };
+}
+function renderHistory(c){
+  const el = $('histCard'); if (!el) return;
+  const vs = visitsOf(c.custNo).slice(0, 10);
+  el.innerHTML = `<h2>Visit history<span class="ar">سجل الزيارات</span></h2>${vs.length ? vs.map(v => `<div class="vrow"><div class="tm">${dayShort(v.start)}<div class="dt">${hm(v.start).replace(/ (AM|PM)/, '')}</div></div>
+    <div style="flex:1;min-width:0"><div class="nm">${esc(v.result || (v.end ? '—' : 'In progress'))} <span class="dt">· ${esc(v.locationType)}${v.durationMin != null ? ' · ' + dur(v.durationMin) : ''}</span></div>
+    ${v.description ? `<div class="dt">${esc(v.description)}</div>` : ''}${v.nextAction ? `<div class="dt"><b>Next:</b> ${esc(v.nextAction)}${v.nextVisitDate ? ' · ' + dateLabel(v.nextVisitDate) : ''}</div>` : ''}
+    ${v.salesmanName && v.salesmanName !== (state.user || {}).name ? `<div class="dt">By ${esc(v.salesmanName)}</div>` : ''}</div>
+    ${v.endType === 'AUTO-CLOSED' ? '<span class="chip-s cs-auto">Auto-closed</span>' : ''}</div>`).join('') : '<p class="hint2">No visits yet in the last 120 days.</p>'}`;
+}
+function locsOf(custNo){ return (field.locations || []).filter(l => custNoOfKey(l.CustomerKey) === String(custNo)); }
+function renderLocations(c){
+  const el = $('locCard'); if (!el) return;
+  const ls = locsOf(c.custNo);
+  el.innerHTML = `<div class="sec-h"><h2>Locations<span class="ar">المواقع</span></h2><button class="mini" type="button" id="pinLoc">+ Pin here</button></div>
+    ${ls.length ? ls.map(l => `<div class="vrow"><div style="flex:1"><div class="nm">${esc(l.Type)}</div><div class="dt">Radius ${esc(l.RadiusM)} m · pinned ${dayShort(l.PinnedAt)}</div></div><a class="mini ghost" href="${mapUrl(l.Lat, l.Lng)}" target="_blank" rel="noopener">Map ↗</a></div>`).join('')
+      : `<div class="warnbox">No location yet. Pin it when you are at the customer.<div dir="rtl">لا يوجد موقع. ثبّته عندما تكون عند العميل.</div></div>`}
+    <p class="hint2">Saved locations can't be moved from the app. Ask the coordinator to correct one.</p>`;
+  $('pinLoc').onclick = () => pinSheet(c, () => { renderLocations(c); if ($('vstart').classList.contains('on')) renderVStart(); });
+}
+function pinSheet(c, done){
+  const types = (state.settings && state.settings.locationTypes) || [];
+  let pick = '';
+  openSheet(`<h3>Pin a location here · تثبيت موقع</h3>
+    <p class="hint2">Stand at the customer's place. Your current GPS position will be saved.</p>
+    <div class="chips-wrap" id="ltChips">${types.map(t => `<button type="button" class="chip" data-t="${esc(t.type)}">${esc(t.type)}</button>`).join('')}</div>
+    <div id="pinGps">${gpsBox(null, null, true)}</div>
+    <div class="msg err" id="sheetMsg"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
+  let g = null, ge = null;
+  const locate = async () => { $('pinGps').innerHTML = gpsBox(null, null, true); try { g = await getGps(); ge = g.accuracy > maxAcc() ? { code: 'GPS_WEAK', detail: { accuracy: g.accuracy, max: maxAcc() } } : null; } catch (e) { g = null; ge = e; } $('pinGps').innerHTML = gpsBox(g, ge, false); const rb = $('pinGps').querySelector('[data-regps]'); if (rb) rb.onclick = locate; };
+  locate();
+  $('ltChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { pick = b.dataset.t; $('sheetMsg').classList.remove('on'); $('ltChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = async () => {
+    if (!pick) return msgInto($('sheetMsg'), errText('BAD_LOCATION_TYPE'));
+    if (!g || ge) return msgInto($('sheetMsg'), errMsg(ge || { code: 'NO_GPS' }));
+    await busy($('fSave'), async () => {
+      const r = await api('saveLocation', { custNo: c.custNo, branch: c.branch, type: pick, lat: g.lat, lng: g.lng, accuracy: g.accuracy });
+      field.locations = (field.locations || []).filter(l => custNoOfKey(l.CustomerKey) !== String(c.custNo)).concat(r.locations || []);
+      if (vs.cust && String(vs.cust.custNo) === String(c.custNo)) { vs.locationId = r.locationId; vs.gps = g; vs.gpsErr = null; }
+      closeSheet(); done && done();
+    }, $('sheetMsg'));
+  };
+}
+
+/* ---------- Start visit ---------- */
+const vs = { cust: null, locationId: '', gps: null, gpsErr: null, gpsBusy: false, team: null, companions: new Set(), photo: null };
+async function startVisitFlow(c){
+  if (!day.data) { try { applyDay(await api('today')); } catch (e) { return toast(errText(e.code)); } }
+  const d = day.data;
+  if (d.openVisit || d.jointVisit) { toast(errText(d.openVisit ? 'VISIT_OPEN' : 'JOINT_VISIT_OPEN')); show('visit'); renderVisit(); return; }
+  if (!d.attendance) { toast(errText('NOT_PUNCHED_IN')); return openPunch('in'); }
+  if (d.attendance.outTime) return toast(errText('DAY_CLOSED'));
+  Object.assign(vs, { cust: c, locationId: '', gps: null, gpsErr: null, team: null, companions: new Set(), photo: null });
+  const ls = locsOf(c.custNo); if (ls.length === 1) vs.locationId = ls[0].LocationID;
+  $('vsTitle').textContent = `${c.custNo} — ${c.cust}`;
+  show('vstart'); renderVStart();
+  if (vs.locationId) vsGps();
+  api('teammates').then(r => { vs.team = r.teammates; renderVStart(); }).catch(() => { vs.team = []; renderVStart(); });
+}
+async function vsGps(){
+  vs.gpsBusy = true; vs.gpsErr = null; renderVStart();
+  try { vs.gps = await getGps(); if (vs.gps.accuracy > maxAcc()) vs.gpsErr = { code: 'GPS_WEAK', detail: { accuracy: vs.gps.accuracy, max: maxAcc() } }; }
+  catch (e) { vs.gps = null; vs.gpsErr = e; }
+  vs.gpsBusy = false; renderVStart();
+}
+function vsCheck(){
+  const loc = locsOf(vs.cust.custNo).find(l => l.LocationID === vs.locationId);
+  if (!loc || !vs.gps || vs.gpsErr) return null;
+  const dist = distM(vs.gps, { lat: Number(loc.Lat), lng: Number(loc.Lng) }), radius = Number(loc.RadiusM) || 150;
+  return { dist, radius, ok: dist - vs.gps.accuracy <= radius };
+}
+function renderVStart(){
+  if (!vs.cust) return;
+  const ls = locsOf(vs.cust.custNo), chk = vsCheck();
+  const statusText = { available: 'Available · متاح', not_punched_in: 'Not punched in', punched_out: 'Punched out', busy: 'In another visit' };
+  let gpsHtml = '';
+  if (vs.locationId) {
+    if (vs.gpsBusy || vs.gpsErr || !vs.gps) gpsHtml = gpsBox(vs.gps, vs.gpsErr, vs.gpsBusy);
+    else if (chk && chk.ok) gpsHtml = `<div class="gps ok"><span class="grow">✓ You are at this location · ${fmtDist(chk.dist)} away (±${vs.gps.accuracy} m, allowed ${chk.radius} m)</span><button class="mini ghost" type="button" data-regps="1">Refresh</button></div>`;
+    else if (chk) gpsHtml = `<div class="gps bad"><span class="grow">✕ Too far: ${fmtDist(chk.dist)} from this location (allowed ${chk.radius} m). Move closer.<span class="ar-line" dir="rtl">أنت بعيد عن الموقع. اقترب.</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`;
+  }
+  const team = vs.team;
+  $('vsBody').innerHTML = `
+    <div class="stepbox"><h2><span class="n ${chk && chk.ok ? 'done' : ''}">1</span>Where are you?<span class="ar">أين أنت؟</span></h2>
+      ${ls.map(l => `<button type="button" class="opt ${l.LocationID === vs.locationId ? 'on' : ''}" data-loc="${esc(l.LocationID)}"><span class="dot"></span><span class="grow"><b>${esc(l.Type)}</b><small>Radius ${esc(l.RadiusM)} m</small></span></button>`).join('')}
+      <button type="button" class="dashed" id="vsPin">+ Pin a new location here · تثبيت موقع جديد</button>
+      ${!ls.length ? '<p class="hint2">This customer has no saved location yet. Pin it first.</p>' : ''}
+      ${gpsHtml}</div>
+    <div class="stepbox"><h2><span class="n ${vs.companions.size ? 'done' : ''}">2</span>Anyone with you? (optional)<span class="ar">هل معك أحد؟</span></h2>
+      ${team == null ? '<div class="gps wait"><span class="spin"></span><span class="grow">Loading teammates…</span></div>' : !team.length ? '<p class="hint2">No teammates in your branch.</p>' :
+        team.map(t => { const ok = t.status === 'available'; return `<button type="button" class="opt ${vs.companions.has(t.id) ? 'on' : ''} ${ok ? '' : 'off'}" data-comp="${esc(t.id)}" ${ok ? '' : 'disabled'}><span class="box">${vs.companions.has(t.id) ? '✓' : ''}</span><span class="grow"><b>${esc(t.code)} · ${esc(t.name)}</b><small>${statusText[t.status] || t.status}</small></span></button>`; }).join('')}
+      ${vs.companions.size ? '<p class="hint2">They will get a "Confirm you\'re here" prompt. It counts for them only after their GPS confirms. They see only the customer name, time and result.</p>' : ''}</div>
+    <div class="stepbox"><h2><span class="n ${vs.photo ? 'done' : ''}">3</span>Photo of the location<span class="ar">صورة الموقع</span></h2>
+      <div class="photo-slot">${vs.photo ? `<span class="thumb"><img src="${vs.photo}" alt=""><button type="button" class="thumb-x" id="vsDel" aria-label="Delete photo">✕</button></span>` : '<div class="ph">No photo</div>'}
+        <div style="flex:1"><button class="btn ${vs.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="vsPhoto">${vs.photo ? 'Retake · إعادة' : 'Open camera · الكاميرا'}</button><div class="hint2" style="margin-top:6px">Live camera only.</div></div></div></div>
+    <div class="msg err" id="vsMsg"></div>`;
+  $('vsBody').querySelectorAll('[data-loc]').forEach(b => b.onclick = () => { vs.locationId = b.dataset.loc; renderVStart(); vsGps(); });
+  $('vsBody').querySelectorAll('[data-comp]').forEach(b => b.onclick = () => { const id = b.dataset.comp; vs.companions.has(id) ? vs.companions.delete(id) : vs.companions.add(id); renderVStart(); });
+  $('vsBody').querySelectorAll('[data-regps]').forEach(b => b.onclick = vsGps);
+  $('vsPin').onclick = () => pinSheet(vs.cust, () => { renderVStart(); });
+  if ($('vsDel')) $('vsDel').onclick = () => { vs.photo = null; renderVStart(); };
+  $('vsPhoto').onclick = async () => {
+    const loc = ls.find(l => l.LocationID === vs.locationId);
+    const shot = await Cam.open('Visit photo · صورة الزيارة', `${vs.cust.custNo} · ${loc ? loc.Type : ''}`, () => stampLines(`${vs.cust.custNo} · ${loc ? loc.Type : ''}`, vs.gps));
+    if (shot) { vs.photo = shot; renderVStart(); }
+  };
+  $('vsGo').disabled = !(chk && chk.ok && vs.photo);
+}
+async function submitStart(){
+  const box = $('vsMsg'); box.classList.remove('on');
+  if (!vs.locationId) return msgInto(box, ['Pick where you are.', 'اختر مكانك.']);
+  if (!vs.photo) return msgInto(box, errText('NO_PHOTO'));
+  if (!vs.gps || Date.now() - vs.gps.at > 180000) await vsGps();
+  const chk = vsCheck(); if (!chk || !chk.ok) return msgInto(box, vs.gpsErr ? errMsg(vs.gpsErr) : errText('TOO_FAR'));
+  const c = vs.cust, g = vs.gps, photo = vs.photo;
+  await busy($('vsGo'), async () => {
+    const r = await api('startVisit', { custNo: c.custNo, branch: c.branch, custName: c.cust, locationId: vs.locationId, lat: g.lat, lng: g.lng, accuracy: g.accuracy, photo, companions: [...vs.companions] }, 60000);
+    visitPhoto = photo;
+    applyDay(r); show('visit'); renderVisit();
+  }, box);
+}
+
+/* ---------- Visit in progress ---------- */
+let visitPhoto = null;
+function renderVisit(){
+  clearInterval(day.timer);
+  const d = day.data, v = d && (d.openVisit || d.jointVisit);
+  if (!v) { $('visitBody').innerHTML = `<div class="state"><b>No visit in progress.</b><span>العودة إلى الرئيسية</span></div>`; $('visitFoot').style.display = 'none'; return; }
+  const mine = !!d.openVisit;
+  const phones = phonesOf(v.custNo).length, contacts = contactsOf(v.custNo).length;
+  const statusChip = { PENDING: '<span class="chip-s cs-pend">Waiting to confirm</span>', CONFIRMED: '<span class="chip-s cs-ok">Confirmed ✓</span>', DECLINED: '<span class="chip-s cs-no">Not there</span>', EXPIRED: '<span class="chip-s cs-no">Expired</span>' };
+  $('visitTitle').textContent = mine ? 'Visit in progress · زيارة جارية' : `Joint visit · مع ${v.ownerName}`;
+  $('visitSub').textContent = `${v.custNo} — ${v.customerName}`;
+  $('visitBody').innerHTML = `
+    <div class="stepbox" style="align-items:center"><div class="bigtimer" id="vTimer">00:00:00</div><div class="hint2">Started ${hm(v.start)} (server time) · ${esc(v.locationType)} · ${fmtDist(v.distanceM)} from the pin</div></div>
+    ${mine ? `<div class="stepbox"><div class="photo-slot">${visitPhoto ? `<img src="${visitPhoto}" alt="">` : '<div class="ph">Saved</div>'}<div style="flex:1"><b>Photo saved ✓</b><div class="hint2">Wrong photo? Take a new one here. Your GPS is checked again.</div><button class="mini" type="button" id="vReplace" style="margin-top:6px"><span class="spin"></span>Replace photo · استبدال</button></div></div></div>` : ''}
+    ${v.companions.length ? `<div class="stepbox"><h2>Companions<span class="ar">المرافقون</span></h2>${v.companions.map(c => `<div class="row"><span>${esc(c.code)} · ${esc(c.name)}</span>${statusChip[c.status] || ''}</div>`).join('')}<button class="linkbtn" type="button" id="vRefresh">Refresh status · تحديث</button></div>` : ''}
+    ${mine && (!phones || !contacts) ? `<div class="warnbox">Customer data is incomplete (${!contacts ? 'no contact' : 'no phone'}). Update it during the visit.<div dir="rtl">بيانات العميل ناقصة. حدّثها أثناء الزيارة.</div><button class="mini" type="button" id="vFix" style="margin-top:8px">Open customer card</button></div>` : ''}
+    ${!mine ? `<div class="stepbox"><p class="hint2">${esc(v.ownerName)} records this visit and will end it. It counts for you because you confirmed.</p></div>` : ''}
+    <p class="hint2" style="text-align:center">Only one visit at a time. Open visits are closed automatically at ${esc((state.settings && state.settings.autoCloseTime) || '23:59')} and flagged.</p>`;
+  const tick = () => { const s = Math.max(0, Math.floor((nowS() - toMs(v.start)) / 1000)); const el = $('vTimer'); if (el) el.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':'); };
+  tick(); day.timer = setInterval(tick, 1000);
+  if ($('vRefresh')) $('vRefresh').onclick = () => busy($('vRefresh'), async () => applyDay(await api('today')));
+  if ($('vReplace')) $('vReplace').onclick = () => replacePhoto(v);
+  if ($('vFix')) $('vFix').onclick = () => { if (list.report) openCustomer(v.custNo); else { go('list'); } };
+  $('visitFoot').style.display = mine ? 'block' : 'none';
+}
+function endSheet(){
+  const v = day.data && day.data.openVisit; if (!v) return;
+  const results = (state.settings && state.settings.visitResults) || [];
+  const min = riyDate(nowS()), max = riyDate(nowS() + 180 * 86400000);
+  let pick = '';
+  openSheet(`<h3>End visit · إنهاء الزيارة</h3><p class="hint2">${esc(v.custNo)} — ${esc(v.customerName)} · started ${hm(v.start)}</p>
+    <div class="field"><label><span>Result</span><span>النتيجة *</span></label><div class="chips-wrap" id="rChips">${results.map(r => `<button type="button" class="chip" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div></div>
+    <div class="field"><label for="eDesc"><span>What happened?</span><span>ماذا حدث؟ *</span></label><textarea class="ta" id="eDesc" maxlength="1000" placeholder="Who you met, what was agreed, orders, collections, complaints…"></textarea></div>
+    <div class="field"><label for="eNext"><span>Next action</span><span>الإجراء التالي *</span></label><div class="input"><input id="eNext" maxlength="200" placeholder="e.g. Collect cheque, send price offer"></div></div>
+    <div class="field"><label for="eDate"><span>Next visit date (optional)</span><span>موعد الزيارة القادمة (اختياري)</span></label><div class="input"><input id="eDate" type="date" value="" min="${min}" max="${max}"><button type="button" id="eDateClr">Clear</button></div></div>
+    <div class="msg err" id="sheetMsg"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save & close · حفظ</button></div>`);
+  $('rChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { pick = b.dataset.r; $('sheetMsg').classList.remove('on'); $('rChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
+  $('eDateClr').onclick = () => { $('eDate').value = ''; };
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = async () => {
+    const box = $('sheetMsg'), desc = $('eDesc').value.trim(), next = $('eNext').value.trim(), date = $('eDate').value;
+    if (!pick) return msgInto(box, errText('BAD_RESULT'));
+    if (desc.length < 5) return msgInto(box, errText('DESCRIPTION_REQUIRED'));
+    if (!next) return msgInto(box, errText('NEXT_ACTION_REQUIRED'));
+    if (date && (date < min || date > max)) return msgInto(box, errText('BAD_NEXT_DATE'));
+    await busy($('fSave'), async () => {
+      const r = await api('endVisit', { visitId: v.visitId, result: pick, description: desc, nextAction: next, nextVisitDate: date }, 45000);
+      closeSheet(); visitPhoto = null; clearInterval(day.timer);
+      applyDay(r); renderHome();
+      if (list.report) renderCustRows();
+      toast(['Visit saved.', 'تم حفظ الزيارة.']);
+    }, box);
+  };
+}
+
+/* ---------- Companion invitation ---------- */
+function inviteSheet(inv){
+  if (!inv) return;
+  openSheet(`<h3 style="text-align:center">${esc(inv.ownerName)} added you to a visit</h3><p class="hint2" style="text-align:center" dir="rtl">${esc(inv.ownerName)} أضافك كمرافق في زيارة</p>
+    <div class="stepbox"><b>${esc(inv.custNo)} — ${esc(inv.customerName)}</b><span class="hint2">${esc(inv.locationType)} · started ${hm(inv.start)}</span></div>
+    <div id="invGps"></div>
+    <div class="msg err" id="sheetMsg"></div>
+    <button class="btn btn-green" type="button" id="invYes"><span class="spin"></span>Confirm I'm here · تأكيد وجودي</button>
+    <button class="btn btn-quiet" type="button" id="invNo">I'm not there · لست هناك</button>
+    <p class="hint2" style="text-align:center">Confirming checks your GPS against the same location. If you don't confirm, the visit won't count for you.</p>`);
+  $('invYes').onclick = async () => {
+    $('invGps').innerHTML = gpsBox(null, null, true);
+    let g; try { g = await getGps(); } catch (e) { $('invGps').innerHTML = ''; return msgInto($('sheetMsg'), errMsg(e)); }
+    $('invGps').innerHTML = '';
+    await busy($('invYes'), async () => { const r = await api('confirmCompanion', { visitId: inv.visitId, lat: g.lat, lng: g.lng, accuracy: g.accuracy }); day.answered.add(inv.visitId); closeSheet(); applyDay(r); toast(['Confirmed. This visit counts for you.', 'تم التأكيد.']); }, $('sheetMsg'));
+  };
+  $('invNo').onclick = async () => {
+    await busy($('invNo'), async () => { const r = await api('declineCompanion', { visitId: inv.visitId }); day.answered.add(inv.visitId); closeSheet(); applyDay(r); }, $('sheetMsg'));
+  };
+  $('sheetBg').onclick = e => { if (e.target === $('sheetBg')) { day.answered.add(inv.visitId); closeSheet(); } };
+}
+
+/* ---------- wiring ---------- */
+$('punchBack').onclick = () => renderHome();
+$('punchGo').onclick = submitPunch;
+$('vsBack').onclick = () => { if (vs.cust && list.report) openCustomer(vs.cust.custNo); else renderHome(); };
+$('vsGo').onclick = submitStart;
+$('visitBack').onclick = () => { clearInterval(day.timer); renderHome(); };
+$('visitEnd').onclick = endSheet;
+$('camClose').onclick = () => Cam.finish(null);
+$('camShutter').onclick = () => Cam.capture();
+$('camRetake').onclick = () => Cam.retake();
+$('camUse').onclick = () => Cam.finish(Cam.shot);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state.user && state.user.code && $('home').classList.contains('on')) loadDay(); });
+
+async function replacePhoto(v){
+  let g = null;
+  const shot = await Cam.open('New visit photo · صورة جديدة', `${v.custNo} · ${v.locationType}`, () => stampLines(`${v.custNo} · ${v.locationType}`, g));
+  if (!shot) return;
+  await busy($('vReplace'), async () => {
+    g = await getGps();
+    if (g.accuracy > maxAcc()) throw new ApiError('GPS_WEAK', { accuracy: g.accuracy, max: maxAcc() });
+    const r = await api('replaceVisitPhoto', { visitId: v.visitId, photo: shot, lat: g.lat, lng: g.lng, accuracy: g.accuracy }, 60000);
+    visitPhoto = shot; applyDay(r);
+    toast(['Photo replaced.', 'تم استبدال الصورة.']);
+  });
+}
+
+
+/* ======================= PDFs — the dashboard's own print code (DashPrint) and CSS ======================= */
+Object.assign(ERR, {
+  POPUP_BLOCKED: ['The PDF page was blocked. Allow pop-ups for this app, then try again.', 'تم حظر صفحة الملف. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.'],
+  NO_LIST:       ['Open My List first so the data is loaded.', 'افتح قائمتي أولًا لتحميل البيانات.']
+});
+const PDF_LANG_KEY = 'alhowail_pdf_lang';
+const PRINT_BAR_CSS = `
+  .pv-bar{position:sticky;top:0;z-index:50;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 18px;background:#fff;border-bottom:1px solid #e2e6ee;box-shadow:0 2px 8px rgba(16,24,40,.06)}
+  .pv-bar button{font-size:15px;padding:10px 16px;border-radius:8px}
+  .pv-bar .hint{font-size:12.5px;color:#6b7387;flex-basis:100%}
+  body{background:#eef1f7} main{padding:18px 20px 40px}
+  .tab-panel.active .print-area{background:#fff;border:1px solid #e2e6ee;border-radius:12px;padding:18px}
+  @media print{ .tab-panel.active .print-area{border:0;padding:0;border-radius:0} body{background:#fff} main{padding:0} }`;
+
+/** Opens the print page: dashboard CSS + dashboard HTML, exactly as the dashboard prints it. */
+function openPrintPage(title, bodyHtml, lng){
+  const w = window.open('', '_blank');
+  if (!w) { toast(errText('POPUP_BLOCKED')); return false; }
+  const doc = '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=900">'
+    + '<title>' + esc(title) + '</title>' + DashPrint.fonts
+    + '<style>' + DashPrint.css + '</style><style>' + PRINT_BAR_CSS + '</style></head><body>'
+    + '<div class="pv-bar no-print"><button class="primary" type="button" onclick="window.print()">Print / Save PDF · طباعة / حفظ PDF</button>'
+    + '<button class="ghost" type="button" onclick="window.close()">Close · إغلاق</button>'
+    + '<span class="hint">iPhone: Print → Share → WhatsApp. Android: Print → Save as PDF, then share the file in WhatsApp. · آيفون: طباعة ← مشاركة ← واتساب. أندرويد: طباعة ← حفظ PDF ثم أرسله بواتساب.</span></div>'
+    + '<main><div class="tab-panel active"><div class="print-area" style="display:block">' + bodyHtml + '</div></div></main>'
+    + '</body></html>';
+  w.document.open(); w.document.write(doc); w.document.close();
+  return true;
+}
+
+function pdfSheet(title, sub, make){
+  let lng = store.get(PDF_LANG_KEY) === 'ar' ? 'ar' : 'en';
+  openSheet(`<h3>${esc(title)}</h3><p class="hint2">${esc(sub)}</p>
+    <div class="field"><label><span>PDF language</span><span>لغة الملف</span></label>
+      <div class="seg" id="pdfLang"><button type="button" data-l="en" class="${lng === 'en' ? 'on' : ''}">English</button><button type="button" data-l="ar" class="${lng === 'ar' ? 'on' : ''}">العربية</button></div></div>
+    <p class="hint2">Same layout as the dashboard's PDF. The page opens with a <b>Print / Save PDF</b> button: on iPhone use Share → WhatsApp; on Android save as PDF, then send it in WhatsApp.</p>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="pdfGo">Open PDF · فتح</button></div>`);
+  $('pdfLang').querySelectorAll('button').forEach(b => b.onclick = () => { lng = b.dataset.l; $('pdfLang').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+  $('fCancel').onclick = closeSheet;
+  $('pdfGo').onclick = () => {           // synchronous: pop-up must open straight from the tap
+    store.set(PDF_LANG_KEY, lng);
+    DashPrint.setLang(lng);
+    const r = make();
+    if (r && openPrintPage(r.title, r.html, lng)) closeSheet();
+  };
+}
+
+function smanListExport(){
+  if (!list.report) return toast(errText('NO_LIST'));
+  pdfSheet('SMAN List PDF · قائمة المندوب', `${state.user.code} · ${list.report.smanName || state.user.name}`, () => {
+    const d = list.report;
+    return { html: DashPrint.smanList(d), title: DashPrint.fileName(`${d.smanName} (${d.smanCode}) - ${DashPrint.t('salesmanReport')}`) };
+  });
+}
+
+function statementExport(c){
+  if (!list.report) return toast(errText('NO_LIST'));
+  pdfSheet('Account statement · كشف حساب', `${c.custNo} — ${c.cust}`, () => {
+    const name = displayCustName(c.custNo, c.custNo);
+    return { html: DashPrint.statement(c.custNo), title: DashPrint.fileName(`${DashPrint.t('accountStatement')} - ${c.custNo} - ${name}`) };
+  });
+}
+
+$('pdfBtn').onclick = smanListExport;
 boot();
 </script>
 </body>
