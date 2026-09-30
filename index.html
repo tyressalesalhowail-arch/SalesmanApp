@@ -294,6 +294,90 @@ textarea.ta:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* ================= Native mobile-app layer ================= */
+body{font-size:15px;background:#f2f4f8}
+.screen{background:#f2f4f8}
+.content{padding:12px 14px 24px;gap:14px}
+
+/* --- compact app bar (solid, like a native app) --- */
+.top,.subtop{background:#00206b;box-shadow:none;padding:calc(var(--safe-top) + 10px) 14px 10px;min-height:calc(var(--safe-top) + 58px);gap:10px}
+.top::after,.subtop::after{display:none}
+.top img{width:46px;padding:3px 4px;border-radius:9px;box-shadow:none}
+.top h1{font-size:17px;font-weight:700}
+.top h1 .ar{display:none}
+.top small{font-size:12px;margin-top:1px}
+.subtop h1{font-size:17px;font-weight:700}
+.subtop h1 .ar{font-size:13px}
+.icon-btn{border:0;background:rgba(255,255,255,.14);width:38px;height:38px;min-width:38px;border-radius:12px}
+#refreshBtn,#pdfBtn{background:rgba(255,255,255,.14)}
+
+/* --- bottom tab bar (native) --- */
+.tabs{padding:4px 8px calc(var(--safe-bottom) + 4px);box-shadow:0 -1px 0 rgba(16,24,40,.06);background:rgba(255,255,255,.96);backdrop-filter:saturate(1.6) blur(12px);-webkit-backdrop-filter:saturate(1.6) blur(12px)}
+.tabs button{padding:8px 4px 5px;font-size:11px;gap:2px}
+.tabs button small{display:none}
+.tabs button.on::before{display:none}
+.tabs button.on svg{stroke-width:2.4}
+.tabs button.on{color:#0033a0}
+.tabs button.on span,.tabs button.on{font-weight:800}
+
+/* --- slide-in for detail screens --- */
+#cust.on,#vstart.on,#visit.on,#punch.on{animation:slideIn .26s var(--ease-out)}
+@keyframes slideIn{from{transform:translateX(24%);opacity:.3}to{transform:none;opacity:1}}
+
+/* --- section titles (iOS grouped style) --- */
+.card h2,.stepbox h2{font-size:14px}
+.card{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:14px}
+.stepbox,.daycard,.chart,.kpi{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:14px}
+.btn{border-radius:12px;min-height:50px;font-size:15.5px}
+.btn-quiet{border-color:#dfe4ee}
+
+/* --- KPI strip: swipe sideways --- */
+.kpis{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin:0 -14px;padding:2px 14px 4px;scrollbar-width:none}
+.kpis::-webkit-scrollbar{display:none}
+.kpi{flex:0 0 44%;scroll-snap-align:start;padding:12px 12px 10px}
+.kpi .v{font-size:17px}
+.kpi::before{height:3px}
+
+/* --- native customer rows --- */
+.lrows{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.lrow{display:flex;flex-direction:row;align-items:center;gap:12px;padding:12px 10px 12px 14px;border:0;border-radius:0;box-shadow:none;background:#fff;position:relative}
+.lrow + .lrow::before{content:'';position:absolute;top:0;left:66px;right:0;height:1px;background:#edf0f5}
+.lrow:active{background:#f4f6fa;transform:none}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;letter-spacing:.3px}
+.lmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.lmain b{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lmain small{font-size:12.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-t{font-weight:700;background:none!important;padding:0}
+.ltrail{display:flex;flex-direction:column;align-items:flex-end;flex:none;text-align:right}
+.ltrail b{font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+.ltrail small{font-size:11px;color:var(--ink-mute);font-weight:600}
+.chev{width:18px;height:18px;color:#c3c9d6;flex:none}
+.count{padding:0 4px}
+
+/* status colours for avatars + text */
+.av.st-new{background:#e3e9fb;color:#0033a0} .st-t.st-new{color:#0033a0}
+.av.st-overdue{background:#fde3e0;color:#b3261e} .st-t.st-overdue{color:#b3261e}
+.av.st-due{background:#fff1bf;color:#7a5a00} .st-t.st-due{color:#8a6d00}
+.av.st-risk{background:#ffe6cc;color:#9a4d00} .st-t.st-risk{color:#9a4d00}
+.av.st-active{background:#d9f2e4;color:#0b7a44} .st-t.st-active{color:#0b7a44}
+.av.st-lost,.av.st-stale{background:#e9ecf2;color:#6b7387} .st-t.st-lost,.st-t.st-stale{color:#6b7387}
+
+/* search + filter chips */
+.search{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:12px;background:#fff}
+.chip{border-color:#dfe4ee}
+
+/* profile */
+.prof-head{display:flex;align-items:center;gap:14px}
+.prof-head b{display:block;font-size:17px}
+.prof-head small{color:var(--ink-dim);font-size:13px}
+.big-av{width:58px;height:58px;font-size:19px}
+
+/* sheets & banners */
+.sheet{border-radius:20px 20px 0 0}
+.banner{border:0;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.banner.orange{background:#fff1dc}
+.banner.blue{background:#e6ecfb}
+
 </style>
 </head>
 <body>
@@ -337,12 +421,12 @@ textarea.ta:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0
       <h1 id="hello">Good morning</h1>
       <small id="whoLine"></small>
     </div>
-    <button class="link-out" id="logoutBtn" type="button">Sign out</button>
   </header>
   <main class="content" id="homeBody"></main>
   <nav class="tabs" aria-label="Main">
     <button type="button" data-go="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
     <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
+    <button type="button" data-go="profile" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profile<small>حسابي</small></button>
   </nav>
 </section>
 
@@ -357,6 +441,18 @@ textarea.ta:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0
   <nav class="tabs" aria-label="Main">
     <button type="button" data-go="home" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
     <button type="button" data-go="list" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
+    <button type="button" data-go="profile" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profile<small>حسابي</small></button>
+  </nav>
+</section>
+
+<!-- Profile -->
+<section id="profile" class="screen" aria-label="Profile">
+  <header class="subtop"><div class="t"><h1>Profile<span class="ar">حسابي</span></h1><small id="profSub"></small></div></header>
+  <main class="content" id="profBody"></main>
+  <nav class="tabs" aria-label="Main">
+    <button type="button" data-go="home" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
+    <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
+    <button type="button" data-go="profile" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profile<small>حسابي</small></button>
   </nav>
 </section>
 
@@ -1267,7 +1363,9 @@ document.getElementById('touchIcon').href = LOGO;
 /* ===== Config ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec';   // Deploy → Web app URL of the NEW Apps Script project
 const SPLASH_MIN_MS = 900;
-const REQUEST_TIMEOUT_MS = 20000;
+const APP_VERSION = '0.6.1';
+const REQUEST_TIMEOUT_MS = 30000;
+const LIST_TIMEOUT_MS = 120000;   // My List reads the whole sales sheet on the server
 const TOKEN_KEY = 'alhowail_field_token';
 const USER_KEY = 'alhowail_field_user';
 
@@ -1394,8 +1492,6 @@ async function verifySession(firstTime){
     if (document.getElementById('home').classList.contains('on')) renderHome();
   } catch (e) {
     if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
-    list.error = errText(e.code);
-    if (quiet) { if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay(); return; }   // api() already signed out
     if (firstTime) { showLoginMsg(errText(e.code)); show('login'); }
     else toast(errText(e.code));
   }
@@ -1432,12 +1528,12 @@ $('togglePw').addEventListener('click', () => {
   $('togglePw').setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
 });
 
-$('logoutBtn').addEventListener('click', async () => {
-  const btn = $('logoutBtn'); btn.disabled = true;
+async function doLogout(){
+  const btn = $('logoutBtn'); if (btn) btn.disabled = true;
   try { await api('logout'); } catch (e) { /* sign out locally anyway */ }
-  btn.disabled = false;
+  if (btn) btn.disabled = false;
   signOutLocal();
-});
+}
 
 
 /* ===== My List (SMAN List) — numbers come from the dashboard's own engine ===== */
@@ -1474,19 +1570,21 @@ function dueText(c){
 function lastInvText(c){ return c.lastInvoiceDate == null ? '—' : `${fmtD(c.lastInvoiceDate)} · ${c.daysSince} days ago`; }
 
 function stateHTML(kind, msg){
-  if (kind === 'loading') return `<div class="state"><span class="spin"></span><b>Loading your list…</b><span dir="rtl">جاري تحميل القائمة…</span></div>`;
+  if (kind === 'loading') return `<div class="state"><span class="spin"></span><b>Loading your list… <span id="loadSecs">0s</span></b><span dir="rtl">جاري تحميل القائمة…</span><span class="hint2">The server reads the full sales sheet. The first load can take up to a minute.</span></div>`;
   return `<div class="state"><b>${esc(msg[0])}</b><span dir="rtl">${esc(msg[1])}</span><button class="btn btn-quiet" type="button" id="retryList">Try again · إعادة المحاولة</button></div>`;
 }
 
 async function loadList(force, quiet){
-  if (list.loading) return;
+  if (list.loading) { if (!quiet) show('list'); return; }
   if (list.report && !force) { renderList(); return; }
   list.loading = true;
   $('refreshBtn').disabled = true;
   if (!list.report) $('listBody').innerHTML = stateHTML('loading');
   if (!quiet) show('list');
+  const started = Date.now();
+  const tick = setInterval(() => { const el = document.getElementById('loadSecs'); if (el) el.textContent = Math.round((Date.now() - started) / 1000) + 's'; }, 1000);
   try {
-    const payload = await api('myList');
+    const payload = await api('myList', {}, LIST_TIMEOUT_MS);
     loadSalesmanData(payload);                                 // dashboard engine
     const f = payload.field || {};
     field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || [];
@@ -1495,14 +1593,19 @@ async function loadList(force, quiet){
     list.error = null;
     list.loadedAt = Date.now();
     renderList();
-    if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay();
   } catch (e) {
     if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
-    if (list.report) { renderList(); toast(errText(e.code)); }
-    else { $('listBody').innerHTML = stateHTML('error', errText(e.code)); const r = $('retryList'); if (r) r.onclick = () => loadList(true); }
+    list.error = errText(e.code);
+    if (list.report) { renderList(); if (!quiet) toast(list.error); }
+    else {   // never leave a spinner: always show the reason + Try again
+      $('listBody').innerHTML = stateHTML('error', list.error);
+      const r = $('retryList'); if (r) r.onclick = () => loadList(true);
+    }
   } finally {
+    clearInterval(tick);
     list.loading = false;
     $('refreshBtn').disabled = false;
+    if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay();
   }
 }
 
@@ -1540,35 +1643,38 @@ function renderList(){
   renderCustRows();
 }
 
+function initials(n){ const w = String(n || '').replace(/[^A-Za-z\u0600-\u06FF ]/g, ' ').trim().split(/\s+/).filter(x => x.length > 1 && !/^(AL|EST|CO|THE|FOR|AND|LTD)$/i.test(x)); return ((w[0] || '?')[0] + ((w[1] || '')[0] || '')).toUpperCase(); }
 function renderCustRows(){
   const d = list.report, q = list.q.trim().toLowerCase();
   const rows = d.custs.filter(c => (list.filter === 'ALL' || c.status === list.filter) &&
     (!q || String(c.custNo).toLowerCase().includes(q) || String(c.cust).toLowerCase().includes(q)));
   $('listCount').textContent = rows.length === d.custs.length ? '' : `${rows.length} of ${d.custs.length} customers`;
   if (!rows.length) { $('custList').innerHTML = `<div class="state"><b>No customers match.</b><span>Clear the search or pick another status.</span></div>`; return; }
-  $('custList').innerHTML = rows.map(c => {
-    const due = dueText(c);
-    return `<button type="button" class="cust" data-c="${esc(c.custNo)}">
-      <div class="h"><span class="n">${esc(c.custNo)} — ${esc(c.cust)}${phonesOf(c.custNo).length ? '' : ' <span class="miss">No phone · بدون رقم</span>'}</span>${stChip(c.status)}</div>
-      <dl class="grid">
-        <dt>Overdue / Current</dt><dd><span class="${c.overdue > 0 ? 'red' : ''}">${SAR.format(Math.round(c.overdue))}</span> / ${SAR.format(Math.round(c.due))}</dd>
-        <dt>Due date</dt><dd class="${due.cls}">${esc(due.t)}</dd>
-        <dt>Last invoice</dt><dd>${esc(lastInvText(c))}</dd>
-        <dt>Sales</dt><dd>${money(c.branchTotalSales)} <span style="color:var(--muted);font-weight:400">· month ${SAR.format(Math.round(c.branchMonthSales))}</span></dd>
-      </dl>${(v => `<div class="count ${v.cls}" style="font-size:12px">${esc(v.t)}</div>`)(visitLine(c))}</button>`;
-  }).join('');
+  $('custList').innerHTML = '<div class="lrows">' + rows.map(c => {
+    const due = dueText(c), m = STATUS[c.status] || { en: c.status, cls: 'st-stale' }, v = visitLine(c);
+    const amt = c.overdue > 0 ? { n: c.overdue, l: 'overdue', cls: 'red' } : c.due > 0 ? { n: c.due, l: 'due', cls: 'warn' } : { n: c.branchMonthSales, l: 'this month', cls: '' };
+    return `<button type="button" class="cust lrow" data-c="${esc(c.custNo)}">
+      <span class="av ${m.cls}">${esc(initials(c.cust))}</span>
+      <span class="lmain"><b>${esc(c.cust)}</b>
+        <small>${esc(c.custNo)} · <span class="st-t ${m.cls}">${esc(m.en)}</span>${phonesOf(c.custNo).length ? '' : ' · <span class="warn">no phone</span>'}</small>
+        <small class="${due.cls}">${due.t !== '—' ? 'Due ' + esc(due.t) : 'Last invoice ' + esc(lastInvText(c))}</small>
+        <small class="${v.cls}">${esc(v.t)}</small></span>
+      <span class="ltrail"><b class="${amt.cls}">${SAR.format(Math.round(amt.n))}</b><small>${amt.l}</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
+  }).join('') + '</div>';
   $('custList').querySelectorAll('.cust').forEach(b => b.addEventListener('click', () => openCustomer(b.dataset.c)));
 }
 
 function openCustomer(custNo){
   const c = list.report && list.report.custs.find(x => String(x.custNo) === String(custNo)); if (!c) return;
   const due = dueText(c);
-  $('custTitle').textContent = `${c.custNo} — ${c.cust}`;
+  $('custTitle').textContent = 'Customer · العميل';
   $('custSub').textContent = `${c.branch || ''}${c.terms ? ' · ' + c.terms + ' days credit' : ''}`;
+  const mm = STATUS[c.status] || { cls: 'st-stale' };
   $('custBody').innerHTML = `
+    <div class="card prof-head"><span class="av big-av ${mm.cls}">${esc(initials(c.cust))}</span><div style="min-width:0"><b>${esc(c.cust)}</b><small>${esc(c.custNo)} · ${esc(c.branch || '')}</small><div style="margin-top:6px">${stChip(c.status)}</div></div></div>
     <div class="row2"><button class="btn btn-quiet" type="button" id="custStmt">Statement · كشف</button><button class="btn btn-primary" type="button" id="custStart">Start visit · بدء زيارة</button></div>
     <div class="card">
-      <div class="row"><span class="count">Code and name are read-only · للقراءة فقط</span>${stChip(c.status)}</div>
+      <div class="row"><span class="count">Balance · الرصيد</span><span class="count">Read-only · للقراءة فقط</span></div>
       <div class="big" style="margin-top:6px;color:#7A5A00">${money(c.total)}</div>
       <dl class="lines">
         <dt>Overdue · متأخر</dt><dd class="${c.overdue > 0 ? 'red' : ''}">${money(c.overdue)}</dd>
@@ -1735,7 +1841,27 @@ function showSheetMsg(msg){ const box = $('sheetMsg'); box.textContent = ''; box
 /* ===== Navigation & small toast ===== */
 function go(where){
   if (where === 'list') { show('list'); loadList(false); }
+  else if (where === 'profile') renderProfile();
   else renderHome();
+}
+function renderProfile(){
+  const u = state.user || {}, d = list.report;
+  $('profSub').textContent = u.name || '';
+  $('profBody').innerHTML = `
+    <div class="card prof-head"><span class="av big-av st-new">${esc(initials(u.name))}</span><div><b>${esc(u.name || '')}</b><small>${u.role === 'ADMIN' ? 'Sales Coordinator' : 'Salesman · مندوب'}</small></div></div>
+    <div class="card"><dl class="lines" style="margin-top:0">
+      <dt>Login ID</dt><dd>${esc(u.loginId || '')}</dd>
+      <dt>Salesman code</dt><dd>${esc(u.code || '—')}</dd>
+      <dt>Branch</dt><dd>${esc(u.branch || '—')}</dd>
+      ${d ? `<dt>Customers</dt><dd>${d.custs.length}</dd><dt>Data through</dt><dd>${fmtD(getLastInvoiceDate())}</dd>` : ''}
+    </dl></div>
+    <div class="card"><dl class="lines" style="margin-top:0">
+      <dt>App version</dt><dd>${esc(APP_VERSION)}</dd>
+      <dt>Signed in on this phone</dt><dd>Yes</dd>
+    </dl><p class="hint2" style="margin-top:8px">Your login ID and password are managed by the Sales Coordinator.</p></div>
+    <button class="btn btn-outline-red" type="button" id="logoutBtn"><span class="spin"></span>Sign out · تسجيل الخروج</button>`;
+  $('logoutBtn').onclick = doLogout;
+  show('profile');
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 $('refreshBtn').addEventListener('click', () => loadList(true));
