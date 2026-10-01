@@ -171,13 +171,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 .lines dt{color:var(--ink-dim)} .lines dd{font-weight:700;text-align:end;font-variant-numeric:tabular-nums}
 .next{border:1px dashed #cfd6e6;background:transparent;box-shadow:none}
 .next p{font-size:13px}
-.updated{font-size:11.5px;color:var(--ink-mute);text-align:center;margin:-4px 0 -2px}
-.sync{display:none;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-inline-start:8px;vertical-align:1px;animation:pulse 1s ease-in-out infinite}
-.sync.on{display:inline-block}
-@keyframes pulse{50%{opacity:.25}}
-.ptr{height:0;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;transition:height .15s;flex:none;background:transparent}
-.ptr .spin{display:inline-block;margin-bottom:10px;border-color:rgba(0,51,160,.2);border-top-color:var(--blue);animation-play-state:paused}
-.ptr.ready .spin{animation-play-state:running}
 
 /* ============ Components — same design language as the dashboard ============ */
 .sec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
@@ -301,288 +294,6 @@ textarea.ta:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ================= Native mobile-app layer ================= */
-body{font-size:15px;background:#f2f4f8}
-.screen{background:#f2f4f8}
-.content{padding:12px 14px 24px;gap:14px}
-
-/* --- compact app bar (solid, like a native app) --- */
-.top,.subtop{background:#00206b;box-shadow:none;padding:calc(var(--safe-top) + 10px) 14px 10px;min-height:calc(var(--safe-top) + 58px);gap:10px}
-.top::after,.subtop::after{display:none}
-.top img{width:46px;padding:3px 4px;border-radius:9px;box-shadow:none}
-.top h1{font-size:17px;font-weight:700}
-.top h1 .ar{display:none}
-.top small{font-size:12px;margin-top:1px}
-.subtop h1{font-size:17px;font-weight:700}
-.subtop h1 .ar{font-size:13px}
-.icon-btn{border:0;background:rgba(255,255,255,.14);width:38px;height:38px;min-width:38px;border-radius:12px}
-#refreshBtn,#pdfBtn{background:rgba(255,255,255,.14)}
-
-/* --- bottom tab bar (native) --- */
-.tabs{padding:4px 8px calc(var(--safe-bottom) + 4px);box-shadow:0 -1px 0 rgba(16,24,40,.06);background:rgba(255,255,255,.96);backdrop-filter:saturate(1.6) blur(12px);-webkit-backdrop-filter:saturate(1.6) blur(12px)}
-.tabs button{padding:8px 4px 5px;font-size:11px;gap:2px}
-.tabs button small{display:none}
-.tabs button.on::before{display:none}
-.tabs button.on svg{stroke-width:2.4}
-.tabs button.on{color:#0033a0}
-.tabs button.on span,.tabs button.on{font-weight:800}
-
-/* --- slide-in for detail screens --- */
-#cust.on,#vstart.on,#visit.on,#punch.on{animation:slideIn .26s var(--ease-out)}
-@keyframes slideIn{from{transform:translateX(24%);opacity:.3}to{transform:none;opacity:1}}
-
-/* --- section titles (iOS grouped style) --- */
-.card h2,.stepbox h2{font-size:14px}
-.card{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:14px}
-.stepbox,.daycard,.chart,.kpi{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:14px}
-.btn{border-radius:12px;min-height:50px;font-size:15.5px}
-.btn-quiet{border-color:#dfe4ee}
-
-/* --- KPI strip: swipe sideways --- */
-.kpis{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin:0 -14px;padding:2px 14px 4px;scrollbar-width:none}
-.kpis::-webkit-scrollbar{display:none}
-.kpi{flex:0 0 44%;scroll-snap-align:start;padding:12px 12px 10px}
-.kpi .v{font-size:17px}
-.kpi::before{height:3px}
-
-/* --- native customer rows --- */
-.lrows{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.06)}
-.lrow{display:flex;flex-direction:row;align-items:center;gap:12px;padding:12px 10px 12px 14px;border:0;border-radius:0;box-shadow:none;background:#fff;position:relative}
-.lrow + .lrow::before{content:'';position:absolute;top:0;left:66px;right:0;height:1px;background:#edf0f5}
-.lrow:active{background:#f4f6fa;transform:none}
-.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;letter-spacing:.3px}
-.lmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.lmain b{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lmain small{font-size:12.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.st-t{font-weight:700;background:none!important;padding:0}
-.ltrail{display:flex;flex-direction:column;align-items:flex-end;flex:none;text-align:right}
-.ltrail b{font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
-.ltrail small{font-size:11px;color:var(--ink-mute);font-weight:600}
-.chev{width:18px;height:18px;color:#c3c9d6;flex:none}
-.count{padding:0 4px}
-
-/* status colours for avatars + text */
-.av.st-new{background:#e3e9fb;color:#0033a0} .st-t.st-new{color:#0033a0}
-.av.st-overdue{background:#fde3e0;color:#b3261e} .st-t.st-overdue{color:#b3261e}
-.av.st-due{background:#fff1bf;color:#7a5a00} .st-t.st-due{color:#8a6d00}
-.av.st-risk{background:#ffe6cc;color:#9a4d00} .st-t.st-risk{color:#9a4d00}
-.av.st-active{background:#d9f2e4;color:#0b7a44} .st-t.st-active{color:#0b7a44}
-.av.st-lost,.av.st-stale{background:#e9ecf2;color:#6b7387} .st-t.st-lost,.st-t.st-stale{color:#6b7387}
-
-/* search + filter chips */
-.search{border:0;box-shadow:0 1px 2px rgba(16,24,40,.06);border-radius:12px;background:#fff}
-.chip{border-color:#dfe4ee}
-
-/* profile */
-.prof-head{display:flex;align-items:center;gap:14px}
-.prof-head b{display:block;font-size:17px}
-.prof-head small{color:var(--ink-dim);font-size:13px}
-.big-av{width:58px;height:58px;font-size:19px}
-
-/* sheets & banners */
-.sheet{border-radius:20px 20px 0 0}
-.banner{border:0;box-shadow:0 1px 2px rgba(16,24,40,.08)}
-.banner.orange{background:#fff1dc}
-.banner.blue{background:#e6ecfb}
-
-/* ================= AL-HOWAIL design layer (light + dark, LTR + RTL) ================= */
-:root{
-  --blue:#1557d5; --blue-dark:#0b3fa8; --blue-soft:#e8effd; --yellow:#ffd400; --yellow-dark:#d9b400;
-  --bg:#f3f5f9; --panel:#ffffff; --panel-2:#f7f9fc; --line:#e6eaf1; --ink:#172033; --ink-dim:#5f6b82; --ink-mute:#98a2b6;
-  --good:#12a150; --green:#12a150; --green-soft:#e3f6ec; --bad:#dc3b30; --danger:#dc3b30; --danger-soft:#fdecea; --amber:#d98a00; --amber-soft:#fff4dc;
-  --shadow:0 1px 2px rgba(16,24,40,.05), 0 2px 8px rgba(16,24,40,.04);
-  --r:16px;
-}
-html[data-theme=dark]{
-  --blue:#4d8bff; --blue-dark:#2f6fe6; --blue-soft:#1a2a4d; --bg:#0b1224; --panel:#131c33; --panel-2:#18223d; --line:#25304a;
-  --ink:#e8ecf5; --ink-dim:#a3adc4; --ink-mute:#6f7a94; --green-soft:#12321f; --danger-soft:#3a1717; --amber-soft:#3a2c0d;
-  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
-}
-html[lang=en] .ar{display:none!important}
-html[lang=ar] .en{display:none!important}
-html[lang=ar] .ar{opacity:1;font-size:inherit;margin:0;font-weight:inherit}
-html[lang=ar] body{font-family:'Noto Sans Arabic',-apple-system,'Segoe UI',Roboto,sans-serif}
-body,.screen{background:var(--bg);color:var(--ink)}
-
-/* ---------- app bar ---------- */
-.appbar,.subtop,.top{background:linear-gradient(135deg,#1557d5 0%,#0b3fa8 100%);color:#fff;display:flex;align-items:center;gap:10px;
-  padding:calc(var(--safe-top) + 10px) 12px 12px;min-height:calc(var(--safe-top) + 62px);box-shadow:0 2px 12px rgba(11,63,168,.25);position:relative;flex:none}
-html[data-theme=dark] .appbar,html[data-theme=dark] .subtop{background:linear-gradient(135deg,#0f2a66 0%,#0a1c47 100%)}
-.appbar::after,.subtop::after{display:none}
-.ab-btn{width:40px;height:40px;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;cursor:pointer;flex:none;position:relative}
-.ab-btn svg{width:21px;height:21px}
-.ab-btn:active{background:rgba(255,255,255,.26)}
-.logo-box{background:#fff;border-radius:11px;padding:4px 6px;display:grid;place-items:center;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.logo-box img{width:44px;height:auto;display:block}
-.logo-box.big img{width:96px}
-.ab-title{flex:1;min-width:0}
-.ab-title h1,.subtop h1{font-size:16.5px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.ab-title small,.subtop small{display:block;font-size:12px;color:rgba(255,255,255,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.badge{position:absolute;top:4px;inset-inline-end:4px;min-width:17px;height:17px;border-radius:9px;background:var(--yellow);color:#0b3fa8;font-size:10.5px;font-weight:800;display:none;place-items:center;padding:0 4px;border:2px solid #1557d5}
-.badge.on{display:grid}
-.icon-btn{border:0;background:rgba(255,255,255,.14);width:40px;height:40px;min-width:40px;border-radius:12px;color:#fff}
-
-/* ---------- bottom navigation: My List · HOME · Visit History ---------- */
-.bnav{display:flex;align-items:flex-end;background:var(--panel);border-top:1px solid var(--line);padding:6px 10px calc(var(--safe-bottom) + 6px);box-shadow:0 -4px 16px rgba(16,24,40,.06);flex:none;gap:0}
-.bnav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-mute);font-size:11.5px;font-weight:700;padding:6px 2px 2px;cursor:pointer}
-.bnav button svg{width:24px;height:24px}
-.bnav button.on{color:var(--blue)}
-.bnav button.on:not(.home) .lbl::after{content:'';display:block;height:3px;border-radius:3px;background:var(--yellow);margin:3px auto 0;width:22px}
-.bnav .home .hb{width:58px;height:58px;border-radius:50%;background:var(--panel);display:grid;place-items:center;margin-top:-30px;box-shadow:0 4px 14px rgba(21,87,213,.28);border:4px solid var(--bg);color:var(--blue)}
-.bnav .home.on .hb{background:linear-gradient(135deg,#1557d5,#0b3fa8);color:#fff}
-.bnav .home .hb svg{width:26px;height:26px}
-.tabs button small,.tabs button.on::before{display:none}
-
-/* ---------- side drawer ---------- */
-.drawer-bg{position:fixed;inset:0;background:rgba(9,14,28,.5);z-index:30;display:none}
-.drawer-bg.on{display:block}
-.drawer{position:absolute;top:0;bottom:0;inset-inline-start:0;width:min(84vw,340px);background:var(--panel);box-shadow:4px 0 30px rgba(0,0,0,.25);
-  padding:calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 18px);display:flex;flex-direction:column;gap:16px;overflow-y:auto;animation:drIn .24s var(--ease-out)}
-@keyframes drIn{from{transform:translateX(-30px);opacity:.3}to{transform:none;opacity:1}}
-html[dir=rtl] .drawer{animation-name:drInR}
-@keyframes drInR{from{transform:translateX(30px);opacity:.3}to{transform:none;opacity:1}}
-.dr-head{display:flex;flex-direction:column;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-.dr-head .logo-box{align-self:flex-start}
-.dr-user{display:flex;align-items:center;gap:12px}
-.dr-user b{display:block;font-size:16px;color:var(--ink)}
-.dr-user small{font-size:12.5px;color:var(--ink-dim)}
-.dr-lbl{font-size:11px;font-weight:800;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.dr-sec .lines dd.mono{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600}
-.drawer .btn{margin-top:auto}
-
-/* ---------- surfaces (light/dark aware) ---------- */
-.card,.chart,.stepbox,.daycard,.lrows,.search,.sheet,.footer-bar,.form,.kpi,.qa,.k2,.work,.active-visit,.drawer{background:var(--panel);color:var(--ink)}
-.card,.chart,.stepbox,.lrows,.k2,.work,.qa{border:0;border-radius:var(--r);box-shadow:var(--shadow)}
-.card h2,.stepbox h2,.sheet h3{color:var(--ink)}
-.lrow{background:var(--panel)}
-.lrow:active,.qa:active{background:var(--panel-2)}
-.lrow + .lrow::before{left:auto;inset-inline-start:66px;inset-inline-end:0;background:var(--line)}
-.input,.opt,.chip,.btn-quiet,.mini.ghost,textarea.ta,.sheet select,.seg,.dashed{background:var(--panel);border-color:var(--line);color:var(--ink)}
-.seg{background:var(--panel-2)}
-.seg button{color:var(--ink-dim)}
-.seg button.on{background:var(--panel);color:var(--blue)}
-.input input,.search input{color:var(--ink)}
-.lines dt,.hint2,.count,.lmain small,.vrow .dt,.kv dt{color:var(--ink-dim)}
-.lmain b,.lines dd,.vrow .nm,.ltrail b{color:var(--ink)}
-.opt.on{background:var(--blue-soft)}
-.warnbox{background:var(--amber-soft);border-color:transparent;color:#8a5a00}
-html[data-theme=dark] .warnbox{color:#ffcf73}
-.chip.on,.chips-wrap .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn-primary{background:var(--blue)} .btn-primary:not(:disabled):hover{background:var(--blue-dark)}
-.btn-lg{min-height:54px;font-size:16px;border-radius:14px}
-.btn-wa{background:#1faa59;color:#fff}
-.btn svg{width:20px;height:20px;flex:none}
-.pdf-acts{display:flex;gap:10px}.pdf-acts .btn{flex:1}
-.mini{background:var(--blue-soft);color:var(--blue)}
-html[data-theme=dark] .kpi.bal .v,html[data-theme=dark] .warn{color:#ffcf73!important}
-html[data-theme=dark] .red{color:#ff7b72!important}
-html[data-theme=dark] .st-overdue,html[data-theme=dark] .av.st-overdue{background:#3a1717;color:#ff8a80}
-html[data-theme=dark] .st-due,html[data-theme=dark] .av.st-due{background:#3a2c0d;color:#ffcf73}
-html[data-theme=dark] .st-active,html[data-theme=dark] .av.st-active{background:#12321f;color:#6fdc9a}
-html[data-theme=dark] .st-new,html[data-theme=dark] .av.st-new{background:#1a2a4d;color:#8fb4ff}
-html[data-theme=dark] .st-lost,html[data-theme=dark] .st-stale,html[data-theme=dark] .av.st-lost,html[data-theme=dark] .av.st-stale{background:#222b40;color:#a3adc4}
-html[data-theme=dark] .banner.blue{background:#1a2a4d;color:#cfe0ff} html[data-theme=dark] .banner.orange{background:#3a2c0d}
-html[data-theme=dark] .gps.ok{background:#12321f;color:#8ff0b5;border-color:transparent}
-html[data-theme=dark] .gps.bad{background:#3a1717;color:#ff9c94;border-color:transparent}
-html[data-theme=dark] .gps.wait,html[data-theme=dark] .stats div{background:var(--panel-2);border-color:var(--line)}
-html[data-theme=dark] .login-top{background:linear-gradient(135deg,#0f2a66,#0a1c47)}
-html[data-theme=dark] #splash{background:#0b1224}
-
-/* ---------- My List: KPI cards + chart ---------- */
-.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.k2{position:relative;padding:14px 14px 12px;overflow:hidden}
-.k2::before{content:'';position:absolute;inset-inline-start:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--blue)}
-html[dir=rtl] .k2::before{border-radius:4px 0 0 4px}
-.k2-l{font-size:11.5px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.4px}
-.k2-v{font-size:19px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
-.k2-s{font-size:11.5px;color:var(--ink-dim);margin-top:3px}
-.k-green::before{background:var(--good)} .k-green .k2-v{color:var(--good)}
-.k-amber::before{background:var(--amber)} .k-amber .k2-v{color:#a36800}
-.k-red::before{background:var(--bad)} .k-red .k2-v{color:var(--bad)}
-html[data-theme=dark] .k-amber .k2-v{color:#ffcf73}
-.kchips{display:flex;gap:8px;flex-wrap:wrap}
-.kchips span{background:var(--panel);border-radius:999px;padding:6px 12px;font-size:12.5px;color:var(--ink-dim);box-shadow:var(--shadow)}
-.kchips b{color:var(--ink);margin-inline-start:4px}
-.chart{padding:14px}
-.chart-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
-.chart-h h3{margin:0;font-size:12px}
-.bars{height:110px;gap:5px}
-.bars button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px;border:0;background:none;padding:0;cursor:pointer}
-.bars button i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:#bfd0f5;min-height:3px;transition:background .15s}
-html[data-theme=dark] .bars button i{background:#2c3f6b}
-.bars button.cur i{background:#7ea3ec}
-.bars button.sel i{background:var(--blue)}
-.bars button span{font-size:10px;color:var(--ink-dim);font-weight:700}
-.bars button.sel span{color:var(--blue)}
-.chart-tip{margin-top:10px;padding:9px 11px;border-radius:10px;background:var(--panel-2);font-size:12.5px;color:var(--ink-dim)}
-.chart-tip b{color:var(--ink)}
-.updated{color:var(--ink-mute)}
-
-/* ---------- Home ---------- */
-.work{padding:16px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
-.w-top{display:flex;align-items:center;gap:12px}
-.w-top > div{flex:1;min-width:0}
-.w-dot{width:12px;height:12px;border-radius:50%;background:var(--ink-mute);flex:none;box-shadow:0 0 0 5px rgba(152,162,182,.18)}
-.work.on .w-dot{background:var(--good);box-shadow:0 0 0 5px rgba(18,161,80,.18);animation:pulse 2s ease-in-out infinite}
-.work.done .w-dot{background:var(--blue)} .work.off .w-dot{background:var(--amber)}
-.w-lbl{font-size:12px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.4px}
-.w-big{font-size:19px;font-weight:800;letter-spacing:-.2px}
-.w-big small{font-size:12px;color:var(--ink-dim);font-weight:600}
-.w-sub{font-size:13px;color:var(--ink-dim)}
-.w-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-dim)}
-.w-row b{color:var(--ink)}
-.stats div{background:var(--panel-2);border:0}
-.stats b small{font-size:11px;color:var(--ink-dim)}
-.active-visit{width:100%;text-align:start;border:0;border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px;cursor:pointer;font:inherit;color:#fff;
-  background:linear-gradient(135deg,#ff9f1c 0%,#e67700 100%);box-shadow:0 6px 18px rgba(230,119,0,.3)}
-.active-visit b{font-size:16px;color:#fff} .active-visit small{color:rgba(255,255,255,.9);font-size:12.5px}
-.av-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.live{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
-.av-timer{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
-.av-go{align-self:flex-end;font-weight:800;font-size:13px;margin-top:4px;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:999px}
-.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.qa{border:0;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit;color:var(--ink)}
-.qa svg{width:24px;height:24px;color:var(--blue);background:var(--blue-soft);border-radius:12px;padding:8px;box-sizing:content-box}
-.qa span{font-size:11px;font-weight:700;text-align:center;line-height:1.25}
-
-/* ---------- Visit history ---------- */
-.filter-chip{display:flex;align-items:center;gap:8px;background:var(--blue-soft);color:var(--blue);border-radius:12px;padding:8px 8px 8px 12px;font-size:13px}
-.filter-chip span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.filter-chip button{border:0;background:var(--panel);color:var(--ink-dim);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
-.filter-chip button svg{width:14px;height:14px}
-.dgroup{font-size:12px;font-weight:800;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.4px;margin:6px 4px -4px}
-.hrow{gap:12px}
-.tmcol{display:flex;flex-direction:column;align-items:center;min-width:48px;flex:none}
-.tmcol b{font-size:14px;color:var(--blue);font-variant-numeric:tabular-nums}
-.tmcol small{font-size:11px;color:var(--ink-mute)}
-.lmain small.res{color:var(--ink);font-weight:600}
-.note-box{background:var(--panel-2);border-radius:12px;padding:12px;font-size:14px;line-height:1.5;white-space:pre-wrap}
-
-/* ---------- customer ---------- */
-.prof-head{background:var(--panel)}
-.ab-act{background:rgba(255,255,255,.18)}
-
-/* ---------- RTL details ---------- */
-html[dir=rtl] .chev,html[dir=rtl] .icon-btn svg{transform:scaleX(-1)}
-html[dir=rtl] .ltrail{align-items:flex-start;text-align:left}
-html[dir=rtl] .thumb-x{right:auto;left:-8px}
-html[dir=rtl] .filter-chip{padding:8px 12px 8px 8px}
-html[dir=rtl] #cam .stamp{direction:ltr}
-.phone .num,.lines dd,.k2-v,.tmcol b,.av-timer,.bigtimer{unicode-bidi:plaintext}
-
-[hidden]{display:none!important}
-.btn-outline-red{background:var(--panel)!important}
-html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
-.stepper{display:flex;align-items:center;background:var(--panel);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow)}
-.stepper i{flex:1;height:2px;background:var(--line);margin:0 6px 16px}
-.stp{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px}
-.stp span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:800;background:var(--panel-2);color:var(--ink-mute);border:2px solid var(--line)}
-.stp small{font-size:10.5px;font-weight:700;color:var(--ink-mute)}
-.stp.cur span{background:var(--blue);border-color:var(--blue);color:#fff}
-.stp.cur small{color:var(--blue)}
-.stp.done span{background:var(--good);border-color:var(--good);color:#fff}
-.sheet .stepper{box-shadow:none;padding:4px 0 2px;background:transparent}
-
 </style>
 </head>
 <body>
@@ -590,7 +301,7 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
 <!-- Splash -->
 <section id="splash" class="screen on" aria-label="Loading">
   <img class="logo" data-logo alt="Al-Howail">
-  <div class="name"><span class="en">Sales Field App</span><span class="ar">تطبيق المندوب</span></div>
+  <div class="name">Sales Field App<span class="ar">تطبيق المندوب</span></div>
   <div class="bar" aria-hidden="true"><i></i></div>
 </section>
 
@@ -598,7 +309,7 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
 <section id="login" class="screen" aria-label="Sign in">
   <div class="login-top">
     <img data-logo alt="Al-Howail">
-    <p><span class="en">Sales Field App</span><span class="ar">تطبيق المندوب</span></p>
+    <p>Sales Field App<span class="ar">تطبيق المندوب</span></p>
   </div>
   <form class="form" id="loginForm" novalidate autocomplete="on">
     <div class="field">
@@ -614,69 +325,46 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
     </div>
     <div class="msg err" id="loginMsg" role="alert"></div>
     <button class="btn btn-primary" id="loginBtn" type="submit"><span class="spin"></span><span>Sign in</span><span class="ar">تسجيل الدخول</span></button>
-    <p class="hint"><span class="en">Your login ID and password are given by the Sales Coordinator.</span><span class="ar">رقم الدخول وكلمة المرور من منسق المبيعات.</span></p>
+    <p class="hint">Your login ID and password are given by the Sales Coordinator.<span dir="rtl" style="display:block">رقم الدخول وكلمة المرور من منسق المبيعات.</span></p>
   </form>
 </section>
 
 <!-- Home (Phase 0 shell) -->
 <section id="home" class="screen" aria-label="Home">
-  <header class="appbar">
-    <button class="ab-btn" type="button" data-drawer aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <span class="logo-box"><img data-logo alt="Al-Howail"></span>
-    <div class="ab-title"><h1 id="hello">Good morning</h1><small id="whoLine"></small></div>
-    <button class="ab-btn bell" type="button" data-bell aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="badge" data-badge></span></button>
+  <header class="top">
+    <img data-logo alt="">
+    <div class="who">
+      <h1 id="hello">Good morning</h1>
+      <small id="whoLine"></small>
+    </div>
+    <button class="link-out" id="logoutBtn" type="button">Sign out</button>
   </header>
   <main class="content" id="homeBody"></main>
-  <nav class="tabs bnav" aria-label="Main">
-    <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lbl"><span class="en">My List</span><span class="ar">قائمتي</span></span></button>
-    <button type="button" data-go="home" class="home on"><span class="hb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></span><span class="lbl"><span class="en">Home</span><span class="ar">الرئيسية</span></span></button>
-    <button type="button" data-go="history" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl"><span class="en">Visit History</span><span class="ar">سجل الزيارات</span></span></button>
+  <nav class="tabs" aria-label="Main">
+    <button type="button" data-go="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
+    <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
   </nav>
 </section>
 
 <!-- My List (SMAN List) -->
 <section id="list" class="screen" aria-label="My List">
-  <header class="appbar">
-    <button class="ab-btn" type="button" data-drawer aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <span class="logo-box"><img data-logo alt="Al-Howail"></span>
-    <div class="ab-title"><h1><span class="en">My List</span><span class="ar">قائمتي</span></h1><small id="listSub">&nbsp;</small></div>
-    <button class="ab-btn ab-act" id="pdfBtn" type="button" aria-label="SMAN List PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></button>
-    <button class="ab-btn" id="refreshBtn" type="button" aria-label="Refresh" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
-    <button class="ab-btn bell" type="button" data-bell aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="badge" data-badge></span></button>
+  <header class="subtop">
+    <div class="t"><h1>My List<span class="ar">قائمتي</span></h1><small id="listSub">&nbsp;</small></div>
+    <button class="icon-btn" id="pdfBtn" type="button" aria-label="PDF" style="width:auto;padding:0 12px;font-weight:700;font-size:13px">PDF</button>
+    <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
   </header>
   <main class="content" id="listBody"></main>
-  <nav class="tabs bnav" aria-label="Main">
-    <button type="button" data-go="list" class=" on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lbl"><span class="en">My List</span><span class="ar">قائمتي</span></span></button>
-    <button type="button" data-go="home" class="home"><span class="hb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></span><span class="lbl"><span class="en">Home</span><span class="ar">الرئيسية</span></span></button>
-    <button type="button" data-go="history" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl"><span class="en">Visit History</span><span class="ar">سجل الزيارات</span></span></button>
+  <nav class="tabs" aria-label="Main">
+    <button type="button" data-go="home" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home<small>الرئيسية</small></button>
+    <button type="button" data-go="list" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>My List<small>قائمتي</small></button>
   </nav>
 </section>
-
-<!-- Visit history -->
-<section id="history" class="screen" aria-label="Visit history">
-  <header class="appbar">
-    <button class="ab-btn" type="button" data-drawer aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <span class="logo-box"><img data-logo alt="Al-Howail"></span>
-    <div class="ab-title"><h1><span class="en">Visit History</span><span class="ar">سجل الزيارات</span></h1><small id="histSub">&nbsp;</small></div>
-    <button class="ab-btn bell" type="button" data-bell aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="badge" data-badge></span></button>
-  </header>
-  <main class="content" id="histBody"></main>
-  <nav class="tabs bnav" aria-label="Main">
-    <button type="button" data-go="list" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lbl"><span class="en">My List</span><span class="ar">قائمتي</span></span></button>
-    <button type="button" data-go="home" class="home"><span class="hb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></span><span class="lbl"><span class="en">Home</span><span class="ar">الرئيسية</span></span></button>
-    <button type="button" data-go="history" class=" on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl"><span class="en">Visit History</span><span class="ar">سجل الزيارات</span></span></button>
-  </nav>
-</section>
-
-<!-- Side drawer -->
-<div class="drawer-bg" id="drawerBg" aria-hidden="true"><aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Menu"></aside></div>
 
 <!-- Customer card -->
 <section id="cust" class="screen" aria-label="Customer">
   <header class="subtop">
     <button class="icon-btn" id="custBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="t"><h1 id="custTitle"></h1><small id="custSub"></small></div>
-    <button class="ab-btn ab-act" id="custStmt" type="button" aria-label="Account statement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></button>
   </header>
   <main class="content" id="custBody"></main>
 </section>
@@ -693,9 +381,9 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
 <!-- Start visit -->
 <section id="vstart" class="screen" aria-label="Start visit">
   <header class="subtop"><button class="icon-btn" id="vsBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <div class="t"><h1><span class="en">Start visit</span><span class="ar">بدء الزيارة</span></h1><small id="vsTitle"></small></div></header>
+    <div class="t"><h1>Start visit<span class="ar">بدء الزيارة</span></h1><small id="vsTitle"></small></div></header>
   <main class="content" id="vsBody"></main>
-  <div class="footer-bar"><button class="btn btn-primary" type="button" id="vsGo" style="width:100%" disabled><span class="spin"></span><span class="en">Start visit</span><span class="ar">بدء الزيارة</span></button></div>
+  <div class="footer-bar"><button class="btn btn-primary" type="button" id="vsGo" style="width:100%" disabled><span class="spin"></span>Start visit · بدء الزيارة</button></div>
 </section>
 
 <!-- Visit in progress -->
@@ -703,7 +391,7 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
   <header class="subtop"><button class="icon-btn" id="visitBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="t"><h1 id="visitTitle">Visit in progress</h1><small id="visitSub"></small></div></header>
   <main class="content" id="visitBody"></main>
-  <div class="footer-bar" id="visitFoot"><button class="btn btn-red" type="button" id="visitEnd" style="width:100%"><span class="en">End visit</span><span class="ar">إنهاء الزيارة</span></button></div>
+  <div class="footer-bar" id="visitFoot"><button class="btn btn-red" type="button" id="visitEnd" style="width:100%">End visit · إنهاء الزيارة</button></div>
 </section>
 
 <!-- Live camera -->
@@ -711,8 +399,8 @@ html[data-theme=dark] .btn-outline-red{border-color:#6b2a26}
   <div class="cbar"><button class="cx" type="button" id="camClose" aria-label="Close">✕</button><div class="t"><b id="camTitle"></b><small id="camSub"></small></div><span style="width:40px"></span></div>
   <div class="view"><video id="camVideo" playsinline muted autoplay></video><img id="camShot" alt=""><div class="stamp" id="camStamp"></div></div>
   <div class="cfoot">
-    <div id="camLive" style="display:flex;flex-direction:column;align-items:center;gap:10px"><button class="shutter" type="button" id="camShutter" aria-label="Take photo" disabled></button><div class="note"><span class="en">Live camera only — gallery is not available</span><span class="ar">كاميرا مباشرة فقط</span></div></div>
-    <div id="camReview" class="row2" style="display:none"><button class="btn btn-quiet" type="button" id="camRetake"><span class="en">Retake</span><span class="ar">إعادة</span></button><button class="btn btn-primary" type="button" id="camUse"><span class="en">Use photo</span><span class="ar">استخدام</span></button></div>
+    <div id="camLive" style="display:flex;flex-direction:column;align-items:center;gap:10px"><button class="shutter" type="button" id="camShutter" aria-label="Take photo" disabled></button><div class="note">Live camera only — gallery is not available · كاميرا مباشرة فقط</div></div>
+    <div id="camReview" class="row2" style="display:none"><button class="btn btn-quiet" type="button" id="camRetake">Retake · إعادة</button><button class="btn btn-primary" type="button" id="camUse">Use photo · استخدام</button></div>
   </div>
 </div>
 
@@ -1579,13 +1267,7 @@ document.getElementById('touchIcon').href = LOGO;
 /* ===== Config ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec';   // Deploy → Web app URL of the NEW Apps Script project
 const SPLASH_MIN_MS = 900;
-const APP_VERSION = '0.8.0';
-/* Inside the Alhowail Android app (APK) the Capacitor bridge is present: native GPS + native printing. */
-const NativeApp = (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform() && typeof window.Capacitor.registerPlugin === 'function')
-  ? window.Capacitor.registerPlugin('AlhowailNative') : null;
-const CLIENT = NativeApp ? 'android-app' : 'web';
-const REQUEST_TIMEOUT_MS = 30000;
-const LIST_TIMEOUT_MS = 120000;   // My List reads the whole sales sheet on the server
+const REQUEST_TIMEOUT_MS = 20000;
 const TOKEN_KEY = 'alhowail_field_token';
 const USER_KEY = 'alhowail_field_user';
 
@@ -1614,104 +1296,36 @@ const store = {
 /* ===== API ===== */
 class ApiError extends Error { constructor(code, detail){ super(code); this.code = code; this.detail = detail; } }
 
-/* Reads are retried automatically on temporary failures. Writes carry a request id (rid): the server stores the
-   answer per rid, so a retried write can never be saved twice. Every request is traced (duration/result). */
-const READ_ACTIONS = { ping: 1, me: 1, today: 1, myList: 1, teammates: 1 };
-const RETRYABLE = { NETWORK: 1, TIMEOUT: 1, SERVER_UNAVAILABLE: 1, INVALID_RESPONSE: 1 };
-const diag = [];
-function trace(rec){ diag.push(rec); if (diag.length > 60) diag.shift(); try { console.info('[api]', rec.action, rec.ms + 'ms', rec.result, rec.traceId); store.set('alhowail_diag', JSON.stringify(diag.slice(-25))); } catch (e) {} }
-const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-async function apiOnce(action, body, timeoutMs, traceId){
+async function api(action, payload = {}, timeoutMs) {
   if (!API_URL || API_URL.startsWith('PASTE_')) throw new ApiError('NOT_CONFIGURED');
-  if (navigator.onLine === false) throw new ApiError('NETWORK');
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs || REQUEST_TIMEOUT_MS);
   let res;
   try {
     // text/plain body = no CORS preflight (Apps Script can't answer OPTIONS)
-    res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action, token: state.token, client: CLIENT, traceId }, body)), signal: ctrl.signal });
+    res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({ action, token: state.token }, payload)),
+      signal: ctrl.signal
+    });
   } catch (e) {
     throw new ApiError(e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK');
   } finally { clearTimeout(timer); }
-  if (!res.ok) throw new ApiError('SERVER_UNAVAILABLE');
   let data;
-  try { data = await res.json(); } catch (e) { throw new ApiError('INVALID_RESPONSE'); }
-  if (!data || typeof data !== 'object') throw new ApiError('INVALID_RESPONSE');
+  try { data = await res.json(); } catch (e) { throw new ApiError('DEFAULT'); }
   if (!data.ok) {
-    if ((data.error === 'SESSION_EXPIRED' || data.error === 'ACCOUNT_INACTIVE') && action !== 'login') signOutLocal(data.error);
+    if (data.error === 'SESSION_EXPIRED' || data.error === 'ACCOUNT_INACTIVE') {
+      if (action !== 'login') signOutLocal(data.error);
+    }
     throw new ApiError(data.error || 'DEFAULT', data.detail);
   }
   return data;
 }
-async function api(action, payload = {}, timeoutMs) {
-  const isRead = !!READ_ACTIONS[action], body = Object.assign({}, payload);
-  if (!isRead && action !== 'login' && action !== 'logout') body.rid = body.rid || newId();
-  const tries = isRead ? 3 : (body.rid ? 2 : 1), traceId = newId().slice(-8);
-  for (let i = 0; i < tries; i++) {
-    const t0 = Date.now();
-    try {
-      const r = await apiOnce(action, body, timeoutMs, traceId);
-      trace({ action, ms: Date.now() - t0, result: 'OK', traceId, attempt: i + 1, at: new Date().toISOString() });
-      return r;
-    } catch (e) {
-      trace({ action, ms: Date.now() - t0, result: e.code || 'ERROR', traceId, attempt: i + 1, at: new Date().toISOString() });
-      if (!RETRYABLE[e.code] || i === tries - 1 || (e.code === 'TIMEOUT' && timeoutMs >= 60000)) { e.traceId = traceId; throw e; }
-      await new Promise(r => setTimeout(r, 700 * Math.pow(2, i)));
-    }
-  }
-}
-
-/* ===== Local cache (IndexedDB): last good My List per salesman — shown instantly, refreshed in background ===== */
-const LocalCache = {
-  db: null,
-  open(){ if (this.db) return Promise.resolve(this.db); return new Promise((res, rej) => { try {
-    const r = indexedDB.open('alhowail-field', 1);
-    r.onupgradeneeded = () => r.result.createObjectStore('kv');
-    r.onsuccess = () => { this.db = r.result; res(this.db); }; r.onerror = () => rej(r.error);
-  } catch (e) { rej(e); } }); },
-  async get(k){ try { const db = await this.open(); return await new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch (e) { return null; } },
-  async set(k, v){ try { const db = await this.open(); await new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = res; }); } catch (e) {} },
-  async clear(){ try { const db = await this.open(); await new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').clear(); t.oncomplete = res; t.onerror = res; }); } catch (e) {} }
-};
-const SETTINGS_KEY = 'alhowail_field_settings';
-const DEFAULT_SETTINGS = { locationTypes: [{ type: 'Head Office', radius: 100 }, { type: 'Showroom', radius: 150 }, { type: 'Workshop', radius: 200 }, { type: 'Warehouse', radius: 250 }, { type: 'Industrial Yard', radius: 500 }, { type: 'Other', radius: 150 }],
-  visitResults: ['Order Taken', 'Collection', 'Follow-up Needed', 'Not Available', 'Complaint', 'Relationship Visit'],
-  dayStatuses: ['Field Work', 'Leave', 'Travel', 'Training', 'Sick', 'Out of Service'], noPunchStatuses: ['Leave', 'Travel', 'Sick'],
-  lastVisitWarnDays: 30, shortVisitMin: 3, longVisitMin: 120, maxGpsAccuracy: 150, companionConfirmMin: 15, autoCloseTime: '23:59' };
-function setSettings(st){ if (st && st.locationTypes && st.locationTypes.length) { state.settings = st; store.set(SETTINGS_KEY, JSON.stringify(st)); } }
-function readSettings(){ try { const s = JSON.parse(store.get(SETTINGS_KEY) || 'null'); return s && s.locationTypes && s.locationTypes.length ? s : DEFAULT_SETTINGS; } catch (e) { return DEFAULT_SETTINGS; } }
 
 /* ===== State & screens ===== */
 function readCachedUser(){ try { return JSON.parse(store.get(USER_KEY) || 'null'); } catch(e){ return null; } }
-const state = { token: store.get(TOKEN_KEY), user: readCachedUser(), settings: readSettings(), serverTime: null };
+const state = { token: store.get(TOKEN_KEY), user: readCachedUser(), settings: null, serverTime: null };
 const $ = id => document.getElementById(id);
-
-/* ===== Language (English / العربية, real RTL) and theme (light / dark / system) ===== */
-let lang = store.get('alhowail_lang') === 'ar' ? 'ar' : 'en';
-let theme = ['light', 'dark', 'system'].includes(store.get('alhowail_theme')) ? store.get('alhowail_theme') : 'light';
-const L = (en, ar) => lang === 'ar' ? ar : en;
-/* Settings values are stored in English (reports stay consistent) and only DISPLAYED in Arabic. */
-const TR_AR = { 'Field Work': 'عمل ميداني', 'Leave': 'إجازة', 'Travel': 'سفر', 'Training': 'تدريب', 'Sick': 'إجازة مرضية', 'Out of Service': 'خارج الخدمة',
-  'Order Taken': 'تم أخذ طلب', 'Collection': 'تحصيل', 'Follow-up Needed': 'متابعة مطلوبة', 'Not Available': 'غير متواجد', 'Complaint': 'شكوى', 'Relationship Visit': 'زيارة علاقات',
-  'Head Office': 'المكتب الرئيسي', 'Showroom': 'المعرض', 'Workshop': 'الورشة', 'Warehouse': 'المستودع', 'Industrial Yard': 'ساحة صناعية', 'Other': 'أخرى' };
-const tr = v => lang === 'ar' && TR_AR[v] ? TR_AR[v] : (v == null ? '' : String(v));
-const pick = m => Array.isArray(m) ? (lang === 'ar' ? (m[1] || m[0]) : m[0]) : String(m == null ? '' : m);
-const darkMq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-function applyLang(){ document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; }
-function applyTheme(){
-  const dark = theme === 'dark' || (theme === 'system' && darkMq && darkMq.matches);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = dark ? '#0b1224' : '#00206b';
-}
-if (darkMq && darkMq.addEventListener) darkMq.addEventListener('change', () => { if (theme === 'system') applyTheme(); });
-applyLang(); applyTheme();
-function rerenderAll(){
-  if ($('home').classList.contains('on')) renderHome();
-  if (list.report) renderList();
-  if ($('history').classList.contains('on')) renderVisitHistory();
-  if ($('cust').classList.contains('on') && currentCust) openCustomer(currentCust.custNo);
-  if ($('drawerBg').classList.contains('on')) renderDrawer();
-}
 function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
 
 function greeting(hour){
@@ -1724,8 +1338,10 @@ function firstName(n){ return String(n || '').trim().split(/\s+/)[0] || ''; }
 function renderHome(){
   const u = state.user || {}, t = state.serverTime || { hour: new Date().getHours(), date: '' };
   const [en, ar] = greeting(t.hour);
-  $('hello').textContent = `${L(en, ar)}${firstName(u.name) ? (lang === 'ar' ? ' ' : ', ') + firstName(u.name) : ''}`;
-  $('whoLine').textContent = [u.code ? L('Code ', 'كود ') + u.code : '', u.branch, u.role === 'ADMIN' ? L('Coordinator', 'منسق') : ''].filter(Boolean).join(' · ');
+  $('hello').innerHTML = '';
+  $('hello').append(`${en}${firstName(u.name) ? ', ' + firstName(u.name) : ''}`);
+  const s = document.createElement('span'); s.className = 'ar'; s.textContent = ar; $('hello').append(s);
+  $('whoLine').textContent = [u.code ? 'Code ' + u.code : '', u.branch, u.role === 'ADMIN' ? 'Coordinator' : ''].filter(Boolean).join('  |  ');
   show('home');
   renderDay();
   loadDay();
@@ -1735,14 +1351,14 @@ function signOutLocal(reason){
   state.token = null; state.user = null; list.report = null; list.filter = 'ALL'; list.q = ''; field.contacts = []; field.phones = []; field.locations = []; field.visits = []; currentCust = null; if (typeof day !== 'undefined') { day.data = null; day.answered.clear(); clearInterval(day.timer); }
   store.del(TOKEN_KEY);
   store.del(USER_KEY);
-  LocalCache.clear();
   showLoginMsg(reason ? errText(reason) : null);
   show('login');
 }
 function showLoginMsg(msg){
   const m = $('loginMsg'); m.textContent = '';
   if (msg) {
-    m.append(pick(msg));
+    m.append(msg[0]);
+    const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = msg[1]; m.append(a);
   }
   m.classList.toggle('on', !!msg);
 }
@@ -1773,11 +1389,13 @@ async function boot(){
 async function verifySession(firstTime){
   try {
     const r = await api('me');
-    state.user = r.user; setSettings(r.settings); state.serverTime = r.serverTime; syncClock(r.serverTime);
+    state.user = r.user; state.settings = r.settings; state.serverTime = r.serverTime; syncClock(r.serverTime);
     store.set(USER_KEY, JSON.stringify(r.user));
     if (document.getElementById('home').classList.contains('on')) renderHome();
   } catch (e) {
     if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
+    list.error = errText(e.code);
+    if (quiet) { if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay(); return; }   // api() already signed out
     if (firstTime) { showLoginMsg(errText(e.code)); show('login'); }
     else toast(errText(e.code));
   }
@@ -1795,7 +1413,7 @@ $('loginForm').addEventListener('submit', async (ev) => {
   btn.disabled = true; btn.classList.add('loading');
   try {
     const r = await api('login', { loginId, password, device: navigator.userAgent });
-    state.token = r.token; state.user = r.user; setSettings(r.settings); state.serverTime = r.serverTime;
+    state.token = r.token; state.user = r.user; state.settings = r.settings; state.serverTime = r.serverTime;
     store.set(TOKEN_KEY, r.token);
     store.set(USER_KEY, JSON.stringify(r.user));
     $('password').value = '';
@@ -1814,12 +1432,12 @@ $('togglePw').addEventListener('click', () => {
   $('togglePw').setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
 });
 
-async function doLogout(){
-  const btn = $('logoutBtn'); if (btn) btn.disabled = true;
+$('logoutBtn').addEventListener('click', async () => {
+  const btn = $('logoutBtn'); btn.disabled = true;
   try { await api('logout'); } catch (e) { /* sign out locally anyway */ }
-  if (btn) btn.disabled = false;
+  btn.disabled = false;
   signOutLocal();
-}
+});
 
 
 /* ===== My List (SMAN List) — numbers come from the dashboard's own engine ===== */
@@ -1833,8 +1451,6 @@ const STATUS = {
   'Stale / prior year only': { en:'Prior year',     ar:'سنة سابقة فقط',   cls:'st-stale' }
 };
 Object.assign(ERR, {
-  SERVER_UNAVAILABLE:  ['The server is not available right now. Try again in a moment.', 'الخادم غير متاح حاليًا. حاول بعد قليل.'],
-  INVALID_RESPONSE:    ['The server sent an unexpected answer. Try again.', 'رد غير متوقع من الخادم. حاول مرة أخرى.'],
   MAIN_NOT_CONFIGURED: ['Sales data is not connected yet. Ask the Sales Coordinator.', 'بيانات المبيعات غير مربوطة بعد. تواصل مع منسق المبيعات.'],
   MAIN_TAB_MISSING:    ['A tab is missing in the sales data sheet. Ask the Sales Coordinator.', 'ورقة مفقودة في ملف المبيعات.'],
   NO_CODE:             ['Your account has no salesman code, so there is no list to show.', 'حسابك بدون كود مندوب، لا توجد قائمة.']
@@ -1845,83 +1461,55 @@ const money = v => 'SAR ' + SAR.format(Math.round(Number(v) || 0));
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtD = t => { if (t == null) return '—'; const d = new Date(t); return isNaN(d) ? '—' : String(d.getDate()).padStart(2,'0') + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-const stChip = s => { const m = STATUS[s] || { en: s, ar: '', cls: 'st-stale' }; return `<span class="st ${m.cls}">${esc(lang === 'ar' && m.ar ? m.ar : m.en)}</span>`; };
+const stChip = s => { const m = STATUS[s] || { en: s, ar: '', cls: 'st-stale' }; return `<span class="st ${m.cls}">${esc(m.en)} · ${esc(m.ar)}</span>`; };
 const pct = v => (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + Math.abs(v).toFixed(0) + '%';
 
 // Same wording rules as the dashboard's formatPaymentDueCell / formatLastPurchaseCell
 function dueText(c){
-  if (c.overdueDays != null) return { t: `${fmtD(c.nextDueDate)} · ${c.overdueDays} ${L('days late', 'يوم تأخير')}`, cls: 'red' };
-  if (c.nextDueDate != null && c.daysUntilDue === 0) return { t: `${fmtD(c.nextDueDate)} · ${L('due today', 'مستحق اليوم')}`, cls: 'warn' };
-  if (c.nextDueDate != null && c.daysUntilDue != null) return { t: `${fmtD(c.nextDueDate)} · ${L('in', 'بعد')} ${c.daysUntilDue} ${L('days', 'يوم')}`, cls: '' };
+  if (c.overdueDays != null) return { t: `${fmtD(c.nextDueDate)} · ${c.overdueDays} days late`, cls: 'red' };
+  if (c.nextDueDate != null && c.daysUntilDue === 0) return { t: `${fmtD(c.nextDueDate)} · due today`, cls: 'warn' };
+  if (c.nextDueDate != null && c.daysUntilDue != null) return { t: `${fmtD(c.nextDueDate)} · in ${c.daysUntilDue} days`, cls: '' };
   return { t: '—', cls: '' };
 }
-function lastInvText(c){ return c.lastInvoiceDate == null ? '—' : `${fmtD(c.lastInvoiceDate)} · ${c.daysSince} ${L('days ago', 'يوم')}`; }
+function lastInvText(c){ return c.lastInvoiceDate == null ? '—' : `${fmtD(c.lastInvoiceDate)} · ${c.daysSince} days ago`; }
 
 function stateHTML(kind, msg){
-  if (kind === 'loading') return `<div class="state"><span class="spin"></span><b>${L('Loading your list…','جاري تحميل القائمة…')} <span id="loadSecs">0s</span></b><span class="hint2">The server reads the full sales sheet. The first load can take up to a minute.</span></div>`;
-  return `<div class="state"><b>${esc(pick(msg))}</b><button class="btn btn-quiet" type="button" id="retryList"><span class="en">Try again</span><span class="ar">إعادة المحاولة</span></button></div>`;
+  if (kind === 'loading') return `<div class="state"><span class="spin"></span><b>Loading your list…</b><span dir="rtl">جاري تحميل القائمة…</span></div>`;
+  return `<div class="state"><b>${esc(msg[0])}</b><span dir="rtl">${esc(msg[1])}</span><button class="btn btn-quiet" type="button" id="retryList">Try again · إعادة المحاولة</button></div>`;
 }
 
-function applyPayload(payload){
-  loadSalesmanData(payload);                                 // dashboard engine
-  const f = payload.field || {};
-  field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || [];
-  if (day.data && day.data.visits) mergeVisits(day.data.visits);
-  list.report = getSalesmanReportData(String(state.user.code));
-}
-function agoText(t){ if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? L('just now', 'الآن') : m < 60 ? m + L(' min ago', ' دقيقة') : m < 1440 ? Math.round(m / 60) + L(' h ago', ' ساعة') : Math.round(m / 1440) + L(' d ago', ' يوم'); }
 async function loadList(force, quiet){
-  if (list.loading) { if (!quiet) show('list'); return; }
+  if (list.loading) return;
   if (list.report && !force) { renderList(); return; }
-  if (!state.user || !state.user.code) { list.error = errText('NO_CODE'); $('listBody').innerHTML = stateHTML('error', list.error); if (!quiet) show('list'); return; }
-  const key = 'list_' + state.user.code;
   list.loading = true;
+  $('refreshBtn').disabled = true;
+  if (!list.report) $('listBody').innerHTML = stateHTML('loading');
   if (!quiet) show('list');
-  if (!list.report) {                       // 1) instant: the last good list saved on this phone
-    const c = await LocalCache.get(key);
-    if (c && c.payload && !list.report) { try { applyPayload(c.payload); list.savedAt = c.savedAt; } catch (e) { list.report = null; } }
-  }
-  list.refreshError = null;
-  if (list.report) renderList(); else $('listBody').innerHTML = stateHTML('loading');
-  setRefreshing(true);
-  const started = Date.now();
-  const tick = setInterval(() => { const el = document.getElementById('loadSecs'); if (el) el.textContent = Math.round((Date.now() - started) / 1000) + 's'; }, 1000);
-  try {                                      // 2) refresh from the server in the background
-    const payload = await api('myList', force ? { fresh: true } : {}, LIST_TIMEOUT_MS);
-    applyPayload(payload);
-    list.savedAt = Date.now(); list.error = null;
-    LocalCache.set(key, { payload, savedAt: list.savedAt });
+  try {
+    const payload = await api('myList');
+    loadSalesmanData(payload);                                 // dashboard engine
+    const f = payload.field || {};
+    field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || [];
+    if (day.data && day.data.visits) mergeVisits(day.data.visits);
+    list.report = getSalesmanReportData(String(state.user.code));
+    list.error = null;
+    list.loadedAt = Date.now();
     renderList();
+    if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay();
   } catch (e) {
     if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
-    list.error = errText(e.code);
-    if (list.report) { list.refreshError = list.error; renderList(); }   // keep showing the cached list
-    else { $('listBody').innerHTML = stateHTML('error', list.error); const r = $('retryList'); if (r) r.onclick = () => loadList(true); }
+    if (list.report) { renderList(); toast(errText(e.code)); }
+    else { $('listBody').innerHTML = stateHTML('error', errText(e.code)); const r = $('retryList'); if (r) r.onclick = () => loadList(true); }
   } finally {
-    clearInterval(tick);
     list.loading = false;
-    setRefreshing(false);
-    if ($('home').classList.contains('on') && typeof renderDay === 'function') renderDay();
-    if ($('history').classList.contains('on')) renderVisitHistory();
-    if (typeof updateBadge === 'function') updateBadge();
+    $('refreshBtn').disabled = false;
   }
-}
-function setRefreshing(on){ const i = document.getElementById('listSync'); if (i) i.classList.toggle('on', !!on); const b = $('refreshBtn'); if (b) b.disabled = !!on; }
-
-/* Pull down to refresh (touch) */
-function enablePullToRefresh(scroller, onRefresh){
-  let y0 = null, dy = 0; const ind = document.createElement('div'); ind.className = 'ptr'; ind.innerHTML = '<span class="spin"></span>';
-  scroller.parentNode.insertBefore(ind, scroller);
-  scroller.addEventListener('touchstart', e => { y0 = scroller.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
-  scroller.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); ind.style.height = Math.min(64, dy * 0.5) + 'px'; ind.classList.toggle('ready', dy > 110); }, { passive: true });
-  scroller.addEventListener('touchend', () => { if (y0 !== null && dy > 110) onRefresh(); y0 = null; dy = 0; ind.style.height = ''; ind.classList.remove('ready'); });
 }
 
 function renderList(){
   const d = list.report; if (!d) return;
   const balance = d.overdueTotal + d.dueTotal;
-  $('listSub').innerHTML = `${d.custs.length} ${L('customers', 'عميل')} · ${L('data through', 'البيانات حتى')} ${fmtD(getLastInvoiceDate())}<span class="sync" id="listSync"></span>`;
-  setRefreshing(list.loading);
+  $('listSub').textContent = `Data through ${fmtD(getLastInvoiceDate())} · ${d.custs.length} customers`;
   const monthCmp = d.monthPriorHasData
     ? `<span class="${d.monthChangePct >= 0 ? 'up' : 'down'}">${pct(d.monthChangePct)}</span> vs same days last month`
     : 'No data for last month';
@@ -1929,80 +1517,68 @@ function renderList(){
   const maxM = Math.max(1, ...d.monthlySeries.map(m => m.sales));
   const counts = {}; d.custs.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
   const chips = ['ALL'].concat(ROSTER_STATUS_ORDER.filter(s => counts[s]))
-    .map(s => `<button type="button" class="chip ${list.filter === s ? 'on' : ''}" data-f="${esc(s)}">${s === 'ALL' ? '<span class="en">All</span><span class="ar">الكل</span>' : esc((STATUS[s] || {}).en || s)} ${s === 'ALL' ? d.custs.length : counts[s]}</button>`).join('');
+    .map(s => `<button type="button" class="chip ${list.filter === s ? 'on' : ''}" data-f="${esc(s)}">${s === 'ALL' ? 'All · الكل' : esc((STATUS[s] || {}).en || s)} ${s === 'ALL' ? d.custs.length : counts[s]}</button>`).join('');
 
-  const notice = list.refreshError ? `<div class="warnbox">${esc(pick(list.refreshError))} ${L('Showing the list from', 'عرض القائمة المحفوظة منذ')} ${esc(agoText(list.savedAt))}.<button class="mini" type="button" id="retryList" style="margin-top:8px;display:block"><span class="en">Try again</span><span class="ar">إعادة المحاولة</span></button></div>`
-    : `<div class="updated">${list.loading ? '<span class="en">Refreshing…</span><span class="ar">جاري التحديث</span>' : 'Updated ' + esc(agoText(list.savedAt))}</div>`;
-  $('listBody').innerHTML = notice + `
-    <div class="kgrid">
-      <div class="k2 k-blue"><div class="k2-l">${L('Sales YTD', 'المبيعات')}</div><div class="k2-v">${money(d.totalSales)}</div><div class="k2-s">${L('This month', 'هذا الشهر')} ${SAR.format(Math.round(d.curMonthSales))} ${d.monthPriorHasData ? `<b class="${d.monthChangePct >= 0 ? 'up' : 'down'}">${pct(d.monthChangePct)}</b>` : ''}</div></div>
-      <div class="k2 k-green"><div class="k2-l">${L('Collected', 'المحصل')}</div><div class="k2-v">${money(d.collected)}</div><div class="k2-s">${L('This month', 'هذا الشهر')} ${SAR.format(Math.round(d.collectedThisMonth))}</div></div>
-      <div class="k2 k-amber"><div class="k2-l">${L('Balance', 'الرصيد')}</div><div class="k2-v">${money(balance)}</div><div class="k2-s">${L('Current', 'حالي')} ${SAR.format(Math.round(d.dueTotal))}</div></div>
-      <div class="k2 k-red"><div class="k2-l">${L('Overdue', 'المتأخر')}</div><div class="k2-v">${money(d.overdueTotal)}</div><div class="k2-s">${balance ? Math.round(d.overdueTotal / balance * 100) : 0}% ${L('of balance', 'من الرصيد')}</div></div>
+  $('listBody').innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="l">Total sales · المبيعات</div><div class="v">${money(d.totalSales)}</div><div class="s">All invoices on record</div></div>
+      <div class="kpi"><div class="l">This month · هذا الشهر</div><div class="v">${money(d.curMonthSales)}</div><div class="s">${monthCmp}</div></div>
+      <div class="kpi"><div class="l">Collected · المحصل</div><div class="v" style="color:var(--green)">${money(d.collected)}</div><div class="s">This month ${money(d.collectedThisMonth)}</div></div>
+      <div class="kpi"><div class="l">New customers · عملاء جدد</div><div class="v">${d.newCustomersThisMonth}</div><div class="s">${newCmp}</div></div>
+      <div class="kpi bal"><div class="l">Balance · الرصيد</div><div class="v" style="color:#7A5A00">${money(balance)}</div><div class="s">Current ${money(d.dueTotal)}</div></div>
+      <div class="kpi bad"><div class="l">Overdue · المتأخر</div><div class="v">${money(d.overdueTotal)}</div><div class="s">${balance ? Math.round(d.overdueTotal / balance * 100) : 0}% of balance</div></div>
     </div>
-    <div class="kchips"><span>${L('New customers', 'عملاء جدد')} <b>${d.newCustomersThisMonth}</b></span><span>${L('Customers', 'العملاء')} <b>${d.custs.length}</b></span></div>
-    <div class="chart"><div class="chart-h"><h3>${L('Monthly sales (excl. VAT)', 'المبيعات الشهرية (بدون ضريبة)')}</h3><span class="hint2">${L('Tap a month', 'اضغط على شهر')}</span></div>
-      <div class="bars" id="bars">${d.monthlySeries.map((m, i) => `<button type="button" class="${i === d.monthlySeries.length - 1 ? 'cur' : ''}" data-m="${i}" aria-label="${esc(m.monthName)}"><i style="height:${Math.max(3, Math.round(m.sales / maxM * 80))}px"></i><span>${esc(m.monthName)}</span></button>`).join('')}</div>
-      <div class="chart-tip" id="chartTip"></div>
+    <div class="chart"><h3>Monthly sales · المبيعات الشهرية</h3>
+      <div class="bars">${d.monthlySeries.map((m, i) => `<div class="${i === d.monthlySeries.length - 1 ? 'cur' : ''}" title="${esc(m.monthName)}: ${money(m.sales)}"><i style="height:${Math.max(2, Math.round(m.sales / maxM * 72))}px"></i><span>${esc(m.monthName)}</span></div>`).join('')}</div>
     </div>
-    <label class="search">${'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#5E6687" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'}<input id="custSearch" type="search" placeholder="${L('Search name or code', 'بحث بالاسم أو الكود')}" value="${esc(list.q)}" autocomplete="off"></label>
+    <label class="search">${'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#5E6687" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'}<input id="custSearch" type="search" placeholder="Search name or code · بحث بالاسم أو الكود" value="${esc(list.q)}" autocomplete="off"></label>
     <div class="chips" role="tablist">${chips}</div>
     <div class="count" id="listCount"></div>
-    <div id="custList"></div>`;
+    <div id="custList" style="display:flex;flex-direction:column;gap:10px"></div>`;
   $('custSearch').addEventListener('input', e => { list.q = e.target.value; renderCustRows(); });
-  const rt = $('retryList'); if (rt) rt.onclick = () => loadList(true);
-  const tip = i => { const m = d.monthlySeries[i], prev = d.monthlySeries[i - 1];
-    const ch = prev && prev.sales ? Math.round((m.sales - prev.sales) / prev.sales * 100) : null;
-    $('chartTip').innerHTML = `<b>${esc(m.monthName)}</b> · ${L('Sales excl. VAT', 'المبيعات بدون ضريبة')} <b>${money(m.sales)}</b>${ch != null ? ` · <span class="${ch >= 0 ? 'up' : 'down'}">${pct(ch)}</span> ${L('vs', 'مقابل')} ${esc(prev.monthName)}` : ''}`;
-    $('bars').querySelectorAll('button').forEach((b, j) => b.classList.toggle('sel', j === i)); };
-  $('bars').querySelectorAll('button').forEach(b => b.onclick = () => tip(Number(b.dataset.m)));
-  tip(d.monthlySeries.length - 1);
   $('listBody').querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => { list.filter = b.dataset.f; renderList(); }));
   renderCustRows();
 }
 
-function initials(n){ const w = String(n || '').replace(/[^A-Za-z\u0600-\u06FF ]/g, ' ').trim().split(/\s+/).filter(x => x.length > 1 && !/^(AL|EST|CO|THE|FOR|AND|LTD)$/i.test(x)); return ((w[0] || '?')[0] + ((w[1] || '')[0] || '')).toUpperCase(); }
 function renderCustRows(){
   const d = list.report, q = list.q.trim().toLowerCase();
   const rows = d.custs.filter(c => (list.filter === 'ALL' || c.status === list.filter) &&
     (!q || String(c.custNo).toLowerCase().includes(q) || String(c.cust).toLowerCase().includes(q)));
-  $('listCount').textContent = rows.length === d.custs.length ? '' : `${rows.length} ${L('of', 'من')} ${d.custs.length} ${L('customers', 'عميل')}`;
-  if (!rows.length) { $('custList').innerHTML = `<div class="state"><b>${L('No customers match.', 'لا يوجد عملاء مطابقون.')}</b></div>`; return; }
-  $('custList').innerHTML = '<div class="lrows">' + rows.map(c => {
-    const due = dueText(c), m = STATUS[c.status] || { en: c.status, cls: 'st-stale' }, v = visitLine(c);
-    const amt = c.overdue > 0 ? { n: c.overdue, l: L('overdue', 'متأخر'), cls: 'red' } : c.due > 0 ? { n: c.due, l: L('due', 'مستحق'), cls: 'warn' } : { n: c.branchMonthSales, l: L('this month', 'هذا الشهر'), cls: '' };
-    return `<button type="button" class="cust lrow" data-c="${esc(c.custNo)}">
-      <span class="av ${m.cls}">${esc(initials(c.cust))}</span>
-      <span class="lmain"><b>${esc(c.cust)}</b>
-        <small>${esc(c.custNo)} · <span class="st-t ${m.cls}">${esc(lang === 'ar' && m.ar ? m.ar : m.en)}</span>${phonesOf(c.custNo).length ? '' : ' · <span class="warn">' + L('no phone', 'بدون رقم') + '</span>'}</small>
-        <small class="${due.cls}">${due.t !== '—' ? L('Due ', 'الاستحقاق ') + esc(due.t) : L('Last invoice ', 'آخر فاتورة ') + esc(lastInvText(c))}</small>
-        <small class="${v.cls}">${esc(v.t)}</small></span>
-      <span class="ltrail"><b class="${amt.cls}">${SAR.format(Math.round(amt.n))}</b><small>${amt.l}</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
-  }).join('') + '</div>';
+  $('listCount').textContent = rows.length === d.custs.length ? '' : `${rows.length} of ${d.custs.length} customers`;
+  if (!rows.length) { $('custList').innerHTML = `<div class="state"><b>No customers match.</b><span>Clear the search or pick another status.</span></div>`; return; }
+  $('custList').innerHTML = rows.map(c => {
+    const due = dueText(c);
+    return `<button type="button" class="cust" data-c="${esc(c.custNo)}">
+      <div class="h"><span class="n">${esc(c.custNo)} — ${esc(c.cust)}${phonesOf(c.custNo).length ? '' : ' <span class="miss">No phone · بدون رقم</span>'}</span>${stChip(c.status)}</div>
+      <dl class="grid">
+        <dt>Overdue / Current</dt><dd><span class="${c.overdue > 0 ? 'red' : ''}">${SAR.format(Math.round(c.overdue))}</span> / ${SAR.format(Math.round(c.due))}</dd>
+        <dt>Due date</dt><dd class="${due.cls}">${esc(due.t)}</dd>
+        <dt>Last invoice</dt><dd>${esc(lastInvText(c))}</dd>
+        <dt>Sales</dt><dd>${money(c.branchTotalSales)} <span style="color:var(--muted);font-weight:400">· month ${SAR.format(Math.round(c.branchMonthSales))}</span></dd>
+      </dl>${(v => `<div class="count ${v.cls}" style="font-size:12px">${esc(v.t)}</div>`)(visitLine(c))}</button>`;
+  }).join('');
   $('custList').querySelectorAll('.cust').forEach(b => b.addEventListener('click', () => openCustomer(b.dataset.c)));
 }
 
 function openCustomer(custNo){
   const c = list.report && list.report.custs.find(x => String(x.custNo) === String(custNo)); if (!c) return;
   const due = dueText(c);
-  $('custTitle').innerHTML = '<span class="en">Customer</span><span class="ar">العميل</span>';
+  $('custTitle').textContent = `${c.custNo} — ${c.cust}`;
   $('custSub').textContent = `${c.branch || ''}${c.terms ? ' · ' + c.terms + ' days credit' : ''}`;
-  const mm = STATUS[c.status] || { cls: 'st-stale' };
   $('custBody').innerHTML = `
-    <div class="card prof-head"><span class="av big-av ${mm.cls}">${esc(initials(c.cust))}</span><div style="min-width:0"><b>${esc(c.cust)}</b><small>${esc(c.custNo)} · ${esc(c.branch || '')}</small><div style="margin-top:6px">${stChip(c.status)}</div></div></div>
-    <button class="btn btn-primary btn-lg" type="button" id="custStart"><span class="en">Start visit</span><span class="ar">بدء زيارة</span></button>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="custStmt">Statement · كشف</button><button class="btn btn-primary" type="button" id="custStart">Start visit · بدء زيارة</button></div>
     <div class="card">
-      <div class="row"><span class="count"><span class="en">Balance</span><span class="ar">الرصيد</span></span><span class="count"><span class="en">Read-only</span><span class="ar">للقراءة فقط</span></span></div>
+      <div class="row"><span class="count">Code and name are read-only · للقراءة فقط</span>${stChip(c.status)}</div>
       <div class="big" style="margin-top:6px;color:#7A5A00">${money(c.total)}</div>
       <dl class="lines">
-        <dt><span class="en">Overdue</span><span class="ar">متأخر</span></dt><dd class="${c.overdue > 0 ? 'red' : ''}">${money(c.overdue)}</dd>
-        <dt><span class="en">Current</span><span class="ar">حالي</span></dt><dd>${money(c.due)}</dd>
+        <dt>Overdue · متأخر</dt><dd class="${c.overdue > 0 ? 'red' : ''}">${money(c.overdue)}</dd>
+        <dt>Current · حالي</dt><dd>${money(c.due)}</dd>
         <dt>Next due date</dt><dd class="${due.cls}">${esc(due.t)}</dd>
         <dt>Credit limit</dt><dd>${c.credit ? money(c.credit) : '—'}</dd>
       </dl>
     </div>
     <div class="card">
-      <h2><span class="en">Sales</span><span class="ar">المبيعات</span></h2>
+      <h2>Sales<span class="ar">المبيعات</span></h2>
       <dl class="lines">
         <dt>Total</dt><dd>${money(c.branchTotalSales)}</dd>
         <dt>This month</dt><dd>${money(c.branchMonthSales)}</dd>
@@ -2064,18 +1640,18 @@ function renderContacts(){
   const c = currentCust; if (!c) return;
   const contacts = contactsOf(c.custNo), phones = phonesOf(c.custNo);
   const loose = phones.filter(p => !p.ContactID || !contacts.some(x => x.ContactID === p.ContactID));
-  const warn = !contacts.length ? `<div class="warnbox"><span class="en">No contact yet. Add the person you deal with and their number.</span><span class="ar">لا توجد جهة اتصال. أضف الشخص الذي تتعامل معه ورقمه.</span></div>`
-             : !phones.length ? `<div class="warnbox"><span class="en">No phone number yet. Add at least one.</span><span class="ar">لا يوجد رقم هاتف. أضف رقمًا واحدًا على الأقل.</span></div>` : '';
+  const warn = !contacts.length ? `<div class="warnbox">No contact yet. Add the person you deal with and their number.<div dir="rtl">لا توجد جهة اتصال. أضف الشخص الذي تتعامل معه ورقمه.</div></div>`
+             : !phones.length ? `<div class="warnbox">No phone number yet. Add at least one.<div dir="rtl">لا يوجد رقم هاتف. أضف رقمًا واحدًا على الأقل.</div></div>` : '';
   $('contactsCard').innerHTML = `
-    <div class="sec-h"><h2><span class="en">Contacts & phones</span><span class="ar">جهات الاتصال</span></h2><button class="mini" type="button" id="addContact">+ Contact</button></div>
+    <div class="sec-h"><h2>Contacts & phones<span class="ar">جهات الاتصال</span></h2><button class="mini" type="button" id="addContact">+ Contact</button></div>
     ${warn}
     ${contacts.map(ct => `<div class="contact">
       <div class="who"><div><div class="nm">${esc(ct.Name)}</div>${ct.Role ? `<div class="rl">${esc(ct.Role)}</div>` : ''}</div>
         <div style="display:flex;gap:2px;flex:none"><button class="mini ghost" type="button" data-editc="${esc(ct.ContactID)}">Edit</button><button class="mini danger" type="button" data-delc="${esc(ct.ContactID)}">Delete</button></div></div>
       ${phones.filter(p => p.ContactID === ct.ContactID).map(phoneRow).join('')}
-      <button class="mini ghost" type="button" data-addp="${esc(ct.ContactID)}" style="padding-left:0">+ <span class="en">Add number</span><span class="ar">إضافة رقم</span></button>
+      <button class="mini ghost" type="button" data-addp="${esc(ct.ContactID)}" style="padding-left:0">+ Add number · إضافة رقم</button>
     </div>`).join('')}
-    ${loose.length ? `<div class="contact"><div class="rl" style="font-weight:700"><span class="en">Company numbers</span><span class="ar">أرقام الشركة</span></div>${loose.map(phoneRow).join('')}</div>` : ''}`;
+    ${loose.length ? `<div class="contact"><div class="rl" style="font-weight:700">Company numbers · أرقام الشركة</div>${loose.map(phoneRow).join('')}</div>` : ''}`;
   $('addContact').onclick = () => contactForm(null);
   $('contactsCard').querySelectorAll('[data-editc]').forEach(b => b.onclick = () => contactForm(contacts.find(x => x.ContactID === b.dataset.editc)));
   $('contactsCard').querySelectorAll('[data-addp]').forEach(b => b.onclick = () => phoneForm(b.dataset.addp));
@@ -2101,7 +1677,7 @@ async function mutate(action, payload, btn){
     return true;
   } catch (e) {
     const box = document.getElementById('sheetMsg');
-    if (box && $('sheetBg').classList.contains('on')) { box.textContent = ''; box.append(pick(errText(e.code))); box.classList.add('on'); }
+    if (box && $('sheetBg').classList.contains('on')) { box.textContent = ''; box.append(errText(e.code)[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = errText(e.code)[1]; box.append(a); box.classList.add('on'); }
     else toast(errText(e.code));
     return false;
   } finally {
@@ -2119,12 +1695,12 @@ const segVal = () => ($('typeSeg').querySelector('.on') || {}).dataset.t || 'Mob
 
 function contactForm(ct){
   const edit = !!ct;
-  openSheet(`<h3>${edit ? '<span class="en">Edit contact</span><span class="ar">تعديل</span>' : '<span class="en">New contact</span><span class="ar">جهة اتصال جديدة</span>'}</h3>
+  openSheet(`<h3>${edit ? 'Edit contact · تعديل' : 'New contact · جهة اتصال جديدة'}</h3>
     <div class="field"><label for="fName"><span>Name</span><span>الاسم</span></label><div class="input"><input id="fName" maxlength="80" value="${edit ? esc(ct.Name) : ''}" autocomplete="off"></div></div>
     <div class="field"><label for="fRole"><span>Job title (optional)</span><span>الوظيفة</span></label><div class="input"><input id="fRole" maxlength="60" value="${edit ? esc(ct.Role) : ''}" placeholder="Purchasing manager, accountant…" autocomplete="off"></div></div>
     ${edit ? '' : `<div class="field"><label for="fPhone"><span>Phone number</span><span>رقم الهاتف</span></label><div class="input"><input id="fPhone" type="tel" inputmode="tel" placeholder="05X XXX XXXX" autocomplete="off"></div></div>${typeSeg('Mobile')}`}
     <div class="msg err" id="sheetMsg" role="alert"></div>
-    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span><span class="en">Save</span><span class="ar">حفظ</span></button></div>`);
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
   if (!edit) wireSeg();
   $('fCancel').onclick = closeSheet;
   $('fSave').onclick = () => {
@@ -2139,13 +1715,13 @@ function contactForm(ct){
 
 function phoneForm(contactId){
   const contacts = contactsOf(currentCust.custNo);
-  openSheet(`<h3><span class="en">Add number</span><span class="ar">إضافة رقم</span></h3>
+  openSheet(`<h3>Add number · إضافة رقم</h3>
     <div class="field"><label for="fNum"><span>Phone number</span><span>رقم الهاتف</span></label><div class="input"><input id="fNum" type="tel" inputmode="tel" placeholder="05X XXX XXXX" autocomplete="off"></div></div>
     ${typeSeg('Mobile')}
     <div class="field"><label for="fWho"><span>Belongs to</span><span>يخص</span></label>
-      <select id="fWho"><option value=""><span class="en">Company (no contact)</span><span class="ar">الشركة</span></option>${contacts.map(c => `<option value="${esc(c.ContactID)}" ${c.ContactID === contactId ? 'selected' : ''}>${esc(c.Name)}</option>`).join('')}</select></div>
+      <select id="fWho"><option value="">Company (no contact) · الشركة</option>${contacts.map(c => `<option value="${esc(c.ContactID)}" ${c.ContactID === contactId ? 'selected' : ''}>${esc(c.Name)}</option>`).join('')}</select></div>
     <div class="msg err" id="sheetMsg" role="alert"></div>
-    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span><span class="en">Save</span><span class="ar">حفظ</span></button></div>`);
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
   wireSeg();
   $('fCancel').onclick = closeSheet;
   $('fSave').onclick = () => {
@@ -2154,44 +1730,22 @@ function phoneForm(contactId){
     mutate('savePhone', { number, type: segVal(), contactId: $('fWho').value }, $('fSave'));
   };
 }
-function showSheetMsg(msg){ const box = $('sheetMsg'); box.textContent = ''; box.append(pick(msg)); box.classList.add('on'); }
+function showSheetMsg(msg){ const box = $('sheetMsg'); box.textContent = ''; box.append(msg[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = msg[1]; box.append(a); box.classList.add('on'); }
 
 /* ===== Navigation & small toast ===== */
 function go(where){
   if (where === 'list') { show('list'); loadList(false); }
-  else if (where === 'profile') openDrawer();
-  else if (where === 'history') { show('history'); renderVisitHistory(); }
   else renderHome();
-}
-function renderProfile(){
-  const u = state.user || {}, d = list.report;
-  $('profSub').textContent = u.name || '';
-  $('profBody').innerHTML = `
-    <div class="card prof-head"><span class="av big-av st-new">${esc(initials(u.name))}</span><div><b>${esc(u.name || '')}</b><small>${u.role === 'ADMIN' ? 'Sales Coordinator' : '<span class="en">Salesman</span><span class="ar">مندوب</span>'}</small></div></div>
-    <div class="card"><dl class="lines" style="margin-top:0">
-      <dt>Login ID</dt><dd>${esc(u.loginId || '')}</dd>
-      <dt>Salesman code</dt><dd>${esc(u.code || '—')}</dd>
-      <dt>Branch</dt><dd>${esc(u.branch || '—')}</dd>
-      ${d ? `<dt>Customers</dt><dd>${d.custs.length}</dd><dt>Data through</dt><dd>${fmtD(getLastInvoiceDate())}</dd>` : ''}
-    </dl></div>
-    <div class="card"><dl class="lines" style="margin-top:0">
-      <dt>App version</dt><dd>${esc(APP_VERSION)}</dd>
-      <dt>Running as</dt><dd>${NativeApp ? 'Android app' : 'Browser'}</dd>
-    </dl><p class="hint2" style="margin-top:8px">Your login ID and password are managed by the Sales Coordinator.</p></div>
-    <button class="btn btn-outline-red" type="button" id="logoutBtn"><span class="spin"></span><span class="en">Sign out</span><span class="ar">تسجيل الخروج</span></button>`;
-  $('logoutBtn').onclick = doLogout;
-  show('profile');
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 $('refreshBtn').addEventListener('click', () => loadList(true));
-enablePullToRefresh($('listBody'), () => loadList(true));
 $('custBack').addEventListener('click', () => show('list'));
 function toast(msg){
   let t = document.getElementById('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast';
     t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);background:#141A33;color:#fff;border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:600;z-index:9;display:none';
     document.body.appendChild(t); }
-  t.textContent = ''; t.append(pick(msg)); t.style.display = 'block';
+  t.textContent = ''; t.append(msg[0]); const a = document.createElement('div'); a.dir = 'rtl'; a.style.cssText = 'opacity:.85;margin-top:2px'; a.textContent = msg[1]; t.append(a); t.style.display = 'block';
   clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
 
@@ -2226,9 +1780,7 @@ Object.assign(ERR, {
   ALREADY_ENDED:         ['This visit was already closed.', 'تم إغلاق هذه الزيارة بالفعل.'],
   INVITE_CLOSED:         ['This invitation was already answered.', 'تم الرد على هذه الدعوة.'],
   INVITE_EXPIRED:        ['Too late to confirm this visit.', 'انتهى وقت تأكيد هذه الزيارة.'],
-  BAD_STATUS:            ['Pick a day status.', 'اختر حالة اليوم.'],
-  MOCK_LOCATION:         ['A fake-location (mock GPS) app is active on this phone. Turn it off to continue.', 'يوجد تطبيق موقع وهمي مفعّل على الجوال. أوقفه للمتابعة.'],
-  APP_REQUIRED:          ['Punch in and visits must be done from the Alhowail Android app.', 'يجب تسجيل الحضور والزيارات من تطبيق الحويل للأندرويد.']
+  BAD_STATUS:            ['Pick a day status.', 'اختر حالة اليوم.']
 });
 /** Error text, using the server's details when it sends them (distance, accuracy…). */
 function errMsg(e){
@@ -2239,7 +1791,7 @@ function errMsg(e){
   if (e && e.code === 'COMPANION_UNAVAILABLE' && d && d.name) return [`${d.name} is not available now (not punched in or in another visit).`, `${d.name} غير متاح الآن.`];
   return errText(e && e.code);
 }
-function msgInto(el, m){ el.textContent = ''; el.append(pick(m)); el.classList.add('on'); }
+function msgInto(el, m){ el.textContent = ''; el.append(m[0]); const a = document.createElement('span'); a.className = 'ar-line'; a.textContent = m[1]; el.append(a); el.classList.add('on'); }
 
 /* ---------- time (Riyadh, UTC+3 all year) ---------- */
 const RIY = 3 * 3600000;
@@ -2256,13 +1808,6 @@ const fmtDist = m => m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) +
 
 /* ---------- GPS ---------- */
 function getGps(){
-  // Inside the Android app: Android's own location service, which reports fake (mock) locations.
-  if (NativeApp) {
-    return NativeApp.getLocation({ timeout: 20000 }).then(r => {
-      if (r.mock) throw new ApiError('MOCK_LOCATION');
-      return { lat: r.lat, lng: r.lng, accuracy: Math.round(r.accuracy), at: Date.now(), mock: false };
-    }, e => { throw new ApiError(['GPS_DENIED', 'NO_GPS', 'GPS_TIMEOUT'].includes(e && e.code) ? e.code : 'NO_GPS'); });
-  }
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new ApiError('NO_GPS'));
     navigator.geolocation.getCurrentPosition(
@@ -2284,7 +1829,7 @@ const Cam = {
   stream: null, resolve: null, stampFn: null,
   open(title, sub, stampFn){
     this.stampFn = stampFn;
-    $('camTitle').innerHTML = title; $('camSub').innerHTML = sub || '';
+    $('camTitle').textContent = title; $('camSub').textContent = sub || '';
     $('camShot').style.display = 'none'; $('camVideo').style.display = 'block';
     $('camLive').style.display = 'flex'; $('camReview').style.display = 'none';
     $('cam').classList.add('on');
@@ -2308,7 +1853,7 @@ const Cam = {
   capture(){
     const v = $('camVideo'), w0 = v.videoWidth || (window.__DEMO_CAMERA ? 1280 : 0), h0 = v.videoHeight || (window.__DEMO_CAMERA ? 960 : 0);
     if (!w0) return;
-    const scale = Math.min(1, 1024 / Math.max(w0, h0)), w = Math.round(w0 * scale), h = Math.round(h0 * scale);
+    const scale = Math.min(1, 1280 / Math.max(w0, h0)), w = Math.round(w0 * scale), h = Math.round(h0 * scale);
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const g = c.getContext('2d');
     if (v.videoWidth) g.drawImage(v, 0, 0, w, h); else if (window.__DEMO_DRAW) window.__DEMO_DRAW(g, w, h);
@@ -2318,7 +1863,7 @@ const Cam = {
     const bw = Math.max(...lines.map(l => g.measureText(l).width), 0) + pad * 2, bh = lines.length * lh + pad * 1.2;
     g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(pad, h - bh - pad, bw, bh);
     g.fillStyle = '#fff'; lines.forEach((l, i) => g.fillText(l, pad * 2, h - bh - pad + pad * .6 + fs + i * lh));
-    this.shot = c.toDataURL('image/jpeg', 0.62);
+    this.shot = c.toDataURL('image/jpeg', 0.72);
     $('camShot').src = this.shot; $('camShot').style.display = 'block'; $('camVideo').style.display = 'none';
     $('camLive').style.display = 'none'; $('camReview').style.display = 'flex';
     clearInterval(this._t); $('camStamp').textContent = '';
@@ -2351,7 +1896,6 @@ function applyDay(r){
   day.data = r; syncClock(r.serverTime);
   if (r.visits) mergeVisits(r.visits);
   renderDay();
-  if (typeof updateBadge === 'function') updateBadge();
   if ($('visit').classList.contains('on')) renderVisit();
   const inv = (r.invites || []).find(i => !day.answered.has(i.visitId));
   if (inv && !$('sheetBg').classList.contains('on') && !$('cam').classList.contains('on')) inviteSheet(inv);
@@ -2361,49 +1905,40 @@ function renderDay(errorMsg){
   const body = $('homeBody'); if (!body) return;
   const u = state.user || {};
   const listCard = homeCustomersHtml();
-  if (!u.code) { body.innerHTML = `<div class="card"><h2><span class="en">Coordinator account</span><span class="ar">حساب المنسق</span></h2><p>Punch in and visits are for salesman accounts.</p></div>`; return; }
+  if (!u.code) { body.innerHTML = `<div class="card"><h2>Coordinator account<span class="ar">حساب المنسق</span></h2><p>Punch in and visits are for salesman accounts.</p></div>`; return; }
   const d = day.data;
-  if (!d) { body.innerHTML = errorMsg ? `<div class="state"><b>${esc(pick(errorMsg))}</b><button class="btn btn-quiet" type="button" onclick="loadDay()"><span class="en">Try again</span><span class="ar">إعادة المحاولة</span></button></div>${listCard}` : `<div class="state"><span class="spin"></span><b>Loading today…</b></div>`; return; }
+  if (!d) { body.innerHTML = errorMsg ? `<div class="state"><b>${esc(errorMsg[0])}</b><span dir="rtl">${esc(errorMsg[1])}</span><button class="btn btn-quiet" type="button" onclick="loadDay()">Try again · إعادة المحاولة</button></div>${listCard}` : `<div class="state"><span class="spin"></span><b>Loading today…</b></div>`; return; }
   const a = d.attendance, st = d.dayStatus ? d.dayStatus.status : '', off = st && (state.settings && state.settings.noPunchStatuses || []).includes(st);
-  const stat = (v, l) => `<div><b>${v}</b><span>${l}</span></div>`;
-  const stats = `<div class="stats">${stat(d.summary.visits + (d.summary.joint ? `<small> +${d.summary.joint}J</small>` : ''), L('Visits', 'زيارات'))}${stat(dur(d.summary.minutes), L('In visits', 'وقت الزيارات'))}${stat(d.summary.firstVisit ? hm(d.summary.firstVisit).replace(/ (AM|PM)/, '') : '—', L('First visit', 'أول زيارة'))}</div>`;
-  let work;
-  if (!a && off) work = `<div class="work off"><div class="w-top"><span class="w-dot"></span><div><div class="w-lbl">${L('Today', 'اليوم')}</div><div class="w-big">${esc(tr(st))}</div></div><button class="mini" type="button" id="chgStatus">${L('Change', 'تغيير')}</button></div><div class="w-sub">${L('No punch in needed today.', 'لا حاجة لتسجيل الحضور اليوم.')}</div></div>`;
-  else if (!a) work = `<div class="work idle"><div class="w-top"><span class="w-dot"></span><div><div class="w-lbl">${L('Work status', 'حالة العمل')}</div><div class="w-big">${L('Not punched in', 'لم يتم تسجيل الحضور')}</div></div></div>
-      <button class="btn btn-green btn-lg" type="button" id="punchInBtn">${L('Punch in', 'تسجيل الحضور')}</button>
-      <button class="linkbtn" type="button" id="chgStatus">${L('Not in the field today? Set day status', 'لست في الميدان اليوم؟ حدد حالة اليوم')}</button></div>`;
-  else if (!a.outTime) work = `<div class="work on"><div class="w-top"><span class="w-dot"></span><div><div class="w-lbl">${esc(tr(st || 'Field Work'))}</div><div class="w-big">${L('Working', 'في العمل')} · <span id="workDur">${dur(Math.max(0, Math.round((nowS() - toMs(a.inTime)) / 60000)))}</span></div></div></div>
-      <div class="w-row"><span>${L('Punched in', 'الحضور')} <b>${hm(a.inTime)}</b></span><span>${L('Odometer', 'العداد')} <b>${SAR.format(a.inKm || 0)} km</b></span></div>
-      ${stats}<button class="btn btn-outline-red" type="button" id="punchOutBtn">${L('Punch out', 'تسجيل الانصراف')}</button></div>`;
-  else { const km = a.outKm != null && a.inKm != null ? a.outKm - a.inKm : null;
-    work = `<div class="work done"><div class="w-top"><span class="w-dot"></span><div><div class="w-lbl">${L('Day closed', 'اليوم مغلق')}</div><div class="w-big">${hm(a.inTime)} → ${hm(a.outTime)}${a.outType === 'AUTO' ? ' <small>(auto)</small>' : ''}</div></div></div>
-      <div class="w-row"><span>${L('Visits', 'زيارات')} <b>${d.summary.visits}</b></span><span>${L('In visits', 'وقت الزيارات')} <b>${dur(d.summary.minutes)}</b></span>${km != null ? `<span>${L('Driven', 'المسافة')} <b>${SAR.format(km)} km</b></span>` : ''}</div></div>`; }
-  const v = d.openVisit || d.jointVisit;
-  const active = v ? `<button class="active-visit" type="button" data-openvisit="1"><div class="av-top"><span class="live">● ${d.openVisit ? L('Visit in progress', 'زيارة جارية') : L('Joint visit', 'زيارة مشتركة')}</span><span class="av-timer" id="homeTimer">00:00</span></div>
-      <b>${esc(v.customerName)}</b><small>${esc(v.custNo)} · ${esc(v.locationType)}${d.jointVisit ? ' · ' + L('with', 'مع') + ' ' + esc(v.ownerName) : ''}</small><span class="av-go">${L('Continue', 'متابعة')} ›</span></button>` : '';
-  let invites = '';
-  (d.invites || []).forEach(i => { invites += `<button class="banner blue" type="button" data-invite="${esc(i.visitId)}"><div class="grow"><small>${esc(i.ownerName)} ${L('added you to a visit', 'أضافك إلى زيارة')}</small><b>${esc(i.custNo)} — ${esc(i.customerName)}</b><small>${esc(i.locationType)} · ${hm(i.start)}</small></div><span class="pill b">${L('Confirm', 'تأكيد')}</span></button>`; });
-  const qa = (id, icon, t) => `<button type="button" class="qa" id="${id}">${icon}<span>${t}</span></button>`;
-  const quick = `<div class="qgrid">${qa('qaVisit', ICONS.pin, L('Start visit', 'بدء زيارة'))}${qa('qaHist', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', L('Visit history', 'سجل الزيارات'))}${qa('qaPdf', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>', L('SMAN List', 'قائمة العملاء'))}${qa('qaStatus', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>', L('Day status', 'حالة اليوم'))}</div>`;
+  let dayHtml;
+  if (!a && off) {
+    dayHtml = `<div class="st-line"><div><div class="sub">Today · اليوم</div><div class="big-t">${esc(st)}</div></div><button class="mini" type="button" id="chgStatus">Change · تغيير</button></div>
+      <div class="sub">No punch in needed today.</div>`;
+  } else if (!a) {
+    dayHtml = `<div class="st-line"><div><div class="sub">Today · اليوم</div><div class="big-t">Not punched in yet</div></div></div>
+      <button class="btn btn-green" type="button" id="punchInBtn">Punch in · تسجيل الحضور</button>
+      <button class="linkbtn" type="button" id="chgStatus">Not in the field today? Set day status · لست في الميدان اليوم؟</button>`;
+  } else if (!a.outTime) {
+    dayHtml = `<div class="st-line"><div><div class="sub">${esc(st || 'Field Work')} · عمل ميداني</div><div class="big-t" style="color:var(--green)">Punched in ${hm(a.inTime)}</div><div class="sub">Odometer ${SAR.format(a.inKm || 0)} km</div></div></div>
+      <div class="stats"><div><b>${d.summary.visits}</b><span>Visits · زيارات${d.summary.joint ? ` (${d.summary.joint} joint)` : ''}</span></div><div><b>${dur(d.summary.minutes)}</b><span>In visits · وقت</span></div><div><b>${d.summary.firstVisit ? hm(d.summary.firstVisit).replace(/ (AM|PM)/, '') : '—'}</b><span>First visit · أول</span></div></div>
+      <button class="btn btn-outline-red" type="button" id="punchOutBtn">Punch out · تسجيل الانصراف</button>`;
+  } else {
+    const km = a.outKm != null && a.inKm != null ? a.outKm - a.inKm : null;
+    dayHtml = `<div class="st-line"><div><div class="sub">Day closed · اليوم مغلق</div><div class="big-t">${hm(a.inTime)} → ${hm(a.outTime)}${a.outType === 'AUTO' ? ' (auto)' : ''}</div><div class="sub">${d.summary.visits} visit${d.summary.visits === 1 ? '' : 's'} · ${dur(d.summary.minutes)} in visits${km != null ? ` · ${SAR.format(km)} km` : ''}</div></div></div>`;
+  }
+  let banners = '';
+  if (d.openVisit) banners += `<button class="banner orange" type="button" data-openvisit="1"><div class="grow"><small>Visit in progress · زيارة جارية</small><b>${esc(d.openVisit.custNo)} — ${esc(d.openVisit.customerName)}</b><small>${esc(d.openVisit.locationType)} · started ${hm(d.openVisit.start)}</small></div><span class="pill o">Open</span></button>`;
+  if (d.jointVisit) banners += `<button class="banner blue" type="button" data-openvisit="1"><div class="grow"><small>Joint visit with ${esc(d.jointVisit.ownerName)} · زيارة مشتركة</small><b>${esc(d.jointVisit.custNo)} — ${esc(d.jointVisit.customerName)}</b><small>${esc(d.jointVisit.locationType)} · started ${hm(d.jointVisit.start)}</small></div><span class="pill b">Joint</span></button>`;
+  (d.invites || []).forEach(i => { banners += `<button class="banner blue" type="button" data-invite="${esc(i.visitId)}"><div class="grow"><small>${esc(i.ownerName)} added you to a visit · دعوة زيارة</small><b>${esc(i.custNo)} — ${esc(i.customerName)}</b><small>${esc(i.locationType)} · started ${hm(i.start)}</small></div><span class="pill b">Confirm</span></button>`; });
   const vis = (d.visits || []).slice().reverse();
-  const visHtml = vis.length ? `<div class="card"><div class="sec-h"><h2>${L("Today's visits", 'زيارات اليوم')}</h2><button class="mini" type="button" data-go="history">${L('All', 'الكل')} ›</button></div>${vis.slice(0, 4).map(x => {
-      const chip = !x.end ? `<span class="chip-s cs-open">${L('Open', 'جارية')}</span>` : x.endType === 'AUTO-CLOSED' ? `<span class="chip-s cs-auto">${L('Auto', 'تلقائي')}</span>` : `<span class="chip-s cs-ok">${L('Closed', 'مغلقة')}</span>`;
-      return `<div class="vrow"><div class="tm">${hm(x.start).replace(/ (AM|PM)/, '')}<div class="dt">${x.durationMin != null ? dur(x.durationMin) : ''}</div></div><div style="flex:1;min-width:0"><div class="nm">${esc(x.customerName)}</div><div class="dt">${esc(x.custNo)} · ${esc(tr(x.locationType))}${x.result ? ' · ' + esc(tr(x.result)) : ''}</div></div>${chip}</div>`; }).join('')}</div>` : '';
-  body.innerHTML = `${invites}${work}${active}${quick}${listCard}${visHtml}`;
-  clearInterval(day.homeTick);
-  if (v || (a && !a.outTime)) day.homeTick = setInterval(() => {
-    const t = $('homeTimer'); if (t && v) { const sec = Math.max(0, Math.floor((nowS() - toMs(v.start)) / 1000)); t.textContent = `${Math.floor(sec / 3600) ? Math.floor(sec / 3600) + ':' : ''}${String(Math.floor(sec / 60) % 60).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`; }
-    const w = $('workDur'); if (w && a) w.textContent = dur(Math.max(0, Math.round((nowS() - toMs(a.inTime)) / 60000)));
-    if (!$('home').classList.contains('on')) clearInterval(day.homeTick);
-  }, 1000);
+  const visHtml = vis.length ? `<div class="card"><h2>Today's visits<span class="ar">زيارات اليوم</span></h2>${vis.map(v => {
+      const joint = v.salesmanId !== u.id;
+      const chip = !v.end ? '<span class="chip-s cs-open">Open</span>' : v.endType === 'AUTO-CLOSED' ? '<span class="chip-s cs-auto">Auto-closed</span>' : '<span class="chip-s cs-ok">Closed</span>';
+      return `<div class="vrow"><div class="tm">${hm(v.start).replace(/ (AM|PM)/, '')}<div class="dt">${v.durationMin != null ? dur(v.durationMin) : ''}</div></div><div style="flex:1;min-width:0"><div class="nm">${esc(v.custNo)} — ${esc(v.customerName)}</div><div class="dt">${esc(v.locationType)}${v.result ? ' · ' + esc(v.result) : ''}${joint ? ' · joint with ' + esc(v.ownerName) : (v.companions.filter(c => c.status === 'CONFIRMED').length ? ' · with ' + v.companions.filter(c => c.status === 'CONFIRMED').map(c => esc(c.name)).join(', ') : '')}</div></div>${chip}</div>`; }).join('')}</div>` : '';
+  body.innerHTML = `${banners}<div class="daycard">${dayHtml}</div>${visHtml}${listCard}`;
   const on = (id, f) => { const el = $(id); if (el) el.onclick = f; };
   on('punchInBtn', () => openPunch('in'));
   on('punchOutBtn', () => openPunch('out'));
   on('chgStatus', statusSheet);
-  on('qaVisit', () => { go('list'); toast(['Pick the customer, then Start visit.', 'اختر العميل ثم ابدأ الزيارة.']); });
-  on('qaHist', () => go('history'));
-  on('qaPdf', () => { if (list.report) smanListExport(); else go('list'); });
-  on('qaStatus', statusSheet);
   body.querySelectorAll('[data-openvisit]').forEach(b => b.onclick = () => { show('visit'); renderVisit(); });
   body.querySelectorAll('[data-invite]').forEach(b => b.onclick = () => inviteSheet((d.invites || []).find(i => i.visitId === b.dataset.invite)));
   body.querySelectorAll('[data-fu]').forEach(b => b.onclick = () => openCustomer(b.dataset.fu));
@@ -2422,26 +1957,26 @@ function followUpsDue(){
 }
 function homeCustomersHtml(){
   const d = list.report;
-  if (!d && list.error) return `<div class="card"><div class="sec-h"><h2><span class="en">My customers</span><span class="ar">عملائي</span></h2></div><div class="warnbox"><span class="en">${esc(list.error[0])}</span><span class="ar">${esc(list.error[1])}</span></div><button class="btn btn-quiet" type="button" data-go="list" style="margin-top:10px"><span class="en">Try again</span><span class="ar">إعادة المحاولة</span></button></div>`;
-  if (!d) return `<div class="card"><div class="sec-h"><h2><span class="en">My customers</span><span class="ar">عملائي</span></h2></div><div class="gps wait"><span class="spin"></span><span class="grow"><span class="en">Loading your customers…</span><span class="ar">جاري التحميل</span></span></div></div>`;
+  if (!d && list.error) return `<div class="card"><div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2></div><div class="warnbox">${esc(list.error[0])}<div dir="rtl">${esc(list.error[1])}</div></div><button class="btn btn-quiet" type="button" data-go="list" style="margin-top:10px">Try again · إعادة المحاولة</button></div>`;
+  if (!d) return `<div class="card"><div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2></div><div class="gps wait"><span class="spin"></span><span class="grow">Loading your customers… · جاري التحميل</span></div></div>`;
   const noPhone = d.custs.filter(c => !phonesOf(c.custNo).length).length, fu = followUpsDue(), today = riyDate(nowS());
   const bal = d.overdueTotal + d.dueTotal;
-  const fuHtml = fu.length ? `<div class="card"><div class="sec-h"><h2><span class="en">Follow-ups due</span><span class="ar">متابعات مستحقة</span></h2><span class="tag" style="background:#fdecea;color:#a32d2d">${fu.length}</span></div>
+  const fuHtml = fu.length ? `<div class="card"><div class="sec-h"><h2>Follow-ups due<span class="ar">متابعات مستحقة</span></h2><span class="tag" style="background:#fdecea;color:#a32d2d">${fu.length}</span></div>
       ${fu.slice(0, 6).map(({ c, v }) => `<button type="button" class="vrow" data-fu="${esc(c.custNo)}" style="width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:start;cursor:pointer;font:inherit">
         <div class="tm ${v.nextVisitDate < today ? 'red' : ''}">${dayShort(atMidday(v.nextVisitDate))}</div>
         <div style="flex:1;min-width:0"><div class="nm">${esc(c.custNo)} — ${esc(c.cust)}</div><div class="dt">${esc(v.nextAction || v.result || '')}</div></div></button>`).join('')}
-      ${fu.length > 6 ? `<p class="hint2" style="margin-top:6px">+${fu.length - 6} ${L('more in My List', 'أخرى في قائمتي')}</p>` : ''}</div>` : '';
+      ${fu.length > 6 ? `<p class="hint2" style="margin-top:6px">+${fu.length - 6} more in My List</p>` : ''}</div>` : '';
   return `<div class="card">
-      <div class="sec-h"><h2><span class="en">My customers</span><span class="ar">عملائي</span></h2><button class="mini" type="button" data-go="list">${L('Open list', 'فتح القائمة')} ›</button></div>
+      <div class="sec-h"><h2>My customers<span class="ar">عملائي</span></h2><button class="mini" type="button" data-go="list">Open list ›</button></div>
       <div class="stats">
-        <div><b>${d.custs.length}</b><span>${L('Customers', 'العملاء')}</span></div>
-        <div><b style="color:#8a6d00;font-size:15px;line-height:1.55">${SAR.format(Math.round(bal))}</b><span>${L('Balance SAR', 'الرصيد ريال')}</span></div>
-        <div><b style="color:var(--bad);font-size:15px;line-height:1.55">${SAR.format(Math.round(d.overdueTotal))}</b><span>${L('Overdue SAR', 'المتأخر ريال')}</span></div>
+        <div><b>${d.custs.length}</b><span>Customers</span></div>
+        <div><b style="color:#8a6d00;font-size:15px;line-height:1.55">${SAR.format(Math.round(bal))}</b><span>Balance SAR</span></div>
+        <div><b style="color:var(--bad);font-size:15px;line-height:1.55">${SAR.format(Math.round(d.overdueTotal))}</b><span>Overdue SAR</span></div>
       </div>
       <div class="lines" style="margin-top:12px">
-        <dt><span class="en">Missing phone number</span><span class="ar">بدون رقم</span></dt><dd class="${noPhone ? 'warn' : ''}">${noPhone}</dd>
-        <dt><span class="en">Follow-ups due</span><span class="ar">متابعات</span></dt><dd class="${fu.length ? 'red' : ''}">${fu.length}</dd>
-        <dt>${L('New customers this month', 'عملاء جدد هذا الشهر')}</dt><dd>${d.newCustomersThisMonth}</dd>
+        <dt>Missing phone number · بدون رقم</dt><dd class="${noPhone ? 'warn' : ''}">${noPhone}</dd>
+        <dt>Follow-ups due · متابعات</dt><dd class="${fu.length ? 'red' : ''}">${fu.length}</dd>
+        <dt>New customers this month</dt><dd>${d.newCustomersThisMonth}</dd>
       </div></div>${fuHtml}`;
 }
 const atMidday = s => Date.parse(s + 'T12:00:00+03:00');
@@ -2449,11 +1984,11 @@ const atMidday = s => Date.parse(s + 'T12:00:00+03:00');
 function statusSheet(){
   const list = (state.settings && state.settings.dayStatuses) || ['Field Work', 'Leave', 'Travel', 'Training', 'Sick', 'Out of Service'];
   const cur = day.data && day.data.dayStatus ? day.data.dayStatus.status : '';
-  openSheet(`<h3>Today'<span class="en">s status</span><span class="ar">حالة اليوم</span></h3>
-    <div class="chips-wrap" id="stChips">${list.map(s => `<button type="button" class="chip ${s === cur ? 'on' : ''}" data-s="${esc(s)}">${esc(tr(s))}</button>`).join('')}</div>
+  openSheet(`<h3>Today's status · حالة اليوم</h3>
+    <div class="chips-wrap" id="stChips">${list.map(s => `<button type="button" class="chip ${s === cur ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>
     <div class="field"><label for="stNote"><span>Note (optional)</span><span>ملاحظة</span></label><div class="input"><input id="stNote" maxlength="200" value="${esc(day.data && day.data.dayStatus ? day.data.dayStatus.note : '')}"></div></div>
     <div class="msg err" id="sheetMsg"></div>
-    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span><span class="en">Save</span><span class="ar">حفظ</span></button></div>`);
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
   let pick = cur;
   $('stChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { pick = b.dataset.s; $('sheetMsg').classList.remove('on'); $('stChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
   $('fCancel').onclick = closeSheet;
@@ -2481,7 +2016,7 @@ async function recover(e){
 const punch = { mode: 'in', photo: null, gps: null, gpsErr: null, gpsBusy: false };
 function openPunch(mode){
   Object.assign(punch, { mode, photo: null, gps: null, gpsErr: null });
-  $('punchTitle').innerHTML = mode === 'in' ? '<span class="en">Punch in</span><span class="ar">تسجيل الحضور</span>' : '<span class="en">Punch out</span><span class="ar">تسجيل الانصراف</span>';
+  $('punchTitle').textContent = mode === 'in' ? 'Punch in · تسجيل الحضور' : 'Punch out · تسجيل الانصراف';
   $('punchSub').textContent = dateLabel(day.data ? day.data.date : riyDate(nowS()));
   show('punch'); renderPunch(); punchGps();
 }
@@ -2492,8 +2027,8 @@ async function punchGps(){
   punch.gpsBusy = false; renderPunch();
 }
 function gpsBox(g, err, busyNow, okText){
-  if (busyNow) return `<div class="gps wait"><span class="spin"></span><span class="grow"><span class="en">Getting your location…</span><span class="ar">جاري تحديد الموقع</span></span></div>`;
-  if (err) { const m = errMsg(err); return `<div class="gps bad"><span class="grow"><span class="en">${esc(m[0])}</span><span class="ar">${esc(m[1])}</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`; }
+  if (busyNow) return `<div class="gps wait"><span class="spin"></span><span class="grow">Getting your location… · جاري تحديد الموقع</span></div>`;
+  if (err) { const m = errMsg(err); return `<div class="gps bad"><span class="grow">${esc(m[0])}<span class="ar-line" dir="rtl">${esc(m[1])}</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`; }
   if (g) return `<div class="gps ok"><span class="grow">✓ ${okText || 'Location captured'} · ±${g.accuracy} m</span><button class="mini ghost" type="button" data-regps="1">Refresh</button></div>`;
   return '';
 }
@@ -2501,28 +2036,28 @@ function renderPunch(){
   const a = day.data && day.data.attendance, out = punch.mode === 'out', s = day.data ? day.data.summary : null;
   const kmVal = $('pKm') ? $('pKm').value : '';
   $('punchBody').innerHTML = `
-    ${out && a ? `<div class="stepbox"><h2>Today'<span class="en">s summary</span><span class="ar">ملخص اليوم</span></h2><dl class="lines" style="margin:0">
+    ${out && a ? `<div class="stepbox"><h2>Today's summary · ملخص اليوم</h2><dl class="lines" style="margin:0">
       <dt>Punched in</dt><dd>${hm(a.inTime)}</dd><dt>Visits</dt><dd>${s.visits}${s.joint ? ` (${s.joint} joint)` : ''}</dd>
       <dt>Time in visits</dt><dd>${dur(s.minutes)}</dd><dt>Morning odometer</dt><dd>${SAR.format(a.inKm || 0)} km</dd></dl></div>` : ''}
-    <div class="stepbox"><h2><span class="n ${punch.photo ? 'done' : ''}">1</span><span class="en">Photo of steering wheel + odometer</span><span class="ar">صورة المقود والعداد</span></h2>
+    <div class="stepbox"><h2><span class="n ${punch.photo ? 'done' : ''}">1</span>Photo of steering wheel + odometer<span class="ar">صورة المقود والعداد</span></h2>
       <div class="photo-slot">${punch.photo ? `<span class="thumb"><img src="${punch.photo}" alt=""><button type="button" class="thumb-x" id="pDel" aria-label="Delete photo">✕</button></span>` : '<div class="ph">No photo</div>'}
-        <div style="flex:1"><button class="btn ${punch.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="pPhoto">${punch.photo ? '<span class="en">Retake</span><span class="ar">إعادة</span>' : '<span class="en">Open camera</span><span class="ar">الكاميرا</span>'}</button><div class="hint2" style="margin-top:6px">Live camera only. Make sure the km reading is readable.</div></div></div></div>
-    <div class="stepbox"><h2><span class="n">2</span><span class="en">Odometer reading</span><span class="ar">قراءة العداد</span></h2>
+        <div style="flex:1"><button class="btn ${punch.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="pPhoto">${punch.photo ? 'Retake · إعادة' : 'Open camera · الكاميرا'}</button><div class="hint2" style="margin-top:6px">Live camera only. Make sure the km reading is readable.</div></div></div></div>
+    <div class="stepbox"><h2><span class="n">2</span>Odometer reading<span class="ar">قراءة العداد</span></h2>
       <div class="input"><input id="pKm" inputmode="numeric" placeholder="e.g. 48215" value="${esc(kmVal)}" autocomplete="off"><span style="padding:0 14px;color:var(--muted);font-weight:600">km</span></div>
       <div class="hint2" id="kmHint"></div></div>
-    <div class="stepbox"><h2><span class="n ${punch.gps && !punch.gpsErr ? 'done' : ''}">3</span><span class="en">Location</span><span class="ar">الموقع</span></h2>${gpsBox(punch.gps, punch.gpsErr, punch.gpsBusy)}</div>
+    <div class="stepbox"><h2><span class="n ${punch.gps && !punch.gpsErr ? 'done' : ''}">3</span>Location<span class="ar">الموقع</span></h2>${gpsBox(punch.gps, punch.gpsErr, punch.gpsBusy)}</div>
     <div class="msg err" id="punchMsg"></div>`;
   $('pPhoto').onclick = async () => {
-    const shot = await Cam.open(out ? 'Punch out photo' : 'Punch in photo', '<span class="en">Steering wheel + odometer</span><span class="ar">المقود والعداد</span>', () => stampLines(out ? 'PUNCH OUT' : 'PUNCH IN', punch.gps));
+    const shot = await Cam.open(out ? 'Punch out photo' : 'Punch in photo', 'Steering wheel + odometer · المقود والعداد', () => stampLines(out ? 'PUNCH OUT' : 'PUNCH IN', punch.gps));
     if (shot) { punch.photo = shot; renderPunch(); }
   };
   if ($('pDel')) $('pDel').onclick = () => { punch.photo = null; renderPunch(); };
   const kmIn = $('pKm');
-  const hint = () => { if (!out || !a) return; const v = Number(kmIn.value.replace(/[,\s]/g, '')); $('kmHint').innerHTML = v && a.inKm != null && v >= a.inKm ? `= <span class="en">${SAR.format(v - a.inKm)} km today</span><span class="ar">اليوم</span>` : ''; };
+  const hint = () => { if (!out || !a) return; const v = Number(kmIn.value.replace(/[,\s]/g, '')); $('kmHint').textContent = v && a.inKm != null && v >= a.inKm ? `= ${SAR.format(v - a.inKm)} km today · اليوم` : ''; };
   kmIn.oninput = hint; hint();
   $('punchBody').querySelectorAll('[data-regps]').forEach(b => b.onclick = punchGps);
   $('punchGo').className = 'btn ' + (out ? 'btn-red' : 'btn-green');
-  $('punchGoLabel').innerHTML = out ? '<span class="en">Punch out</span><span class="ar">تسجيل الانصراف</span>' : '<span class="en">Punch in</span><span class="ar">تسجيل الحضور</span>';
+  $('punchGoLabel').textContent = out ? 'Punch out · تسجيل الانصراف' : 'Punch in · تسجيل الحضور';
 }
 function stampLines(what, g){
   const u = state.user || {}, t = nowS();
@@ -2556,41 +2091,39 @@ function mergeVisits(views){
 function visitsOf(custNo){ return (field.visits || []).filter(v => String(v.custNo) === String(custNo)).sort((a, b) => toMs(b.start) - toMs(a.start)); }
 function visitLine(c){
   const vs = visitsOf(c.custNo), warn = (state.settings && state.settings.lastVisitWarnDays) || 30;
-  if (!vs.length) return { t: L('No visit in the last 120 days', 'لا زيارة خلال 120 يومًا'), cls: 'red' };
+  if (!vs.length) return { t: 'No visit in the last 120 days', cls: 'red' };
   const last = vs[0], days = Math.floor((nowS() - toMs(last.start)) / 86400000);
   const next = vs.find(v => v.nextVisitDate);
-  return { t: `${L('Last visit', 'آخر زيارة')} ${days === 0 ? L('today', 'اليوم') : days + L(' days ago', ' يوم')}${next ? ' · ' + L('Next', 'القادمة') + ' ' + dateLabel(next.nextVisitDate) : ''}`, cls: days > warn ? 'red' : '' };
+  return { t: `Last visit ${days === 0 ? 'today' : days + ' days ago'}${next ? ' · Next ' + dateLabel(next.nextVisitDate) : ''}`, cls: days > warn ? 'red' : '' };
 }
 function renderHistory(c){
   const el = $('histCard'); if (!el) return;
-  const vs = visitsOf(c.custNo).slice(0, 5);
-  el.innerHTML = `<div class="sec-h"><h2><span class="en">Visit history</span><span class="ar">سجل الزيارات</span></h2><button class="mini" type="button" id="histAll">${L('View all', 'عرض الكل')} ›</button></div>${vs.length ? vs.map(v => `<div class="vrow" data-hv="1"><div class="tm">${dayShort(v.start)}<div class="dt">${hm(v.start).replace(/ (AM|PM)/, '')}</div></div>
+  const vs = visitsOf(c.custNo).slice(0, 10);
+  el.innerHTML = `<h2>Visit history<span class="ar">سجل الزيارات</span></h2>${vs.length ? vs.map(v => `<div class="vrow"><div class="tm">${dayShort(v.start)}<div class="dt">${hm(v.start).replace(/ (AM|PM)/, '')}</div></div>
     <div style="flex:1;min-width:0"><div class="nm">${esc(v.result || (v.end ? '—' : 'In progress'))} <span class="dt">· ${esc(v.locationType)}${v.durationMin != null ? ' · ' + dur(v.durationMin) : ''}</span></div>
     ${v.description ? `<div class="dt">${esc(v.description)}</div>` : ''}${v.nextAction ? `<div class="dt"><b>Next:</b> ${esc(v.nextAction)}${v.nextVisitDate ? ' · ' + dateLabel(v.nextVisitDate) : ''}</div>` : ''}
     ${v.salesmanName && v.salesmanName !== (state.user || {}).name ? `<div class="dt">By ${esc(v.salesmanName)}</div>` : ''}</div>
     ${v.endType === 'AUTO-CLOSED' ? '<span class="chip-s cs-auto">Auto-closed</span>' : ''}</div>`).join('') : '<p class="hint2">No visits yet in the last 120 days.</p>'}`;
-  $('histAll').onclick = () => openHistoryFor(c.custNo);
-  el.querySelectorAll('[data-hv]').forEach(r => r.onclick = () => openHistoryFor(c.custNo));
 }
 function locsOf(custNo){ return (field.locations || []).filter(l => custNoOfKey(l.CustomerKey) === String(custNo)); }
 function renderLocations(c){
   const el = $('locCard'); if (!el) return;
   const ls = locsOf(c.custNo);
-  el.innerHTML = `<div class="sec-h"><h2><span class="en">Locations</span><span class="ar">المواقع</span></h2><button class="mini" type="button" id="pinLoc">+ Pin here</button></div>
+  el.innerHTML = `<div class="sec-h"><h2>Locations<span class="ar">المواقع</span></h2><button class="mini" type="button" id="pinLoc">+ Pin here</button></div>
     ${ls.length ? ls.map(l => `<div class="vrow"><div style="flex:1"><div class="nm">${esc(l.Type)}</div><div class="dt">Radius ${esc(l.RadiusM)} m · pinned ${dayShort(l.PinnedAt)}</div></div><a class="mini ghost" href="${mapUrl(l.Lat, l.Lng)}" target="_blank" rel="noopener">Map ↗</a></div>`).join('')
-      : `<div class="warnbox"><span class="en">No location yet. Pin it when you are at the customer.</span><span class="ar">لا يوجد موقع. ثبّته عندما تكون عند العميل.</span></div>`}
+      : `<div class="warnbox">No location yet. Pin it when you are at the customer.<div dir="rtl">لا يوجد موقع. ثبّته عندما تكون عند العميل.</div></div>`}
     <p class="hint2">Saved locations can't be moved from the app. Ask the coordinator to correct one.</p>`;
   $('pinLoc').onclick = () => pinSheet(c, () => { renderLocations(c); if ($('vstart').classList.contains('on')) renderVStart(); });
 }
 function pinSheet(c, done){
   const types = (state.settings && state.settings.locationTypes) || [];
   let pick = '';
-  openSheet(`<h3><span class="en">Pin a location here</span><span class="ar">تثبيت موقع</span></h3>
+  openSheet(`<h3>Pin a location here · تثبيت موقع</h3>
     <p class="hint2">Stand at the customer's place. Your current GPS position will be saved.</p>
-    <div class="chips-wrap" id="ltChips">${types.map(t => `<button type="button" class="chip" data-t="${esc(t.type)}">${esc(tr(t.type))}</button>`).join('')}</div>
+    <div class="chips-wrap" id="ltChips">${types.map(t => `<button type="button" class="chip" data-t="${esc(t.type)}">${esc(t.type)}</button>`).join('')}</div>
     <div id="pinGps">${gpsBox(null, null, true)}</div>
     <div class="msg err" id="sheetMsg"></div>
-    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span><span class="en">Save</span><span class="ar">حفظ</span></button></div>`);
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save · حفظ</button></div>`);
   let g = null, ge = null;
   const locate = async () => { $('pinGps').innerHTML = gpsBox(null, null, true); try { g = await getGps(); ge = g.accuracy > maxAcc() ? { code: 'GPS_WEAK', detail: { accuracy: g.accuracy, max: maxAcc() } } : null; } catch (e) { g = null; ge = e; } $('pinGps').innerHTML = gpsBox(g, ge, false); const rb = $('pinGps').querySelector('[data-regps]'); if (rb) rb.onclick = locate; };
   locate();
@@ -2606,12 +2139,6 @@ function pinSheet(c, done){
       closeSheet(); done && done();
     }, $('sheetMsg'));
   };
-}
-
-/* ---------- 4-step visit indicator ---------- */
-function stepper(active, done){
-  const st = [[L('Location', 'الموقع')], [L('Photo', 'الصورة')], [L('Visit', 'الزيارة')], [L('Result', 'النتيجة')]];
-  return `<div class="stepper">${st.map(([t], i) => `<div class="stp ${i + 1 < active || (done || []).includes(i + 1) ? 'done' : ''} ${i + 1 === active ? 'cur' : ''}"><span>${i + 1 < active || (done || []).includes(i + 1) ? '✓' : i + 1}</span><small>${t}</small></div>`).join('<i></i>')}</div>`;
 }
 
 /* ---------- Start visit ---------- */
@@ -2644,27 +2171,27 @@ function vsCheck(){
 function renderVStart(){
   if (!vs.cust) return;
   const ls = locsOf(vs.cust.custNo), chk = vsCheck();
-  const statusText = { available: '<span class="en">Available</span><span class="ar">متاح</span>', not_punched_in: 'Not punched in', punched_out: 'Punched out', busy: 'In another visit' };
+  const statusText = { available: 'Available · متاح', not_punched_in: 'Not punched in', punched_out: 'Punched out', busy: 'In another visit' };
   let gpsHtml = '';
   if (vs.locationId) {
     if (vs.gpsBusy || vs.gpsErr || !vs.gps) gpsHtml = gpsBox(vs.gps, vs.gpsErr, vs.gpsBusy);
     else if (chk && chk.ok) gpsHtml = `<div class="gps ok"><span class="grow">✓ You are at this location · ${fmtDist(chk.dist)} away (±${vs.gps.accuracy} m, allowed ${chk.radius} m)</span><button class="mini ghost" type="button" data-regps="1">Refresh</button></div>`;
-    else if (chk) gpsHtml = `<div class="gps bad"><span class="grow"><span class="en">✕ Too far: ${fmtDist(chk.dist)} from this location (allowed ${chk.radius} m). Move closer.</span><span class="ar">أنت بعيد عن الموقع. اقترب.</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`;
+    else if (chk) gpsHtml = `<div class="gps bad"><span class="grow">✕ Too far: ${fmtDist(chk.dist)} from this location (allowed ${chk.radius} m). Move closer.<span class="ar-line" dir="rtl">أنت بعيد عن الموقع. اقترب.</span></span><button class="mini" type="button" data-regps="1">Retry</button></div>`;
   }
   const team = vs.team;
-  $('vsBody').innerHTML = stepper(chk && chk.ok ? 2 : 1, chk && chk.ok ? [1] : []) + `
-    <div class="stepbox"><h2><span class="n ${chk && chk.ok ? 'done' : ''}">1</span><span class="en">Where are you?</span><span class="ar">أين أنت؟</span></h2>
+  $('vsBody').innerHTML = `
+    <div class="stepbox"><h2><span class="n ${chk && chk.ok ? 'done' : ''}">1</span>Where are you?<span class="ar">أين أنت؟</span></h2>
       ${ls.map(l => `<button type="button" class="opt ${l.LocationID === vs.locationId ? 'on' : ''}" data-loc="${esc(l.LocationID)}"><span class="dot"></span><span class="grow"><b>${esc(l.Type)}</b><small>Radius ${esc(l.RadiusM)} m</small></span></button>`).join('')}
-      <button type="button" class="dashed" id="vsPin">+ <span class="en">Pin a new location here</span><span class="ar">تثبيت موقع جديد</span></button>
+      <button type="button" class="dashed" id="vsPin">+ Pin a new location here · تثبيت موقع جديد</button>
       ${!ls.length ? '<p class="hint2">This customer has no saved location yet. Pin it first.</p>' : ''}
       ${gpsHtml}</div>
-    <div class="stepbox"><h2><span class="n ${vs.companions.size ? 'done' : ''}">2</span><span class="en">Anyone with you? (optional)</span><span class="ar">هل معك أحد؟</span></h2>
+    <div class="stepbox"><h2><span class="n ${vs.companions.size ? 'done' : ''}">2</span>Anyone with you? (optional)<span class="ar">هل معك أحد؟</span></h2>
       ${team == null ? '<div class="gps wait"><span class="spin"></span><span class="grow">Loading teammates…</span></div>' : !team.length ? '<p class="hint2">No teammates in your branch.</p>' :
         team.map(t => { const ok = t.status === 'available'; return `<button type="button" class="opt ${vs.companions.has(t.id) ? 'on' : ''} ${ok ? '' : 'off'}" data-comp="${esc(t.id)}" ${ok ? '' : 'disabled'}><span class="box">${vs.companions.has(t.id) ? '✓' : ''}</span><span class="grow"><b>${esc(t.code)} · ${esc(t.name)}</b><small>${statusText[t.status] || t.status}</small></span></button>`; }).join('')}
       ${vs.companions.size ? '<p class="hint2">They will get a "Confirm you\'re here" prompt. It counts for them only after their GPS confirms. They see only the customer name, time and result.</p>' : ''}</div>
-    <div class="stepbox"><h2><span class="n ${vs.photo ? 'done' : ''}">3</span><span class="en">Photo of the location</span><span class="ar">صورة الموقع</span></h2>
+    <div class="stepbox"><h2><span class="n ${vs.photo ? 'done' : ''}">3</span>Photo of the location<span class="ar">صورة الموقع</span></h2>
       <div class="photo-slot">${vs.photo ? `<span class="thumb"><img src="${vs.photo}" alt=""><button type="button" class="thumb-x" id="vsDel" aria-label="Delete photo">✕</button></span>` : '<div class="ph">No photo</div>'}
-        <div style="flex:1"><button class="btn ${vs.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="vsPhoto">${vs.photo ? '<span class="en">Retake</span><span class="ar">إعادة</span>' : '<span class="en">Open camera</span><span class="ar">الكاميرا</span>'}</button><div class="hint2" style="margin-top:6px">Live camera only.</div></div></div></div>
+        <div style="flex:1"><button class="btn ${vs.photo ? 'btn-quiet' : 'btn-primary'}" type="button" id="vsPhoto">${vs.photo ? 'Retake · إعادة' : 'Open camera · الكاميرا'}</button><div class="hint2" style="margin-top:6px">Live camera only.</div></div></div></div>
     <div class="msg err" id="vsMsg"></div>`;
   $('vsBody').querySelectorAll('[data-loc]').forEach(b => b.onclick = () => { vs.locationId = b.dataset.loc; renderVStart(); vsGps(); });
   $('vsBody').querySelectorAll('[data-comp]').forEach(b => b.onclick = () => { const id = b.dataset.comp; vs.companions.has(id) ? vs.companions.delete(id) : vs.companions.add(id); renderVStart(); });
@@ -2673,7 +2200,7 @@ function renderVStart(){
   if ($('vsDel')) $('vsDel').onclick = () => { vs.photo = null; renderVStart(); };
   $('vsPhoto').onclick = async () => {
     const loc = ls.find(l => l.LocationID === vs.locationId);
-    const shot = await Cam.open('<span class="en">Visit photo</span><span class="ar">صورة الزيارة</span>', `${vs.cust.custNo} · ${loc ? loc.Type : ''}`, () => stampLines(`${vs.cust.custNo} · ${loc ? loc.Type : ''}`, vs.gps));
+    const shot = await Cam.open('Visit photo · صورة الزيارة', `${vs.cust.custNo} · ${loc ? loc.Type : ''}`, () => stampLines(`${vs.cust.custNo} · ${loc ? loc.Type : ''}`, vs.gps));
     if (shot) { vs.photo = shot; renderVStart(); }
   };
   $('vsGo').disabled = !(chk && chk.ok && vs.photo);
@@ -2701,13 +2228,13 @@ function renderVisit(){
   const mine = !!d.openVisit;
   const phones = phonesOf(v.custNo).length, contacts = contactsOf(v.custNo).length;
   const statusChip = { PENDING: '<span class="chip-s cs-pend">Waiting to confirm</span>', CONFIRMED: '<span class="chip-s cs-ok">Confirmed ✓</span>', DECLINED: '<span class="chip-s cs-no">Not there</span>', EXPIRED: '<span class="chip-s cs-no">Expired</span>' };
-  $('visitTitle').innerHTML = mine ? '<span class="en">Visit in progress</span><span class="ar">زيارة جارية</span>' : `<span class="en">Joint visit</span><span class="ar">مع ${v.ownerName}</span>`;
+  $('visitTitle').textContent = mine ? 'Visit in progress · زيارة جارية' : `Joint visit · مع ${v.ownerName}`;
   $('visitSub').textContent = `${v.custNo} — ${v.customerName}`;
-  $('visitBody').innerHTML = (mine ? stepper(3) : '') + `
+  $('visitBody').innerHTML = `
     <div class="stepbox" style="align-items:center"><div class="bigtimer" id="vTimer">00:00:00</div><div class="hint2">Started ${hm(v.start)} (server time) · ${esc(v.locationType)} · ${fmtDist(v.distanceM)} from the pin</div></div>
-    ${mine ? `<div class="stepbox"><div class="photo-slot">${visitPhoto ? `<img src="${visitPhoto}" alt="">` : '<div class="ph">Saved</div>'}<div style="flex:1"><b>Photo saved ✓</b><div class="hint2">Wrong photo? Take a new one here. Your GPS is checked again.</div><button class="mini" type="button" id="vReplace" style="margin-top:6px"><span class="spin"></span><span class="en">Replace photo</span><span class="ar">استبدال</span></button></div></div></div>` : ''}
-    ${v.companions.length ? `<div class="stepbox"><h2><span class="en">Companions</span><span class="ar">المرافقون</span></h2>${v.companions.map(c => `<div class="row"><span>${esc(c.code)} · ${esc(c.name)}</span>${statusChip[c.status] || ''}</div>`).join('')}<button class="linkbtn" type="button" id="vRefresh"><span class="en">Refresh status</span><span class="ar">تحديث</span></button></div>` : ''}
-    ${mine && (!phones || !contacts) ? `<div class="warnbox"><span class="en">Customer data is incomplete (${!contacts ? 'no contact' : 'no phone'}). Update it during the visit.</span><span class="ar">بيانات العميل ناقصة. حدّثها أثناء الزيارة.</span><button class="mini" type="button" id="vFix" style="margin-top:8px">Open customer card</button></div>` : ''}
+    ${mine ? `<div class="stepbox"><div class="photo-slot">${visitPhoto ? `<img src="${visitPhoto}" alt="">` : '<div class="ph">Saved</div>'}<div style="flex:1"><b>Photo saved ✓</b><div class="hint2">Wrong photo? Take a new one here. Your GPS is checked again.</div><button class="mini" type="button" id="vReplace" style="margin-top:6px"><span class="spin"></span>Replace photo · استبدال</button></div></div></div>` : ''}
+    ${v.companions.length ? `<div class="stepbox"><h2>Companions<span class="ar">المرافقون</span></h2>${v.companions.map(c => `<div class="row"><span>${esc(c.code)} · ${esc(c.name)}</span>${statusChip[c.status] || ''}</div>`).join('')}<button class="linkbtn" type="button" id="vRefresh">Refresh status · تحديث</button></div>` : ''}
+    ${mine && (!phones || !contacts) ? `<div class="warnbox">Customer data is incomplete (${!contacts ? 'no contact' : 'no phone'}). Update it during the visit.<div dir="rtl">بيانات العميل ناقصة. حدّثها أثناء الزيارة.</div><button class="mini" type="button" id="vFix" style="margin-top:8px">Open customer card</button></div>` : ''}
     ${!mine ? `<div class="stepbox"><p class="hint2">${esc(v.ownerName)} records this visit and will end it. It counts for you because you confirmed.</p></div>` : ''}
     <p class="hint2" style="text-align:center">Only one visit at a time. Open visits are closed automatically at ${esc((state.settings && state.settings.autoCloseTime) || '23:59')} and flagged.</p>`;
   const tick = () => { const s = Math.max(0, Math.floor((nowS() - toMs(v.start)) / 1000)); const el = $('vTimer'); if (el) el.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':'); };
@@ -2722,13 +2249,13 @@ function endSheet(){
   const results = (state.settings && state.settings.visitResults) || [];
   const min = riyDate(nowS()), max = riyDate(nowS() + 180 * 86400000);
   let pick = '';
-  openSheet(stepper(4) + `<h3><span class="en">End visit</span><span class="ar">إنهاء الزيارة</span></h3><p class="hint2">${esc(v.custNo)} — ${esc(v.customerName)} · started ${hm(v.start)}</p>
-    <div class="field"><label><span>Result</span><span>النتيجة *</span></label><div class="chips-wrap" id="rChips">${results.map(r => `<button type="button" class="chip" data-r="${esc(r)}">${esc(tr(r))}</button>`).join('')}</div></div>
+  openSheet(`<h3>End visit · إنهاء الزيارة</h3><p class="hint2">${esc(v.custNo)} — ${esc(v.customerName)} · started ${hm(v.start)}</p>
+    <div class="field"><label><span>Result</span><span>النتيجة *</span></label><div class="chips-wrap" id="rChips">${results.map(r => `<button type="button" class="chip" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div></div>
     <div class="field"><label for="eDesc"><span>What happened?</span><span>ماذا حدث؟ *</span></label><textarea class="ta" id="eDesc" maxlength="1000" placeholder="Who you met, what was agreed, orders, collections, complaints…"></textarea></div>
     <div class="field"><label for="eNext"><span>Next action</span><span>الإجراء التالي *</span></label><div class="input"><input id="eNext" maxlength="200" placeholder="e.g. Collect cheque, send price offer"></div></div>
     <div class="field"><label for="eDate"><span>Next visit date (optional)</span><span>موعد الزيارة القادمة (اختياري)</span></label><div class="input"><input id="eDate" type="date" value="" min="${min}" max="${max}"><button type="button" id="eDateClr">Clear</button></div></div>
     <div class="msg err" id="sheetMsg"></div>
-    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span><span class="en">Save & close</span><span class="ar">حفظ</span></button></div>`);
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>Save & close · حفظ</button></div>`);
   $('rChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { pick = b.dataset.r; $('sheetMsg').classList.remove('on'); $('rChips').querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); });
   $('eDateClr').onclick = () => { $('eDate').value = ''; };
   $('fCancel').onclick = closeSheet;
@@ -2751,12 +2278,12 @@ function endSheet(){
 /* ---------- Companion invitation ---------- */
 function inviteSheet(inv){
   if (!inv) return;
-  openSheet(`<h3 style="text-align:center">${esc(inv.ownerName)} ${L('added you to a visit','أضافك كمرافق في زيارة')}</h3>
+  openSheet(`<h3 style="text-align:center">${esc(inv.ownerName)} added you to a visit</h3><p class="hint2" style="text-align:center" dir="rtl">${esc(inv.ownerName)} أضافك كمرافق في زيارة</p>
     <div class="stepbox"><b>${esc(inv.custNo)} — ${esc(inv.customerName)}</b><span class="hint2">${esc(inv.locationType)} · started ${hm(inv.start)}</span></div>
     <div id="invGps"></div>
     <div class="msg err" id="sheetMsg"></div>
-    <button class="btn btn-green" type="button" id="invYes"><span class="spin"></span>Confirm I'<span class="en">m here</span><span class="ar">تأكيد وجودي</span></button>
-    <button class="btn btn-quiet" type="button" id="invNo">I'<span class="en">m not there</span><span class="ar">لست هناك</span></button>
+    <button class="btn btn-green" type="button" id="invYes"><span class="spin"></span>Confirm I'm here · تأكيد وجودي</button>
+    <button class="btn btn-quiet" type="button" id="invNo">I'm not there · لست هناك</button>
     <p class="hint2" style="text-align:center">Confirming checks your GPS against the same location. If you don't confirm, the visit won't count for you.</p>`);
   $('invYes').onclick = async () => {
     $('invGps').innerHTML = gpsBox(null, null, true);
@@ -2785,7 +2312,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && st
 
 async function replacePhoto(v){
   let g = null;
-  const shot = await Cam.open('<span class="en">New visit photo</span><span class="ar">صورة جديدة</span>', `${v.custNo} · ${v.locationType}`, () => stampLines(`${v.custNo} · ${v.locationType}`, g));
+  const shot = await Cam.open('New visit photo · صورة جديدة', `${v.custNo} · ${v.locationType}`, () => stampLines(`${v.custNo} · ${v.locationType}`, g));
   if (!shot) return;
   await busy($('vReplace'), async () => {
     g = await getGps();
@@ -2812,26 +2339,16 @@ const PRINT_BAR_CSS = `
   @media print{ .tab-panel.active .print-area{border:0;padding:0;border-radius:0} body{background:#fff} main{padding:0} }`;
 
 /** Opens the print page: dashboard CSS + dashboard HTML, exactly as the dashboard prints it. */
-function printDoc(title, bodyHtml, lng){
-  return '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8"><meta name="viewport" content="width=900">'
-    + '<title>' + esc(title) + '</title>' + DashPrint.fonts + '<style>' + DashPrint.css + '</style><style>' + PRINT_BAR_CSS + '</style></head><body>'
-    + '<main><div class="tab-panel active"><div class="print-area" style="display:block">' + bodyHtml + '</div></div></main></body></html>';
-}
 function openPrintPage(title, bodyHtml, lng){
-  // Android app: the phone's print screen (Save as PDF / share) with the same dashboard HTML + CSS.
-  if (NativeApp) {
-    NativeApp.printHtml({ html: printDoc(title, bodyHtml, lng), name: title }).catch(() => toast(errText('DEFAULT')));
-    return true;
-  }
   const w = window.open('', '_blank');
   if (!w) { toast(errText('POPUP_BLOCKED')); return false; }
   const doc = '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=900">'
     + '<title>' + esc(title) + '</title>' + DashPrint.fonts
     + '<style>' + DashPrint.css + '</style><style>' + PRINT_BAR_CSS + '</style></head><body>'
-    + '<div class="pv-bar no-print"><button class="primary" type="button" onclick="window.print()"><span class="en">Print / Save PDF</span><span class="ar">طباعة / حفظ PDF</span></button>'
-    + '<button class="ghost" type="button" onclick="window.close()"><span class="en">Close</span><span class="ar">إغلاق</span></button>'
-    + '<span class="hint">iPhon<span class="en">e: Print → Share → WhatsApp. Android: Print → Save as PDF, then share the file in WhatsApp.</span><span class="ar">آيفون: طباعة ← مشاركة ← واتساب. أندرويد: طباعة ← حفظ PDF ثم أرسله بواتساب.</span></span></div>'
+    + '<div class="pv-bar no-print"><button class="primary" type="button" onclick="window.print()">Print / Save PDF · طباعة / حفظ PDF</button>'
+    + '<button class="ghost" type="button" onclick="window.close()">Close · إغلاق</button>'
+    + '<span class="hint">iPhone: Print → Share → WhatsApp. Android: Print → Save as PDF, then share the file in WhatsApp. · آيفون: طباعة ← مشاركة ← واتساب. أندرويد: طباعة ← حفظ PDF ثم أرسله بواتساب.</span></div>'
     + '<main><div class="tab-panel active"><div class="print-area" style="display:block">' + bodyHtml + '</div></div></main>'
     + '</body></html>';
   w.document.open(); w.document.write(doc); w.document.close();
@@ -2840,39 +2357,24 @@ function openPrintPage(title, bodyHtml, lng){
 
 function pdfSheet(title, sub, make){
   let lng = store.get(PDF_LANG_KEY) === 'ar' ? 'ar' : 'en';
-  openSheet(`<h3>${title}</h3><p class="hint2">${esc(sub)}</p>
-    <div class="field"><label><span>${L('PDF language', 'لغة الملف')}</span></label>
+  openSheet(`<h3>${esc(title)}</h3><p class="hint2">${esc(sub)}</p>
+    <div class="field"><label><span>PDF language</span><span>لغة الملف</span></label>
       <div class="seg" id="pdfLang"><button type="button" data-l="en" class="${lng === 'en' ? 'on' : ''}">English</button><button type="button" data-l="ar" class="${lng === 'ar' ? 'on' : ''}">العربية</button></div></div>
-    <div class="pdf-acts">
-      <button class="btn btn-wa" type="button" id="pdfWa">${ICONS.wa}<span>WhatsApp</span></button>
-      <button class="btn btn-primary" type="button" id="pdfGo">${ICONS.down}<span>${L('Download PDF', 'تحميل PDF')}</span></button>
-    </div>
-    <p class="hint2">${L('Same layout as the dashboard PDF.', 'نفس تصميم ملف لوحة التحكم.')}</p>
-    <div class="msg err" id="sheetMsg"></div>`);
+    <p class="hint2">Same layout as the dashboard's PDF. The page opens with a <b>Print / Save PDF</b> button: on iPhone use Share → WhatsApp; on Android save as PDF, then send it in WhatsApp.</p>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">Cancel</button><button class="btn btn-primary" type="button" id="pdfGo">Open PDF · فتح</button></div>`);
   $('pdfLang').querySelectorAll('button').forEach(b => b.onclick = () => { lng = b.dataset.l; $('pdfLang').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
-  const run = async (how, btn) => {
-    store.set(PDF_LANG_KEY, lng); DashPrint.setLang(lng);
-    const r = make(); if (!r) return;
-    const html = printDoc(r.title, r.html, lng);
-    if (NativeApp && NativeApp.sharePdf) {            // Android app: real PDF file → WhatsApp / Downloads
-      btn.disabled = true; btn.classList.add('loading');
-      try {
-        if (how === 'wa') await NativeApp.sharePdf({ html, name: r.title, target: 'whatsapp' });
-        else { const s = await NativeApp.savePdf({ html, name: r.title }); toast([`Saved to ${s && s.where ? s.where : 'Downloads'}`, `تم الحفظ في ${s && s.where ? s.where : 'التنزيلات'}`]); }
-        closeSheet();
-      } catch (e) { msgInto($('sheetMsg'), ['Could not create the PDF. Try again.', 'تعذّر إنشاء الملف. حاول مرة أخرى.']); }
-      finally { btn.disabled = false; btn.classList.remove('loading'); }
-      return;
-    }
-    if (openPrintPage(r.title, r.html, lng)) closeSheet();   // browser: print page → Save as PDF
+  $('fCancel').onclick = closeSheet;
+  $('pdfGo').onclick = () => {           // synchronous: pop-up must open straight from the tap
+    store.set(PDF_LANG_KEY, lng);
+    DashPrint.setLang(lng);
+    const r = make();
+    if (r && openPrintPage(r.title, r.html, lng)) closeSheet();
   };
-  $('pdfWa').onclick = () => run('wa', $('pdfWa'));
-  $('pdfGo').onclick = () => run('save', $('pdfGo'));
 }
 
 function smanListExport(){
   if (!list.report) return toast(errText('NO_LIST'));
-  pdfSheet(L('SMAN List', 'قائمة العملاء'), `${state.user.code} · ${list.report.smanName || state.user.name}`, () => {
+  pdfSheet('SMAN List PDF · قائمة المندوب', `${state.user.code} · ${list.report.smanName || state.user.name}`, () => {
     const d = list.report;
     return { html: DashPrint.smanList(d), title: DashPrint.fileName(`${d.smanName} (${d.smanCode}) - ${DashPrint.t('salesmanReport')}`) };
   });
@@ -2880,141 +2382,13 @@ function smanListExport(){
 
 function statementExport(c){
   if (!list.report) return toast(errText('NO_LIST'));
-  pdfSheet(L('Account statement', 'كشف حساب'), `${c.custNo} — ${c.cust}`, () => {
+  pdfSheet('Account statement · كشف حساب', `${c.custNo} — ${c.cust}`, () => {
     const name = displayCustName(c.custNo, c.custNo);
     return { html: DashPrint.statement(c.custNo), title: DashPrint.fileName(`${DashPrint.t('accountStatement')} - ${c.custNo} - ${name}`) };
   });
 }
 
 $('pdfBtn').onclick = smanListExport;
-
-/* ======================= Shell: drawer, notifications, navigation, visit history ======================= */
-const ICONS = {
-  wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>',
-  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
-  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.6"/></svg>',
-  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
-  chev: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
-};
-
-/* ---------- drawer ---------- */
-function openDrawer(){ renderDrawer(); $('drawerBg').classList.add('on'); $('drawerBg').setAttribute('aria-hidden', 'false'); }
-function closeDrawer(){ $('drawerBg').classList.remove('on'); $('drawerBg').setAttribute('aria-hidden', 'true'); }
-function renderDrawer(){
-  const u = state.user || {}, last = diag.length ? diag[diag.length - 1] : null;
-  const seg = (name, cur, items) => `<div class="seg" data-seg="${name}">${items.map(([v, t]) => `<button type="button" data-v="${v}" class="${v === cur ? 'on' : ''}">${t}</button>`).join('')}</div>`;
-  $('drawer').innerHTML = `
-    <div class="dr-head"><span class="logo-box big"><img src="${LOGO}" alt="Al-Howail"></span>
-      <div class="dr-user"><span class="av big-av st-new">${esc(initials(u.name))}</span><div><b>${esc(u.name || '')}</b>
-      <small>${u.code ? L('Code', 'كود') + ' ' + esc(u.code) + ' · ' : ''}${esc(u.branch || '')}</small></div></div></div>
-    <div class="dr-sec"><div class="dr-lbl">${L('Language', 'اللغة')}</div>${seg('lang', lang, [['en', 'English'], ['ar', 'العربية']])}</div>
-    <div class="dr-sec"><div class="dr-lbl">${L('Theme', 'المظهر')}</div>${seg('theme', theme, [['light', L('Light', 'فاتح')], ['dark', L('Dark', 'داكن')], ['system', L('System', 'النظام')]])}</div>
-    <div class="dr-sec"><dl class="lines" style="margin:0">
-      <dt>${L('Customer data', 'بيانات العملاء')}</dt><dd>${list.savedAt ? L('Updated ', 'حُدّثت ') + esc(agoText(list.savedAt)) : L('Not loaded yet', 'لم تُحمّل بعد')}</dd>
-      <dt>${L('Connection', 'الاتصال')}</dt><dd class="${navigator.onLine === false ? 'red' : ''}">${navigator.onLine === false ? L('Offline', 'غير متصل') : L('Online', 'متصل')}</dd>
-      <dt>${L('Running as', 'يعمل كـ')}</dt><dd>${NativeApp ? L('Android app', 'تطبيق أندرويد') : L('Browser', 'متصفح')}</dd>
-      <dt>${L('App version', 'الإصدار')}</dt><dd>${esc(APP_VERSION)}</dd>
-      ${last ? `<dt>${L('Last request', 'آخر طلب')}</dt><dd class="mono">${esc(last.action)} · ${last.ms}ms · ${esc(last.result)} · ${esc(last.traceId)}</dd>` : ''}
-    </dl></div>
-    <button class="btn btn-outline-red" type="button" id="logoutBtn"><span class="spin"></span>${L('Sign out', 'تسجيل الخروج')}</button>`;
-  $('drawer').querySelectorAll('[data-seg] button').forEach(b => b.onclick = () => {
-    const kind = b.parentNode.dataset.seg;
-    if (kind === 'lang') { lang = b.dataset.v; store.set('alhowail_lang', lang); applyLang(); }
-    else { theme = b.dataset.v; store.set('alhowail_theme', theme); applyTheme(); }
-    rerenderAll(); renderDrawer();
-  });
-  $('logoutBtn').onclick = async () => { closeDrawer(); await doLogout(); };
-}
-$('drawerBg').addEventListener('click', e => { if (e.target === $('drawerBg')) closeDrawer(); });
-
-/* ---------- notifications ---------- */
-function notifications(){
-  const out = [], d = day.data;
-  if (d && d.openVisit) out.push({ kind: 'visit', t: L('Visit in progress', 'زيارة جارية'), s: `${d.openVisit.custNo} — ${d.openVisit.customerName}` });
-  ((d && d.invites) || []).forEach(i => out.push({ kind: 'invite', id: i.visitId, t: L(`${i.ownerName} added you to a visit`, `${i.ownerName} أضافك إلى زيارة`), s: `${i.custNo} — ${i.customerName}` }));
-  if (typeof followUpsDue === 'function') followUpsDue().forEach(({ c, v }) => out.push({ kind: 'fu', id: c.custNo, t: L('Follow-up due', 'متابعة مستحقة') + ' · ' + dateLabel(v.nextVisitDate), s: `${c.custNo} — ${c.cust}` }));
-  return out;
-}
-function updateBadge(){ const n = notifications().length; document.querySelectorAll('[data-badge]').forEach(b => { b.textContent = n > 9 ? '9+' : String(n); b.classList.toggle('on', n > 0); }); }
-function bellSheet(){
-  const items = notifications();
-  openSheet(`<h3>${L('Notifications', 'الإشعارات')}</h3>${items.length ? `<div class="lrows">${items.map((n, i) => `<button type="button" class="lrow" data-n="${i}">
-      <span class="av ${n.kind === 'fu' ? 'st-risk' : 'st-new'}">${n.kind === 'fu' ? '!' : n.kind === 'invite' ? '+' : '●'}</span>
-      <span class="lmain"><b>${esc(n.t)}</b><small>${esc(n.s)}</small></span>${ICONS.chev}</button>`).join('')}</div>`
-    : `<p class="hint2" style="text-align:center;padding:18px 0">${L('No notifications', 'لا توجد إشعارات')}</p>`}`);
-  $('sheet').querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
-    const n = items[Number(b.dataset.n)]; closeSheet();
-    if (n.kind === 'visit') { show('visit'); renderVisit(); }
-    else if (n.kind === 'invite') inviteSheet(((day.data && day.data.invites) || []).find(i => i.visitId === n.id));
-    else openCustomer(n.id);
-  });
-}
-document.addEventListener('click', e => {
-  if (e.target.closest('[data-drawer]')) openDrawer();
-  else if (e.target.closest('[data-bell]')) bellSheet();
-});
-
-/* ---------- Visit history ---------- */
-const hist = { range: 'week', cust: null, q: '' };
-function openHistoryFor(custNo){ hist.cust = String(custNo); hist.range = 'all'; hist.q = ''; go('history'); }
-function allVisits(){
-  const m = new Map();
-  (field.visits || []).forEach(v => m.set(v.visitId, Object.assign({}, v)));
-  ((day.data && day.data.visits) || []).forEach(v => m.set(v.visitId, Object.assign({}, m.get(v.visitId) || {}, {
-    visitId: v.visitId, custNo: v.custNo, customerName: v.customerName, salesmanName: v.ownerName, start: v.start, end: v.end, durationMin: v.durationMin,
-    endType: v.endType, locationType: v.locationType, result: v.result, description: v.description, nextAction: v.nextAction, nextVisitDate: v.nextVisitDate,
-    companions: v.companions })));
-  const names = {}; if (list.report) list.report.custs.forEach(c => { names[String(c.custNo)] = c.cust; });
-  return [...m.values()].map(v => Object.assign(v, { customerName: v.customerName || names[String(v.custNo)] || '' })).sort((a, b) => toMs(b.start) - toMs(a.start));
-}
-function renderVisitHistory(){
-  const body = $('histBody'); if (!body) return;
-  if (!list.report && !list.loading) loadList(false, true);
-  const today = riyDate(nowS()), weekAgo = riyDate(nowS() - 6 * 86400000);
-  let vs = allVisits().filter(v => {
-    const d = riyDate(toMs(v.start));
-    if (hist.range === 'today' && d !== today) return false;
-    if (hist.range === 'week' && d < weekAgo) return false;
-    if (hist.cust && String(v.custNo) !== hist.cust) return false;
-    if (hist.q) { const q = hist.q.toLowerCase(); if (!String(v.custNo).includes(q) && !String(v.customerName).toLowerCase().includes(q)) return false; }
-    return true;
-  });
-  const custName = hist.cust ? ((list.report && (list.report.custs.find(c => String(c.custNo) === hist.cust) || {}).cust) || '') : '';
-  $('histSub').textContent = `${vs.length} ${L('visits', 'زيارة')}`;
-  const groups = {}; vs.forEach(v => { const d = riyDate(toMs(v.start)); (groups[d] = groups[d] || []).push(v); });
-  body.innerHTML = `
-    <div class="seg" id="hRange">${[['today', L('Today', 'اليوم')], ['week', L('This week', 'هذا الأسبوع')], ['all', L('120 days', '120 يومًا')]].map(([k, t]) => `<button type="button" data-r="${k}" class="${hist.range === k ? 'on' : ''}">${t}</button>`).join('')}</div>
-    ${hist.cust ? `<div class="filter-chip"><span>${L('Customer', 'العميل')}: <b>${esc(hist.cust)}${custName ? ' — ' + esc(custName) : ''}</b></span><button type="button" id="hClear" aria-label="${L('Remove filter', 'إزالة الفلتر')}">${ICONS.x}</button></div>`
-      : `<label class="search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="hSearch" type="search" placeholder="${L('Search customer', 'بحث عن عميل')}" value="${esc(hist.q)}" autocomplete="off"></label>`}
-    ${!list.report && list.loading ? `<div class="state"><span class="spin"></span><b>${L('Loading visits…', 'جاري تحميل الزيارات…')}</b></div>` : ''}
-    ${Object.keys(groups).length ? Object.keys(groups).sort().reverse().map(d => `<div class="dgroup">${d === today ? L('Today', 'اليوم') : dateLabel(d)}</div>
-      <div class="lrows">${groups[d].map(v => {
-        const chip = !v.end ? `<span class="chip-s cs-open">${L('Open', 'جارية')}</span>` : v.endType === 'AUTO-CLOSED' ? `<span class="chip-s cs-auto">${L('Auto', 'تلقائي')}</span>` : '';
-        return `<button type="button" class="lrow hrow" data-v="${esc(v.visitId)}"><span class="tmcol"><b>${hm(v.start).replace(/ (AM|PM)/, '')}</b><small>${v.durationMin != null ? dur(v.durationMin) : '—'}</small></span>
-          <span class="lmain"><b>${esc(v.customerName || v.custNo)}</b><small>${esc(v.custNo)} · ${esc(tr(v.locationType || ''))}</small><small class="res">${esc(v.result ? tr(v.result) : (v.end ? '—' : L('In progress', 'جارية')))}</small></span>${chip}${ICONS.chev}</button>`;
-      }).join('')}</div>`).join('')
-      : (list.report || !list.loading ? `<div class="state"><b>${L('No visits in this period', 'لا توجد زيارات في هذه الفترة')}</b>${hist.range !== 'all' ? `<button class="btn btn-quiet" type="button" id="hAll">${L('Show 120 days', 'عرض 120 يومًا')}</button>` : ''}</div>` : '')}`;
-  body.querySelectorAll('#hRange button').forEach(b => b.onclick = () => { hist.range = b.dataset.r; renderVisitHistory(); });
-  const hc = $('hClear'); if (hc) hc.onclick = () => { hist.cust = null; renderVisitHistory(); };
-  const ha = $('hAll'); if (ha) ha.onclick = () => { hist.range = 'all'; renderVisitHistory(); };
-  const hs = $('hSearch'); if (hs) hs.oninput = e => { hist.q = e.target.value; const pos = e.target.selectionStart; renderVisitHistory(); const n = $('hSearch'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } };
-  body.querySelectorAll('[data-v]').forEach(b => b.onclick = () => visitDetail(vs.find(v => v.visitId === b.dataset.v)));
-}
-function visitDetail(v){
-  if (!v) return;
-  const row = (k, val) => val ? `<dt>${k}</dt><dd>${esc(val)}</dd>` : '';
-  openSheet(`<h3>${esc(v.customerName || v.custNo)}</h3><p class="hint2">${esc(v.custNo)} · ${dateLabel(riyDate(toMs(v.start)))}</p>
-    <dl class="lines" style="margin-top:0">
-      ${row(L('Time', 'الوقت'), hm(v.start) + (v.end ? ' → ' + hm(v.end) : ''))}${row(L('Duration', 'المدة'), v.durationMin != null ? dur(v.durationMin) : '')}
-      ${row(L('Location', 'الموقع'), tr(v.locationType))}${row(L('Result', 'النتيجة'), tr(v.result))}${row(L('By', 'بواسطة'), v.salesmanName)}
-      ${row(L('Next action', 'الإجراء التالي'), v.nextAction)}${row(L('Next visit', 'الزيارة القادمة'), v.nextVisitDate ? dateLabel(v.nextVisitDate) : '')}
-      ${v.endType === 'AUTO-CLOSED' ? `<dt>${L('Closed', 'الإغلاق')}</dt><dd class="warn">${L('Automatically at end of day', 'تلقائيًا في نهاية اليوم')}</dd>` : ''}
-    </dl>${v.description ? `<div class="note-box">${esc(v.description)}</div>` : ''}
-    <div class="row2"><button class="btn btn-quiet" type="button" id="vdCust">${L('Customer', 'العميل')}</button><button class="btn btn-primary" type="button" id="vdClose">${L('Close', 'إغلاق')}</button></div>`);
-  $('vdClose').onclick = closeSheet;
-  $('vdCust').onclick = () => { closeSheet(); openCustomer(v.custNo); };
-}
-
 boot();
 </script>
 </body>
