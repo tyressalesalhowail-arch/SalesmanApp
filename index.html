@@ -783,6 +783,22 @@ html[data-theme=dark] #splash{background:#0b1224}
 .login-top{background:var(--bg)!important;color:var(--ink)!important}
 .login-top p{color:var(--ink-dim)!important}
 .dr-logo{height:40px;width:auto;align-self:flex-start}
+/* notifications with delete */
+.nrow{padding:0;gap:0}
+.nrow .nopen{flex:1;display:flex;align-items:center;gap:12px;padding:12px 6px 12px 14px;border:0;background:none;font:inherit;color:inherit;text-align:start;min-width:0;cursor:pointer}
+.nrow .ndel{width:44px;align-self:stretch;border:0;background:none;color:var(--ink-mute);display:grid;place-items:center;cursor:pointer}
+.nrow .ndel svg{width:16px;height:16px}
+/* Home slightly more prominent in the bottom navigation */
+.bnav .home .hb svg{width:29px!important;height:29px!important}
+.bnav .home{font-weight:800}
+.bnav .home .lbl{font-size:12px}
+/* centred logo: header (menu · logo · bell) and drawer */
+#home .appbar{position:relative}
+#home .appbar .logo-box{position:absolute;left:50%;top:calc(var(--safe-top) + 12px);transform:translateX(-50%)}
+#home .appbar .logo-box img{height:38px}
+.dr-logo{align-self:center!important;height:46px}
+.dr-head{align-items:center;text-align:center}
+.dr-user{flex-direction:column;gap:8px}
 
 </style>
 </head>
@@ -1785,7 +1801,7 @@ document.getElementById('touchIcon').href = MARK;
 /* ===== Config ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec';   // Deploy → Web app URL of the NEW Apps Script project
 const SPLASH_MIN_MS = 900;
-const APP_VERSION = '0.9.0';
+const APP_VERSION = '0.10.0';
 /* Inside the Alhowail Android app (APK) the Capacitor bridge is present: native GPS + native printing. */
 const NativeApp = (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform() && typeof window.Capacitor.registerPlugin === 'function')
   ? window.Capacitor.registerPlugin('AlhowailNative') : null;
@@ -1808,7 +1824,12 @@ const ERR = {
   NOT_CONFIGURED:      ['App is not connected yet: API_URL is missing.', 'التطبيق غير مربوط بالخادم بعد.'],
   DEFAULT:             ['Something went wrong. Try again.', 'حدث خطأ. حاول مرة أخرى.']
 };
-const errText = code => ERR[code] || ERR.DEFAULT;
+Object.assign(ERR, {
+  UNKNOWN_ACTION: ['The server is an older version. Ask the coordinator to deploy the latest Code.gs (Manage deployments → New version).', 'نسخة الخادم قديمة. اطلب من المنسق نشر آخر نسخة من Code.gs.'],
+  BUSY:           ['The server is busy with another save. Try again in a few seconds.', 'الخادم مشغول بحفظ آخر. حاول بعد ثوانٍ.']
+});
+/** Known codes get their message; unknown codes still show the code so the problem can be traced. */
+const errText = code => ERR[code] || (code && code !== 'DEFAULT' ? [`Something went wrong (${code}). Try again.`, `حدث خطأ (${code}). حاول مرة أخرى.`] : ERR.DEFAULT);
 
 /* ===== Storage (guarded: private mode can block it) ===== */
 const store = {
@@ -1822,7 +1843,7 @@ class ApiError extends Error { constructor(code, detail){ super(code); this.code
 
 /* Reads are retried automatically on temporary failures. Writes carry a request id (rid): the server stores the
    answer per rid, so a retried write can never be saved twice. Every request is traced (duration/result). */
-const READ_ACTIONS = { ping: 1, me: 1, today: 1, myList: 1, teammates: 1 };
+const READ_ACTIONS = { ping: 1, me: 1, today: 1, myList: 1, teammates: 1, branchDirectory: 1, dataVersion: 1, customerBasic: 1, myLeads: 1 };
 const RETRYABLE = { NETWORK: 1, TIMEOUT: 1, SERVER_UNAVAILABLE: 1, INVALID_RESPONSE: 1 };
 const diag = [];
 function trace(rec){ diag.push(rec); if (diag.length > 60) diag.shift(); try { console.info('[api]', rec.action, rec.ms + 'ms', rec.result, rec.traceId); store.set('alhowail_diag', JSON.stringify(diag.slice(-25))); } catch (e) {} }
@@ -2469,7 +2490,9 @@ function errMsg(e){
   if (e && e.code === 'GPS_WEAK' && d) return [`GPS accuracy is ±${d.accuracy} m (needs ±${d.max} m or better). Step outside or wait, then retry.`, `دقة الموقع ±${d.accuracy} م. اخرج قليلًا أو انتظر ثم أعد المحاولة.`];
   if (e && e.code === 'KM_LOWER' && d) return [`Odometer must be at least ${SAR.format(d.inKm)} km (this morning).`, `يجب ألا تقل القراءة عن ${SAR.format(d.inKm)} كم.`];
   if (e && e.code === 'COMPANION_UNAVAILABLE' && d && d.name) return [`${d.name} is not available now (not punched in or in another visit).`, `${d.name} غير متاح الآن.`];
-  return errText(e && e.code);
+  if (e && e.code === 'SERVER_ERROR' && d && d.message) return [`Server error: ${d.message}${e.traceId ? ' · ref ' + e.traceId : ''}`, `خطأ في الخادم: ${d.message}`];
+  const t = errText(e && e.code);
+  return e && e.traceId && !ERR[e.code] ? [t[0] + ' · ref ' + e.traceId, t[1]] : t;
 }
 function msgInto(el, m){ el.textContent = ''; el.append(pick(m)); el.classList.add('on'); }
 
@@ -3097,17 +3120,13 @@ function openPrintPage(title, bodyHtml, lng){
 }
 
 function pdfSheet(title, sub, make){
-  let lng = store.get(PDF_LANG_KEY) === 'ar' ? 'ar' : 'en';
-  openSheet(`<h3>${title}</h3><p class="hint2">${esc(sub)}</p>
-    <div class="field"><label><span>${L('PDF language', 'لغة الملف')}</span></label>
-      <div class="seg" id="pdfLang"><button type="button" data-l="en" class="${lng === 'en' ? 'on' : ''}">English</button><button type="button" data-l="ar" class="${lng === 'ar' ? 'on' : ''}">العربية</button></div></div>
+  const lng = lang === 'ar' ? 'ar' : 'en';                 // PDF language = the app's current language
+  openSheet(`<h3>${title}</h3><p class="hint2">${esc(sub)} · ${lng === 'ar' ? 'PDF عربي' : 'English PDF'}</p>
     <div class="pdf-acts">
-      <button class="btn btn-wa" type="button" id="pdfWa">${ICONS.wa}<span>WhatsApp</span></button>
-      <button class="btn btn-primary" type="button" id="pdfGo">${ICONS.down}<span>${L('Download PDF', 'تحميل PDF')}</span></button>
+      <button class="btn btn-primary" type="button" id="pdfGo"><span class="spin"></span>${ICONS.down}<span>${L('Download PDF', 'تحميل PDF')}</span></button>
+      <button class="btn btn-wa" type="button" id="pdfWa"><span class="spin"></span>${ICONS.wa}<span>WhatsApp</span></button>
     </div>
-    <p class="hint2">${L('Same layout as the dashboard PDF.', 'نفس تصميم ملف لوحة التحكم.')}</p>
     <div class="msg err" id="sheetMsg"></div>`);
-  $('pdfLang').querySelectorAll('button').forEach(b => b.onclick = () => { lng = b.dataset.l; $('pdfLang').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
   const run = async (how, btn) => {
     store.set(PDF_LANG_KEY, lng); DashPrint.setLang(lng);
     const r = make(); if (!r) return;
@@ -3215,19 +3234,26 @@ function renderDrawer(){
 $('drawerBg').addEventListener('click', e => { if (e.target === $('drawerBg')) closeDrawer(); });
 
 /* ---------- notifications ---------- */
+const DISMISS_KEY = 'alhowail_dismissed';
+const dismissed = () => { try { return JSON.parse(store.get(DISMISS_KEY) || '{}'); } catch (e) { return {}; } };
+function dismiss(ids){ const m = dismissed(), today = riyDate(nowS()); ids.forEach(id => { m[id] = today; }); Object.keys(m).forEach(k => { if (m[k] < riyDate(nowS() - 30 * 86400000)) delete m[k]; }); store.set(DISMISS_KEY, JSON.stringify(m)); }
 function notifications(){
+  const all = rawNotifications(), off = dismissed();
+  return all.filter(n => !off[n.key]);
+}
+function rawNotifications(){
   const out = [], d = day.data;
-  if (d && d.openVisit) out.push({ kind: 'visit', t: L('Visit in progress', 'زيارة جارية'), s: `${d.openVisit.custNo} — ${d.openVisit.customerName}` });
-  ((d && d.invites) || []).forEach(i => out.push({ kind: 'invite', id: i.visitId, t: L(`${i.ownerName} added you to a visit`, `${i.ownerName} أضافك إلى زيارة`), s: `${i.custNo} — ${i.customerName}` }));
-  if (typeof followUpsDue === 'function') followUpsDue().forEach(({ c, v }) => out.push({ kind: 'fu', id: c.custNo, t: L('Follow-up due', 'متابعة مستحقة') + ' · ' + dateLabel(v.nextVisitDate), s: `${c.custNo} — ${c.cust}` }));
+  if (d && d.openVisit) out.push({ key: 'v:' + d.openVisit.visitId, kind: 'visit', t: L('Visit in progress', 'زيارة جارية'), s: `${d.openVisit.custNo} — ${d.openVisit.customerName}` });
+  ((d && d.invites) || []).forEach(i => out.push({ key: 'i:' + i.visitId, kind: 'invite', id: i.visitId, t: L(`${i.ownerName} added you to a visit`, `${i.ownerName} أضافك إلى زيارة`), s: `${i.custNo} — ${i.customerName}` }));
+  if (typeof followUpsDue === 'function') followUpsDue().forEach(({ c, v }) => out.push({ key: 'f:' + v.visitId + ':' + v.nextVisitDate, kind: 'fu', id: c.custNo, t: L('Follow-up due', 'متابعة مستحقة') + ' · ' + dateLabel(v.nextVisitDate), s: `${c.custNo} — ${c.cust}` }));
   return out;
 }
 function updateBadge(){ const n = notifications().length; document.querySelectorAll('[data-badge]').forEach(b => { b.textContent = n > 9 ? '9+' : String(n); b.classList.toggle('on', n > 0); }); }
 function bellSheet(){
   const items = notifications();
-  openSheet(`<h3>${L('Notifications', 'الإشعارات')}</h3>${items.length ? `<div class="lrows">${items.map((n, i) => `<button type="button" class="lrow" data-n="${i}">
+  openSheet(`<div class="sec-h"><h3>${L('Notifications', 'الإشعارات')}</h3>${items.length ? `<button class="mini ghost" type="button" id="nClear">${L('Clear all', 'مسح الكل')}</button>` : ''}</div>${items.length ? `<div class="lrows">${items.map((n, i) => `<div class="lrow nrow"><button type="button" class="nopen" data-n="${i}">
       <span class="av ${n.kind === 'fu' ? 'st-risk' : 'st-new'}">${n.kind === 'fu' ? '!' : n.kind === 'invite' ? '+' : '●'}</span>
-      <span class="lmain"><b>${esc(n.t)}</b><small>${esc(n.s)}</small></span>${ICONS.chev}</button>`).join('')}</div>`
+      <span class="lmain"><b>${esc(n.t)}</b><small>${esc(n.s)}</small></span></button><button type="button" class="ndel" data-d="${i}" aria-label="${L('Delete', 'حذف')}">${ICONS.x}</button></div>`).join('')}</div>`
     : `<p class="hint2" style="text-align:center;padding:18px 0">${L('No notifications', 'لا توجد إشعارات')}</p>`}`);
   $('sheet').querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
     const n = items[Number(b.dataset.n)]; closeSheet();
@@ -3235,6 +3261,8 @@ function bellSheet(){
     else if (n.kind === 'invite') inviteSheet(((day.data && day.data.invites) || []).find(i => i.visitId === n.id));
     else openCustomer(n.id);
   });
+  $('sheet').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { dismiss([items[Number(b.dataset.d)].key]); updateBadge(); bellSheet(); });
+  const c = $('nClear'); if (c) c.onclick = () => { dismiss(items.map(n => n.key)); updateBadge(); bellSheet(); };
 }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-drawer]')) openDrawer();
@@ -3376,28 +3404,43 @@ function reasonSheet(e, then){
   $('fSave').onclick = () => { if (!pickV) return msgInto($('sheetMsg'), errText('OUT_REASON_REQUIRED')); e.outReason = pickV; closeSheet(); then(); };
 }
 
-/* ---------- search customers of my branch ---------- */
+/* ---------- search customers of my branch (branch list cached on the phone, refreshed when the sales data version changes) ---------- */
+const branchDir = { rows: null, version: null, loading: null };
+async function loadBranchDir(){
+  const key = 'dir_' + (state.user && state.user.code);
+  if (!branchDir.rows) { const c = await LocalCache.get(key); if (c && c.rows) { branchDir.rows = c.rows; branchDir.version = c.version; } }
+  if (branchDir.loading) return branchDir.loading;
+  branchDir.loading = api('branchDirectory', { ifVersion: branchDir.version || '' }, 90000).then(r => {
+    if (!r.unchanged) { branchDir.rows = r.rows || []; branchDir.version = r.dataVersion; LocalCache.set(key, { rows: branchDir.rows, version: branchDir.version }); }
+  }).finally(() => { branchDir.loading = null; });
+  return branchDir.loading;
+}
+function searchBranchDir(q){
+  q = q.toLowerCase();
+  return (branchDir.rows || []).filter(d => String(d[0]).toLowerCase().includes(q) || String(d[2]).toLowerCase().includes(q))
+    .slice(0, 40).map(d => ({ custNo: d[0], branch: d[1], name: d[2], ownerCode: d[3], ownerName: d[4], own: !!d[5] }));
+}
 function otherCustomerSheet(){
   openSheet(`<h3>${L('Visit another customer', 'زيارة عميل آخر')}</h3>
     <p class="hint2">${L('Search your branch by name or code.', 'ابحث في فرعك بالاسم أو الكود.')}</p>
     <label class="search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="ocQ" type="search" autocomplete="off" placeholder="${L('Customer name or code', 'اسم العميل أو الكود')}"></label>
     <div id="ocRes" class="list2" style="max-height:48vh;overflow-y:auto"></div>
     <div class="msg err" id="sheetMsg"></div>`);
-  let t = null, seq = 0;
-  const run = async () => {
-    const q = $('ocQ').value.trim(), my = ++seq;
-    if (q.length < 2) { $('ocRes').innerHTML = `<p class="hint2" style="padding:12px">${L('Type at least 2 characters.', 'اكتب حرفين على الأقل.')}</p>`; return; }
-    $('ocRes').innerHTML = `<div class="gps wait"><span class="spin"></span><span class="grow">${L('Searching…', 'جاري البحث…')}</span></div>`;
-    try {
-      const r = await api('branchSearch', { q });
-      if (my !== seq) return;
-      $('ocRes').innerHTML = r.results.length ? r.results.map((x, i) => `<button type="button" class="li2" data-i="${i}"><span class="li2-ic">${esc(initials(x.name))}</span><span class="m"><b>${esc(x.name)}</b><small>${esc(x.custNo)} · ${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Owner', 'المسؤول') + ': ' + esc(x.ownerName || x.ownerCode)}</small></span>${ICONS.chev}</button>`).join('')
-        : `<p class="hint2" style="padding:12px">${L('No customer found.', 'لا يوجد عميل.')}</p>`;
-      $('ocRes').querySelectorAll('[data-i]').forEach(b => b.onclick = () => pickOther(r.results[Number(b.dataset.i)]));
-    } catch (e) { if (my === seq) { $('ocRes').innerHTML = ''; msgInto($('sheetMsg'), errMsg(e)); } }
+  let t = null;
+  const show = () => {
+    const el = $('ocRes'); if (!el) return;
+    const q = $('ocQ').value.trim();
+    if (!branchDir.rows) { el.innerHTML = `<div class="gps wait"><span class="spin"></span><span class="grow">${L('Loading branch customers… (first time only)', 'جاري تحميل عملاء الفرع… (أول مرة فقط)')}</span></div>`; return; }
+    if (q.length < 2) { el.innerHTML = `<p class="hint2" style="padding:12px">${L('Type at least 2 characters.', 'اكتب حرفين على الأقل.')} · ${branchDir.rows.length} ${L('customers in your branch', 'عميل في فرعك')}</p>`; return; }
+    const res = searchBranchDir(q);
+    el.innerHTML = res.length ? res.map((x, i) => `<button type="button" class="li2" data-i="${i}"><span class="li2-ic">${esc(initials(x.name))}</span><span class="m"><b>${esc(x.name)}</b><small>${esc(x.custNo)} · ${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Owner', 'المسؤول') + ': ' + esc(x.ownerName || x.ownerCode)}</small></span>${ICONS.chev}</button>`).join('')
+      : `<p class="hint2" style="padding:12px">${L('No customer found.', 'لا يوجد عميل.')}</p>`;
+    el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => pickOther(res[Number(b.dataset.i)]));
   };
-  $('ocQ').oninput = () => { clearTimeout(t); t = setTimeout(run, 350); };
-  setTimeout(() => $('ocQ').focus(), 60);
+  $('ocQ').oninput = () => { clearTimeout(t); t = setTimeout(show, 250); };
+  show();
+  loadBranchDir().then(show, e => { if (!branchDir.rows) { $('ocRes').innerHTML = ''; msgInto($('sheetMsg'), errMsg(e)); } });
+  setTimeout(() => $('ocQ') && $('ocQ').focus(), 60);
 }
 async function pickOther(x){
   if (x.own && list.report && list.report.custs.some(c => String(c.custNo) === String(x.custNo))) { closeSheet(); openCustomer(x.custNo); return; }
