@@ -799,6 +799,7 @@ html[data-theme=dark] #splash{background:#0b1224}
 .dr-logo{align-self:center!important;height:46px}
 .dr-head{align-items:center;text-align:center}
 .dr-user{flex-direction:column;gap:8px}
+.fu-x{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--ink-mute);background:var(--panel-2,#f2f4f8);font-size:12px;flex:none;margin-inline-end:6px}
 
 </style>
 </head>
@@ -1801,7 +1802,7 @@ document.getElementById('touchIcon').href = MARK;
 /* ===== Config ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec';   // Deploy → Web app URL of the NEW Apps Script project
 const SPLASH_MIN_MS = 900;
-const APP_VERSION = '0.10.0';
+const APP_VERSION = '0.13.0';
 /* Inside the Alhowail Android app (APK) the Capacitor bridge is present: native GPS + native printing. */
 const NativeApp = (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform() && typeof window.Capacitor.registerPlugin === 'function')
   ? window.Capacitor.registerPlugin('AlhowailNative') : null;
@@ -1825,10 +1826,14 @@ const ERR = {
   DEFAULT:             ['Something went wrong. Try again.', 'حدث خطأ. حاول مرة أخرى.']
 };
 Object.assign(ERR, {
+  ADMIN_ONLY:       ['Only the coordinator can change or delete saved customer information. You can add new information.', 'فقط المنسق يمكنه تعديل أو حذف بيانات العميل المحفوظة. يمكنك إضافة معلومات جديدة.'],
+  PASSWORD_NOT_SET: ['Your account is ready but has no password yet. Ask the Sales Coordinator to set it.', 'حسابك جاهز لكن بدون كلمة مرور. اطلب من منسق المبيعات تعيينها.'],
   UNKNOWN_ACTION: ['The server is an older version. Ask the coordinator to deploy the latest Code.gs (Manage deployments → New version).', 'نسخة الخادم قديمة. اطلب من المنسق نشر آخر نسخة من Code.gs.'],
   BUSY:           ['The server is busy with another save. Try again in a few seconds.', 'الخادم مشغول بحفظ آخر. حاول بعد ثوانٍ.']
 });
 /** Known codes get their message; unknown codes still show the code so the problem can be traced. */
+/** Salesmen add customer information; only admins edit or delete it (enforced on the server too). */
+const canManage = () => !!(state.user && state.user.role === 'ADMIN');
 const errText = code => ERR[code] || (code && code !== 'DEFAULT' ? [`Something went wrong (${code}). Try again.`, `حدث خطأ (${code}). حاول مرة أخرى.`] : ERR.DEFAULT);
 
 /* ===== Storage (guarded: private mode can block it) ===== */
@@ -2093,9 +2098,10 @@ function stateHTML(kind, msg){
 function applyPayload(payload){
   loadSalesmanData(payload);                                 // dashboard engine
   const f = payload.field || {};
-  field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || [];
+  field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || []; field.notes = f.notes || [];
   if (day.data && day.data.visits) mergeVisits(day.data.visits);
   list.report = getSalesmanReportData(String(state.user.code));
+  if (payload.custIdentity) custIdentity = { dups: new Set(payload.custIdentity.dups || []), abbr: payload.custIdentity.abbr || {} };
   if (typeof applyLeads === 'function') applyLeads(payload.leadsBundle);
 }
 function agoText(t){ if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? L('just now', 'الآن') : m < 60 ? m + L(' min ago', ' دقيقة') : m < 1440 ? Math.round(m / 60) + L(' h ago', ' ساعة') : Math.round(m / 1440) + L(' d ago', ' يوم'); }
@@ -2249,10 +2255,12 @@ function openCustomer(custNo){
     </div>
     <div class="card" id="contactsCard"></div>
     <div class="card" id="locCard"></div>
+    <div class="card" id="notesCard"></div>
     <div class="card" id="histCard"></div>`;
   currentCust = c;
   renderContacts();
   renderLocations(c);
+  renderNotes(c);
   renderHistory(c);
   $('custStart').onclick = () => startVisitFlow(c);
   $('custStmt').style.display = ''; $('custStmtBar').style.display = '';
@@ -2271,13 +2279,17 @@ Object.assign(ERR, {
   NOT_YOUR_CUSTOMER: ['This customer is not in your list.', 'هذا العميل ليس في قائمتك.'],
   NOT_FOUND:         ['This item was already removed. Refresh and try again.', 'تم حذف هذا العنصر بالفعل. حدّث الصفحة.']
 });
-const field = { contacts: [], phones: [], locations: [], visits: [] };
+const field = { contacts: [], phones: [], locations: [], visits: [], notes: [] };
 let currentCust = null;
 const I_CALL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>';
 const I_WA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>';
 const I_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
 
-const custNoOfKey = k => String(k || '').split('|')[1];
+/** Branch-aware customer identity (same rule as the server and dashboard): a code used in several branches
+ *  is shown as code-BRANCH (32184-DAM1); stored keys keep the original ERP code: C|code|branch. */
+let custIdentity = { dups: new Set(), abbr: {} };
+const normBranch = b => String(b || '').replace(/\s+/g, ' ').trim().toUpperCase();
+const custNoOfKey = k => { const p = String(k || '').split('|'); if (p[0] !== 'C') return p[1]; return custIdentity.dups.has(p[1]) ? p[1] + '-' + (custIdentity.abbr[normBranch(p[2])] || 'BR') : p[1]; };
 const phonesOf = custNo => field.phones.filter(p => custNoOfKey(p.CustomerKey) === String(custNo));
 const contactsOf = custNo => field.contacts.filter(c => custNoOfKey(c.CustomerKey) === String(custNo));
 function fmtPhone(n){ n = String(n); return /^05\d{8}$/.test(n) ? n.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3') : /^0\d{9}$/.test(n) ? n.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3') : n; }
@@ -2295,7 +2307,7 @@ function phoneRow(p){
     <span class="num"><span dir="ltr">${esc(fmtPhone(p.Number))}</span><span class="ty">${esc(tr(p.Type))}</span></span>
     <a class="act call" href="tel:${esc(p.Number)}" data-ext aria-label="${L('Call', 'اتصال')}">${I_CALL}</a>
     <a class="act wa" href="${esc(waLink(p.Number))}" data-ext target="_blank" rel="noopener" aria-label="WhatsApp">${I_WA}</a>
-    <button class="act del" type="button" data-delphone="${esc(p.PhoneID)}" aria-label="${L('Delete number', 'حذف الرقم')}">${I_DEL}</button>
+    ${canManage() ? `<button class="act del" type="button" data-delphone="${esc(p.PhoneID)}" aria-label="${L('Delete number', 'حذف الرقم')}">${I_DEL}</button>` : ''}
   </div>`;
 }
 
@@ -2310,7 +2322,7 @@ function renderContacts(){
     ${warn}
     ${contacts.map(ct => `<div class="contact">
       <div class="who"><div><div class="nm" data-i="${esc(initials(ct.Name))}">${esc(ct.Name)}</div>${ct.Role ? `<div class="rl">${esc(ct.Role)}</div>` : ''}</div>
-        <div style="display:flex;gap:2px;flex:none"><button class="mini ghost" type="button" data-editc="${esc(ct.ContactID)}">Edit</button><button class="mini danger" type="button" data-delc="${esc(ct.ContactID)}">Delete</button></div></div>
+        ${canManage() ? `<div style="display:flex;gap:2px;flex:none"><button class="mini ghost" type="button" data-editc="${esc(ct.ContactID)}">Edit</button><button class="mini danger" type="button" data-delc="${esc(ct.ContactID)}">Delete</button></div>` : ''}</div>
       ${phones.filter(p => p.ContactID === ct.ContactID).map(phoneRow).join('')}
       <button class="mini ghost" type="button" data-addp="${esc(ct.ContactID)}" style="padding-left:0">+ <span class="en">Add number</span><span class="ar">إضافة رقم</span></button>
     </div>`).join('')}
@@ -2438,7 +2450,10 @@ function renderProfile(){
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 $('refreshBtn').addEventListener('click', () => loadList(true));
 enablePullToRefresh($('listBody'), () => loadList(true));
-$('custBack').addEventListener('click', () => show('list'));
+$('custBack').addEventListener('click', () => {
+  if (returnToVisit && day.data && (day.data.openVisit || day.data.jointVisit)) { returnToVisit = false; show('visit'); renderVisit(); return; }
+  returnToVisit = false; show('list');
+});
 function toast(msg){
   let t = document.getElementById('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast';
@@ -2658,7 +2673,8 @@ function renderDay(errorMsg){
   (d.invites || []).forEach(i => { invites += `<button class="banner blue" type="button" data-invite="${esc(i.visitId)}"><div class="grow"><small>${esc(i.ownerName)} ${L('added you to a visit', 'أضافك إلى زيارة')}</small><b>${esc(i.custNo)} — ${esc(i.customerName)}</b><small>${esc(tr(i.locationType))} · ${hm(i.start)}</small></div><span class="pill b">${L('Confirm', 'تأكيد')}</span></button>`; });
   const fu = typeof followUpsDue === 'function' ? followUpsDue() : [];
   const fuHtml = fu.length ? `<div class="sec-t"><h3>${L('Follow-ups today', 'متابعات اليوم')}<span>${fu.length}</span></h3><button type="button" data-go="list">${L('View all', 'عرض الكل')} ›</button></div>
-      <div class="list2">${fu.slice(0, 4).map(({ c, v: fv }) => `<button type="button" class="li2" data-fu="${esc(c.custNo)}"><span class="li2-ic">${IC.clock}</span><span class="m"><b>${esc(c.cust)}</b><small>${esc(c.custNo)} · ${esc(fv.nextAction || tr(fv.result) || '')}</small></span><span class="go">${L('Visit', 'زيارة')} ›</span></button>`).join('')}</div>` : '';
+      <div class="list2">${fu.slice(0, 4).map(({ c, v: fv }) => `<button type="button" class="li2" data-fu="${esc(c.custNo)}"><span class="li2-ic">${IC.clock}</span><span class="m"><b>${esc(c.cust)}</b><small>${esc(c.custNo)} · ${esc(fv.nextAction || tr(fv.result) || '')}</small></span><span class="fu-x" role="button" data-fucancel="${esc(fv.visitId)}" aria-label="${L('Cancel follow-up', 'إلغاء المتابعة')}">✕</span><span class="go">${L('Visit', 'زيارة')} ›</span></button>`).join('')}</div>` : '';
+  const fuCancel = fu.slice(0, 4).map(({ v: fv }) => fv.visitId);
   const rep = list.report;
   const pf = rep ? `<div class="sec-t"><h3>${L('My customers', 'عملائي')}</h3><button type="button" data-go="list">${L('Open list', 'فتح القائمة')} ›</button></div>
       <div class="list2 pf"><div><b>${rep.custs.length}</b><span>${L('Customers', 'العملاء')}</span></div><div><b style="color:#a36b00">${SAR.format(Math.round(rep.overdueTotal + rep.dueTotal))}</b><span>${L('Balance', 'الرصيد')}</span></div><div><b style="color:#e5484d">${SAR.format(Math.round(rep.overdueTotal))}</b><span>${L('Overdue', 'المتأخر')}</span></div></div>`
@@ -2685,6 +2701,7 @@ function renderDay(errorMsg){
   body.querySelectorAll('[data-openvisit]').forEach(b => b.onclick = () => { show('visit'); renderVisit(); });
   body.querySelectorAll('[data-invite]').forEach(b => b.onclick = () => inviteSheet((d.invites || []).find(i => i.visitId === b.dataset.invite)));
   body.querySelectorAll('[data-fu]').forEach(b => b.onclick = () => openCustomer(b.dataset.fu));
+  body.querySelectorAll('[data-fucancel]').forEach(b => b.onclick = e => { e.stopPropagation(); cancelFollowUpSheet(b.dataset.fucancel); });
   if (!list.report && !list.loading && u.code) loadList(false, true);     // fill "My customers" in the background
 }
 
@@ -2694,7 +2711,7 @@ function followUpsDue(){
   const today = riyDate(nowS()), out = [];
   list.report.custs.forEach(c => {
     const vs = visitsOf(c.custNo), last = vs.find(v => v.end);
-    if (last && last.nextVisitDate && last.nextVisitDate <= today && !vs.some(v => toMs(v.start) > toMs(last.start))) out.push({ c, v: last });
+    if (last && last.nextVisitDate && last.followUpStatus !== 'Cancelled' && last.nextVisitDate <= today && !vs.some(v => toMs(v.start) > toMs(last.start))) out.push({ c, v: last });
   });
   return out.sort((a, b) => a.v.nextVisitDate.localeCompare(b.v.nextVisitDate));
 }
@@ -2821,12 +2838,45 @@ async function submitPunch(){
   }, box);
 }
 
+/* ---------- Cancel a follow-up (kept in history as Cancelled) ---------- */
+function cancelFollowUpSheet(visitId){
+  openSheet(`<h3>${L('Cancel this follow-up?', 'إلغاء هذه المتابعة؟')}</h3><p class="hint2">${L('It will no longer appear in Follow-ups Today or reminders. It stays in the visit history as Cancelled.', 'لن تظهر في متابعات اليوم أو التذكيرات، وتبقى في سجل الزيارات كملغاة.')}</p>
+    <div class="msg err" id="sheetMsg"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Keep', 'إبقاء')}</button><button class="btn btn-red" type="button" id="fSave"><span class="spin"></span>${L('Cancel follow-up', 'إلغاء المتابعة')}</button></div>`);
+  $('fCancel').onclick = closeSheet;
+  $('fSave').onclick = () => busy($('fSave'), async () => {
+    await api('cancelFollowUp', { visitId });
+    (field.visits || []).forEach(v => { if (v.visitId === visitId) v.followUpStatus = 'Cancelled'; });
+    closeSheet(); renderDay(); if (typeof updateBadge === 'function') updateBadge();
+    toast(['Follow-up cancelled.', 'تم إلغاء المتابعة.']);
+  }, $('sheetMsg'));
+}
+
+/* ---------- Customer notes (salesmen add + view; only the coordinator edits / deletes) ---------- */
+function notesOf(custNo){ return (field.notes || []).filter(n => custNoOfKey(n.CustomerKey) === String(custNo)).sort((a, b) => toMs(a.CreatedAt) - toMs(b.CreatedAt)); }
+function renderNotes(c){
+  const el = $('notesCard'); if (!el) return;
+  const ns = notesOf(c.custNo);
+  el.innerHTML = `<div class="sec-h"><h2>${L('Notes', 'ملاحظات')}</h2><button class="mini" type="button" id="addNote">+ ${L('Note', 'ملاحظة')}</button></div>
+    ${ns.length ? ns.map(n => `<div class="vrow"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(n.Note)}</div><div class="dt">${esc(n.CreatedByName || '')} · ${dayShort(n.CreatedAt)} ${hm(n.CreatedAt)}</div></div></div>`).join('')
+      : `<p class="hint2">${L('No notes yet.', 'لا توجد ملاحظات.')}</p>`}`;
+  $('addNote').onclick = () => {
+    openSheet(`<h3>${L('Add note', 'إضافة ملاحظة')}</h3><textarea class="ta" id="nText" maxlength="2000" placeholder="${L('e.g. Gate code, best time to visit, decision maker…', 'مثال: رمز البوابة، أفضل وقت للزيارة…')}"></textarea>
+      <p class="hint2">${L('Notes cannot be edited or deleted after saving.', 'لا يمكن تعديل أو حذف الملاحظة بعد الحفظ.')}</p><div class="msg err" id="sheetMsg"></div>
+      <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Cancel', 'إلغاء')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('Save', 'حفظ')}</button></div>`);
+    $('fCancel').onclick = closeSheet;
+    $('fSave').onclick = () => { const t = $('nText').value.trim(); if (!t) return msgInto($('sheetMsg'), ['Write the note.', 'اكتب الملاحظة.']);
+      busy($('fSave'), async () => { const r = await api('addNote', { custNo: c.custNo, branch: c.branch || '', note: t });
+        field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []); closeSheet(); renderNotes(c); toast(['Note saved.', 'تم حفظ الملاحظة.']); }, $('sheetMsg')); };
+  };
+}
+
 /* ---------- Visit history helpers (customer card + list rows) ---------- */
 function mergeVisits(views){
   field.visits = field.visits || [];
   views.forEach(v => {
     const rec = { visitId: v.visitId, custNo: v.custNo, salesmanName: v.ownerName, start: v.start, end: v.end, durationMin: v.durationMin, endType: v.endType,
-      locationType: v.locationType, result: v.result, description: v.description, nextAction: v.nextAction, nextVisitDate: v.nextVisitDate };
+      locationType: v.locationType, result: v.result, description: v.description, nextAction: v.nextAction, nextVisitDate: v.nextVisitDate, followUpStatus: v.followUpStatus };
     const i = field.visits.findIndex(x => x.visitId === v.visitId);
     if (i >= 0) field.visits[i] = rec; else field.visits.push(rec);
   });
@@ -2975,6 +3025,20 @@ async function submitStart(){
 }
 
 /* ---------- Visit in progress ---------- */
+let returnToVisit = false;
+/** Opens the card of the customer being visited (own customer, lead or branch customer). The visit stays open. */
+async function openVisitCustomer(v){
+  returnToVisit = true;
+  if (/^L-/.test(String(v.custNo))) { const l = (typeof leadsState !== 'undefined' ? leadsState : []).find(x => x.leadId === v.custNo); if (l) return openEntity(leadEntity(l)); }
+  if (list.report && list.report.custs.some(c => String(c.custNo) === String(v.custNo))) return openCustomer(v.custNo);
+  try {
+    const p = String(v.customerKey || '').split('|');
+    const r = await api('customerBasic', { custNo: v.custNo, branch: p[2] || '' });
+    const key = 'C|' + r.customer.custNo + '|' + r.customer.branch;
+    field.locations = (field.locations || []).filter(l => l.CustomerKey !== key).concat(r.locations || []);
+    openEntity({ custNo: r.customer.custNo, branch: r.customer.branch, cust: r.customer.name, kind: r.customer.own ? 'own' : 'other', ownerName: r.customer.ownerName, ownerCode: r.customer.ownerCode });
+  } catch (e) { returnToVisit = false; toast(errMsg(e)); }
+}
 let visitPhoto = null;
 function renderVisit(){
   clearInterval(day.timer);
@@ -2986,6 +3050,7 @@ function renderVisit(){
   $('visitTitle').innerHTML = mine ? '<span class="en">Visit in progress</span><span class="ar">زيارة جارية</span>' : `<span class="en">Joint visit</span><span class="ar">مع ${v.ownerName}</span>`;
   $('visitSub').textContent = `${v.custNo} — ${v.customerName}`;
   $('visitBody').innerHTML = (mine ? stepper(3) : '') + `
+    <button type="button" class="btn btn-quiet" id="vCust">${L('Open customer card', 'فتح بطاقة العميل')} · ${esc(v.custNo)}</button>
     <div class="stepbox" style="align-items:center"><div class="bigtimer" id="vTimer">00:00:00</div><div class="hint2">Started ${hm(v.start)} (server time) · ${esc(v.locationType)} · ${fmtDist(v.distanceM)} from the pin</div></div>
     ${mine ? `<div class="stepbox"><div class="photo-slot">${visitPhoto ? `<img src="${visitPhoto}" alt="">` : '<div class="ph">Saved</div>'}<div style="flex:1"><b>Photo saved ✓</b><div class="hint2">Wrong photo? Take a new one here. Your GPS is checked again.</div><button class="mini" type="button" id="vReplace" style="margin-top:6px"><span class="spin"></span><span class="en">Replace photo</span><span class="ar">استبدال</span></button></div></div></div>` : ''}
     ${v.companions.length ? `<div class="stepbox"><h2><span class="en">Companions</span><span class="ar">المرافقون</span></h2>${v.companions.map(c => `<div class="row"><span>${esc(c.code)} · ${esc(c.name)}</span>${statusChip[c.status] || ''}</div>`).join('')}<button class="linkbtn" type="button" id="vRefresh"><span class="en">Refresh status</span><span class="ar">تحديث</span></button></div>` : ''}
@@ -2996,7 +3061,8 @@ function renderVisit(){
   tick(); day.timer = setInterval(tick, 1000);
   if ($('vRefresh')) $('vRefresh').onclick = () => busy($('vRefresh'), async () => applyDay(await api('today')));
   if ($('vReplace')) $('vReplace').onclick = () => replacePhoto(v);
-  if ($('vFix')) $('vFix').onclick = () => { if (list.report) openCustomer(v.custNo); else { go('list'); } };
+  if ($('vFix')) $('vFix').onclick = () => openVisitCustomer(v);
+  if ($('vCust')) $('vCust').onclick = () => openVisitCustomer(v);
   $('visitFoot').style.display = mine ? 'block' : 'none';
 }
 function endSheet(){
@@ -3365,6 +3431,7 @@ function applyLeads(b){
   field.contacts = (field.contacts || []).filter(notLead).concat(b.contacts || []);
   field.phones = (field.phones || []).filter(notLead).concat(b.phones || []);
   field.locations = (field.locations || []).filter(notLead).concat(b.locations || []);
+  field.notes = (field.notes || []).filter(notLead).concat(b.notes || []);
   const ids = new Set((b.visits || []).map(v => v.visitId));
   field.visits = (field.visits || []).filter(v => !ids.has(v.visitId)).concat(b.visits || []);
 }
@@ -3383,9 +3450,10 @@ function openEntity(e){
     ${e.kind === 'other' ? `<div class="warnbox">${L('This customer is not in your list. You can visit them; balances and statements stay with the owner.', 'هذا العميل ليس في قائمتك. يمكنك زيارته؛ الأرصدة وكشف الحساب لدى المسؤول.')}</div>` : ''}
     ${e.kind === 'lead' ? '<div class="card" id="contactsCard"></div>' : ''}
     <div class="card" id="locCard"></div>
+    ${e.kind === 'lead' ? '<div class="card" id="notesCard"></div>' : ''}
     <div class="card" id="histCard"></div>`;
   if (e.kind === 'lead') renderContacts();
-  renderLocations(e); renderHistory(e);
+  renderLocations(e); if (e.kind === 'lead') renderNotes(e); renderHistory(e);
   $('custStmt').style.display = 'none'; $('custStmtBar').style.display = 'none';
   $('custStart').onclick = () => startVisitFlow(e);
   show('cust'); $('custBody').scrollTop = 0;
