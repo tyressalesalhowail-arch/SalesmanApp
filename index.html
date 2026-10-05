@@ -1813,7 +1813,7 @@ const DATA_SOURCE = (() => {
   return ['supabase', 'local', 'legacy'].includes(v) ? v : DS_CONFIG.dataSource;
 })();
 const API_URL = DATA_SOURCE === 'legacy' ? DS_CONFIG.legacyFieldApiUrl
-  : DATA_SOURCE === 'local' ? (location.port === '8787' ? location.origin + '/api' : 'http://localhost:8787/api')
+  : DATA_SOURCE === 'local' ? (location.port === '8787' ? location.origin + '/api' : (DS_CONFIG.localApiUrl || 'http://localhost:8787/api'))
   : DS_CONFIG.supabaseUrl + '/functions/v1/' + DS_CONFIG.functionName;
 const SPLASH_MIN_MS = 900;
 const APP_VERSION = '0.13.0';
@@ -1978,7 +1978,9 @@ function firstName(n){ return String(n || '').trim().split(/\s+/)[0] || ''; }
 function renderHome(){
   const u = state.user || {}, t = state.serverTime || { hour: new Date().getHours(), date: '' };
   const [en, ar] = greeting(t.hour);
-  $('hello').textContent = `${L(en, ar)}${firstName(u.name) ? (lang === 'ar' ? ' ' : ', ') + firstName(u.name) : ''}`;
+  // The name comes ONLY from the admin's "Preferred first name" (ERP names like "Tyre Dammam - John …" are never guessed)
+  const fn = String(u.firstName || '').trim();
+  $('hello').textContent = `${L(en, ar)}${fn ? (lang === 'ar' ? ' ' : ', ') + fn : ''}`;
   $('whoLine').textContent = [u.code ? L('Code ', 'كود ') + u.code : '', u.branch, u.role === 'ADMIN' ? L('Coordinator', 'منسق') : ''].filter(Boolean).join(' · ');
   show('home');
   renderDay();
@@ -2277,12 +2279,14 @@ function openCustomer(custNo){
     <div class="card" id="contactsCard"></div>
     <div class="card" id="locCard"></div>
     <div class="card" id="notesCard"></div>
-    <div class="card" id="histCard"></div>`;
+    <div class="card" id="histCard"></div>
+    <div id="leadLinkCard"></div>`;
   currentCust = c;
   renderContacts();
   renderLocations(c);
   renderNotes(c);
   renderHistory(c);
+  if (typeof renderLeadLink === 'function') renderLeadLink(c);
   $('custStart').onclick = () => startVisitFlow(c);
   $('custStmt').style.display = ''; $('custStmtBar').style.display = '';
   $('custStmt').onclick = () => statementExport(c);
@@ -2484,6 +2488,8 @@ function toast(msg){
   clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 3500);
 }
 
+/* photo upload size (see capture()) */
+const PHOTO_MAX_PX = 1280, PHOTO_QUALITY = 0.72, PHOTO_MAX_CHARS = 600000;   // ≈450 KB jpeg
 
 /* ======================= Phase 2: day, punch, visits, companions ======================= */
 Object.assign(ERR, {
@@ -2600,7 +2606,7 @@ const Cam = {
   capture(){
     const v = $('camVideo'), w0 = v.videoWidth || (window.__DEMO_CAMERA ? 1280 : 0), h0 = v.videoHeight || (window.__DEMO_CAMERA ? 960 : 0);
     if (!w0) return;
-    const scale = Math.min(1, 1024 / Math.max(w0, h0)), w = Math.round(w0 * scale), h = Math.round(h0 * scale);
+    const scale = Math.min(1, PHOTO_MAX_PX / Math.max(w0, h0)), w = Math.round(w0 * scale), h = Math.round(h0 * scale);
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const g = c.getContext('2d');
     if (v.videoWidth) g.drawImage(v, 0, 0, w, h); else if (window.__DEMO_DRAW) window.__DEMO_DRAW(g, w, h);
@@ -2610,7 +2616,10 @@ const Cam = {
     const bw = Math.max(...lines.map(l => g.measureText(l).width), 0) + pad * 2, bh = lines.length * lh + pad * 1.2;
     g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(pad, h - bh - pad, bw, bh);
     g.fillStyle = '#fff'; lines.forEach((l, i) => g.fillText(l, pad * 2, h - bh - pad + pad * .6 + fs + i * lh));
-    this.shot = c.toDataURL('image/jpeg', 0.62);
+    // compressed on the phone before upload (free-plan storage): 1280 px long side, JPEG 0.72; very detailed scenes step down
+    let shot = c.toDataURL('image/jpeg', PHOTO_QUALITY);
+    if (shot.length > PHOTO_MAX_CHARS) shot = c.toDataURL('image/jpeg', 0.6);
+    this.shot = shot;
     $('camShot').src = this.shot; $('camShot').style.display = 'block'; $('camVideo').style.display = 'none';
     $('camLive').style.display = 'none'; $('camReview').style.display = 'flex';
     clearInterval(this._t); $('camStamp').textContent = '';
@@ -2663,7 +2672,7 @@ function renderDay(errorMsg){
   const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const gh = greeting((state.serverTime || {}).hour != null ? state.serverTime.hour : dNow.getUTCHours());
   const hello = `<div class="home-hello"><div class="date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>${L(DAYS[0], DAYS[1])}, ${dNow.getUTCDate()} ${L(MONTHS_EN[dNow.getUTCMonth()], MONTHS_AR[dNow.getUTCMonth()])}</div>
-    <h2 class="disp">${L(gh[0], gh[1])}${firstName(u.name) ? (lang === 'ar' ? ' ' : ', ') + esc(firstName(u.name)) : ''}</h2><small>${u.code ? L('Code', 'كود') + ' ' + esc(u.code) + ' · ' : ''}${esc(u.branch || '')}</small></div>`;
+    <h2 class="disp">${L(gh[0], gh[1])}${String(u.firstName || '').trim() ? (lang === 'ar' ? ' ' : ', ') + esc(String(u.firstName).trim()) : ''}</h2><small>${u.code ? L('Code', 'كود') + ' ' + esc(u.code) + ' · ' : ''}${esc(u.branch || '')}</small></div>`;
   const km = a && a.outKm != null && a.inKm != null ? a.outKm - a.inKm : null;
   let work;
   if (!a && off) work = `<div class="w2 idle"><div class="w2-top"><span class="w2-lbl">${L("Today's status", 'حالة اليوم')}</span></div>
@@ -2877,17 +2886,27 @@ function cancelFollowUpSheet(visitId){
 function notesOf(custNo){ return (field.notes || []).filter(n => custNoOfKey(n.CustomerKey) === String(custNo)).sort((a, b) => toMs(a.CreatedAt) - toMs(b.CreatedAt)); }
 function renderNotes(c){
   const el = $('notesCard'); if (!el) return;
-  const ns = notesOf(c.custNo);
+  const ns = notesOf(c.custNo), pend = Outbox.forCust('addNote', c.custNo);
   el.innerHTML = `<div class="sec-h"><h2>${L('Notes', 'ملاحظات')}</h2><button class="mini" type="button" id="addNote">+ ${L('Note', 'ملاحظة')}</button></div>
-    ${ns.length ? ns.map(n => `<div class="vrow"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(n.Note)}</div><div class="dt">${esc(n.CreatedByName || '')} · ${dayShort(n.CreatedAt)} ${hm(n.CreatedAt)}</div></div></div>`).join('')
-      : `<p class="hint2">${L('No notes yet.', 'لا توجد ملاحظات.')}</p>`}`;
+    ${ns.map(n => `<div class="vrow"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(n.Note)}</div><div class="dt">${esc(n.CreatedByName || '')} · ${dayShort(n.CreatedAt)} ${hm(n.CreatedAt)}</div></div></div>`).join('')}
+    ${pend.map(o => Outbox.rowHtml(o, o.payload.note)).join('')}
+    ${!ns.length && !pend.length ? `<p class="hint2">${L('No notes yet.', 'لا توجد ملاحظات.')}</p>` : ''}`;
+  Outbox.wire(el, () => renderNotes(c));
   $('addNote').onclick = () => {
     openSheet(`<h3>${L('Add note', 'إضافة ملاحظة')}</h3><textarea class="ta" id="nText" maxlength="2000" placeholder="${L('e.g. Gate code, best time to visit, decision maker…', 'مثال: رمز البوابة، أفضل وقت للزيارة…')}"></textarea>
       <p class="hint2">${L('Notes cannot be edited or deleted after saving.', 'لا يمكن تعديل أو حذف الملاحظة بعد الحفظ.')}</p><div class="msg err" id="sheetMsg"></div>
       <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Cancel', 'إلغاء')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('Save', 'حفظ')}</button></div>`);
     $('fCancel').onclick = closeSheet;
     $('fSave').onclick = () => { const t = $('nText').value.trim(); if (!t) return msgInto($('sheetMsg'), ['Write the note.', 'اكتب الملاحظة.']);
-      busy($('fSave'), async () => { const r = await api('addNote', { custNo: c.custNo, branch: c.branch || '', note: t });
+      const payload = { custNo: c.custNo, branch: c.branch || '', note: t, rid: newId() };
+      busy($('fSave'), async () => {
+        let r;
+        try { r = await api('addNote', payload); }
+        catch (e) {   // no connection: keep it on the phone, upload automatically later (same rid ⇒ never saved twice)
+          if (!RETRYABLE[e.code]) throw e;
+          await Outbox.add('addNote', payload, c.custNo); closeSheet(); renderNotes(c);
+          toast(['No connection — note kept on the phone, it will upload automatically.', 'لا يوجد اتصال — حُفظت الملاحظة على الهاتف وسترفع تلقائيًا.']); return;
+        }
         field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []); closeSheet(); renderNotes(c); toast(['Note saved.', 'تم حفظ الملاحظة.']); }, $('sheetMsg')); };
   };
 }
@@ -3165,6 +3184,66 @@ async function replacePhoto(v){
 }
 
 
+/* ===================== Outbox: writes made without connection (V1: notes) =====================
+   Saved on the phone (IndexedDB) with their request id; uploaded automatically when the connection returns.
+   The server keeps one answer per request id, so an upload that is retried is never stored twice.
+   States shown to the salesman: Waiting for connection · Saving… · Sync failed (Retry / Discard). Nothing is shown as
+   "saved" until the server confirmed it. */
+const Outbox = {
+  items: [], loaded: false, busy: false,
+  key(){ return 'outbox_' + ((state.user && state.user.code) || 'x'); },
+  async load(){ const k = this.key(); if (this.loaded === k) return; const v = await LocalCache.get(k); this.items = Array.isArray(v) ? v : []; this.loaded = k; this.badge(); },
+  async save(){ await LocalCache.set(this.key(), this.items); this.badge(); },
+  async add(action, payload, custNo){ await this.load(); this.items.push({ id: payload.rid, action, payload, custNo: String(custNo), at: Date.now(), state: 'waiting' }); await this.save(); },
+  forCust(action, custNo){ return this.items.filter(o => o.action === action && o.custNo === String(custNo)); },
+  rowHtml(o, text){
+    const st = o.state === 'failed' ? `<span class="red">${L('Sync failed', 'فشل الرفع')}${o.error ? ' (' + esc(o.error) + ')' : ''}</span> <button class="mini" type="button" data-obretry="${esc(o.id)}">${L('Retry', 'إعادة')}</button> <button class="mini" type="button" data-obdrop="${esc(o.id)}">${L('Discard', 'حذف')}</button>`
+      : o.state === 'sending' ? `<span>${L('Saving…', 'جاري الحفظ…')}</span>` : `<span class="amber">⏳ ${L('Waiting for connection', 'بانتظار الاتصال')}</span>`;
+    return `<div class="vrow" style="opacity:.8"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(text)}</div><div class="dt">${st}</div></div></div>`;
+  },
+  wire(el, redraw){
+    el.querySelectorAll('[data-obretry]').forEach(b => b.onclick = () => { const o = this.items.find(x => x.id === b.dataset.obretry); if (o) { o.state = 'waiting'; o.error = ''; this.save().then(() => { redraw(); this.flush(); }); } });
+    el.querySelectorAll('[data-obdrop]').forEach(b => b.onclick = () => { this.items = this.items.filter(x => x.id !== b.dataset.obdrop); this.save().then(redraw); });
+  },
+  badge(){
+    let el = document.getElementById('obBar');
+    const n = this.items.length, failed = this.items.filter(o => o.state === 'failed').length;
+    if (!n) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('div'); el.id = 'obBar'; el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;background:#fff7e6;color:#7a4b00;border:1px solid #f2d29b;border-radius:12px;padding:8px 12px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12)'; document.body.appendChild(el); el.onclick = () => this.flush(); }
+    el.textContent = failed ? L(`${failed} item(s) failed to upload — open the customer to retry`, `${failed} عنصر فشل رفعه — افتح العميل لإعادة المحاولة`)
+      : L(`${n} item(s) waiting for connection — will upload automatically`, `${n} عنصر بانتظار الاتصال — سيرفع تلقائيًا`);
+  },
+  async flush(){
+    await this.load();
+    if (this.busy || !state.token || navigator.onLine === false) return;
+    const todo = this.items.filter(o => o.state !== 'failed'); if (!todo.length) return;
+    this.busy = true;
+    try {
+      for (const o of todo) {
+        o.state = 'sending'; this.badge();
+        try {
+          const r = await api(o.action, o.payload);
+          this.items = this.items.filter(x => x.id !== o.id);
+          if (o.action === 'addNote' && r) field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []);
+          await this.save();
+        } catch (e) {
+          if (RETRYABLE[e.code]) { o.state = 'waiting'; await this.save(); break; }   // still offline: try later
+          if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') { o.state = 'waiting'; await this.save(); break; }
+          o.state = 'failed'; o.error = e.code || 'ERROR'; await this.save();
+        }
+      }
+    } finally {
+      this.busy = false; this.badge();
+      const c = $('cust').classList.contains('on') ? currentCust : null; if (c && typeof renderNotes === 'function') renderNotes(c);
+    }
+  }
+};
+window.addEventListener('online', () => Outbox.flush());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') Outbox.flush(); });
+setInterval(() => { if (Outbox.items.length) Outbox.flush(); }, 20000);
+setTimeout(() => Outbox.load().then(() => Outbox.flush()), 1500);
+
+
 /* ======================= PDFs — the dashboard's own print code (DashPrint) and CSS ======================= */
 Object.assign(ERR, {
   POPUP_BLOCKED: ['The PDF page was blocked. Allow pop-ups for this app, then try again.', 'تم حظر صفحة الملف. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.'],
@@ -3229,7 +3308,7 @@ function pdfSheet(title, sub, make){
         if (how === 'wa') { await NativeApp.sharePdf({ html, name: r.title, target: 'whatsapp' }); closeSheet(); }
         else {
           const sv = await NativeApp.savePdf({ html, name: r.title });
-          savedSheet(r.title, sv || {});
+          savedSheet(r.title, sv || {}, html);
         }
       } catch (e) {
         const why = (e && (e.code || e.message)) || 'unknown';
@@ -3247,12 +3326,16 @@ function pdfSheet(title, sub, make){
   $('pdfGo').onclick = () => run('save', $('pdfGo'));
 }
 
-function savedSheet(title, sv){
+function savedSheet(title, sv, html){
   openSheet(`<div class="done-ic">✓</div><h3 style="text-align:center">${L('PDF saved', 'تم حفظ الملف')}</h3>
     <p class="hint2" style="text-align:center">${esc(title)}.pdf<br>${esc(sv.where || L('Downloads', 'التنزيلات'))}</p>
     ${sv.uri ? `<button class="btn btn-primary" type="button" id="pdfOpen">${L('Open file', 'فتح الملف')}</button>` : ''}
+    ${html && NativeApp && NativeApp.sharePdf ? `<button class="btn btn-wa" type="button" id="pdfShare"><span class="spin"></span>${ICONS.wa}<span>${L('Share / WhatsApp', 'مشاركة / واتساب')}</span></button>` : ''}
     <button class="btn btn-quiet" type="button" id="fCancel">${L('Done', 'تم')}</button>`);
   $('fCancel').onclick = closeSheet;
+  const sh = $('pdfShare'); if (sh) sh.onclick = async () => { sh.disabled = true; sh.classList.add('loading');
+    try { await NativeApp.sharePdf({ html, name: title, target: 'any' }); closeSheet(); } catch (e) { toast(['Could not share the PDF.', 'تعذّرت مشاركة الملف.']); }
+    finally { sh.disabled = false; sh.classList.remove('loading'); } };
   const o = $('pdfOpen'); if (o) o.onclick = () => { NativeApp.openFile({ uri: sv.uri }).catch(() => toast(['No PDF viewer found on this phone.', 'لا يوجد تطبيق لعرض ملفات PDF.'])); closeSheet(); };
 }
 
@@ -3439,7 +3522,9 @@ function visitDetail(v){
 Object.assign(ERR, {
   OUT_REASON_REQUIRED: ['Pick the reason for visiting this customer.', 'اختر سبب زيارة هذا العميل.'],
   NOT_IN_BRANCH:       ['This customer is not in your branch.', 'هذا العميل ليس في فرعك.'],
-  LEAD_CLOSED:         ['This lead is closed.', 'هذا العميل المحتمل مغلق.']
+  LEAD_CLOSED:         ['This lead is closed.', 'هذا العميل المحتمل مغلق.'],
+  LINK_ALREADY_REQUESTED: ['A link for this lead is already waiting for the admin.', 'يوجد طلب ربط لهذا العميل المحتمل بانتظار المسؤول.'],
+  AMBIGUOUS_CUSTOMER:  ['This code exists in more than one branch. Ask the admin to link it.', 'هذا الكود موجود في أكثر من فرع. اطلب من المسؤول الربط.']
 });
 let leadsState = [];
 const OUT_REASONS_UI = () => [['Covering colleague', L('Covering a colleague', 'تغطية زميل')], ['Customer request', L('Customer request', 'طلب العميل')], ['Other', L('Other', 'أخرى')]];
@@ -3599,6 +3684,27 @@ function wireLeadCards(){
   $('custList').querySelectorAll('[data-lead]').forEach(b => b.onclick = () => openEntity(leadEntity(find(b.dataset.lead))));
   $('custList').querySelectorAll('[data-leadv]').forEach(b => b.onclick = () => startVisitFlow(leadEntity(find(b.dataset.leadv))));
   const e = $('leadEmptyNew'); if (e) e.onclick = newLeadSheet;
+}
+
+
+/* ---------- "This customer was my lead": the salesman asks, the admin approves (nothing is merged by the phone) ---------- */
+function renderLeadLink(c){
+  const el = $('leadLinkCard'); if (!el) return;
+  const open = (leadsState || []).filter(l => (l.status || 'OPEN') === 'OPEN');
+  if (!open.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="card"><div class="sec-h"><h2>${L('Was this one of your leads?', 'هل كان هذا عميلاً محتملاً لك؟')}</h2>
+    <button class="mini" type="button" id="llReq">${L('Request link', 'طلب ربط')}</button></div>
+    <p class="hint2">${L('The admin checks and approves. The lead’s contacts, notes and visits then move to this customer.', 'يراجع المسؤول ويوافق، ثم تنتقل جهات الاتصال والملاحظات والزيارات إلى هذا العميل.')}</p></div>`;
+  $('llReq').onclick = () => {
+    openSheet(`<h3>${L('Link a lead to', 'ربط عميل محتمل بـ')} ${esc(c.custNo)}</h3><p class="hint2">${esc(c.cust)} · ${esc(c.branch || '')}</p>
+      <div class="opts">${open.map((l, i) => `<label class="opt"><input type="radio" name="llPick" value="${esc(l.leadId)}" ${i ? '' : 'checked'}> <b>${esc(l.name)}</b> <small>${esc(l.leadId)}</small></label>`).join('')}</div>
+      <div class="msg err" id="sheetMsg"></div>
+      <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Cancel', 'إلغاء')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('Send request', 'إرسال الطلب')}</button></div>`);
+    $('fCancel').onclick = closeSheet;
+    $('fSave').onclick = () => { const pick = (document.querySelector('input[name=llPick]:checked') || {}).value; if (!pick) return;
+      busy($('fSave'), async () => { await api('requestLeadLink', { leadId: pick, custNo: c.custNo, branch: c.branch || '' }); closeSheet();
+        toast(['Request sent — the admin will approve it.', 'تم إرسال الطلب — سيوافق عليه المسؤول.']); }, $('sheetMsg')); };
+  };
 }
 
 boot();
