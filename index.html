@@ -1800,7 +1800,21 @@ paintLogos();
 document.getElementById('favIcon').href = MARK;
 document.getElementById('touchIcon').href = MARK;
 /* ===== Config ===== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec';   // Deploy → Web app URL of the NEW Apps Script project
+/* Data source switch (Supabase V1). Default comes from source/config/client.json at build time.
+   • supabase → the field-api Edge Function of the hosted project
+   • local    → the local field-api server (scripts: npm run api) — automatic when the app itself is opened from it (port 8787)
+   • legacy   → the old Google Apps Script backend (temporary fallback until final cut-over)
+   Testing override (no rebuild): add ?ds=legacy | ?ds=supabase | ?ds=local to the URL once; it is remembered on this device. */
+const DS_CONFIG = {"dataSource": "supabase", "supabaseUrl": "https://blaoygrxvcpkikozjbrn.supabase.co", "functionName": "field-api", "legacyFieldApiUrl": "https://script.google.com/macros/s/AKfycbzhh1WZjw2P21gkq6_yLLkH1LDurr2KORW5Rk9_5wLqqE5E9mnFvq5x2GZwnNIGyklP/exec", "legacyDashboardApiUrl": "https://script.google.com/macros/s/AKfycby92PsrvsqrTHMICzxjoD7l5_I33hzmZ6pEAnjddURY__C47qIahhSX0nFiSJTJWe3G1Q/exec"};
+const DATA_SOURCE = (() => {
+  let v = null;
+  try { const q = new URLSearchParams(location.search).get('ds'); if (q) localStorage.setItem('alhowail_ds', q); v = localStorage.getItem('alhowail_ds'); } catch (e) {}
+  if (!v && location.port === '8787') v = 'local';
+  return ['supabase', 'local', 'legacy'].includes(v) ? v : DS_CONFIG.dataSource;
+})();
+const API_URL = DATA_SOURCE === 'legacy' ? DS_CONFIG.legacyFieldApiUrl
+  : DATA_SOURCE === 'local' ? (location.port === '8787' ? location.origin + '/api' : 'http://localhost:8787/api')
+  : DS_CONFIG.supabaseUrl + '/functions/v1/' + DS_CONFIG.functionName;
 const SPLASH_MIN_MS = 900;
 const APP_VERSION = '0.13.0';
 /* Inside the Alhowail Android app (APK) the Capacitor bridge is present: native GPS + native printing. */
@@ -1808,7 +1822,7 @@ const NativeApp = (window.Capacitor && typeof window.Capacitor.isNativePlatform 
   ? window.Capacitor.registerPlugin('AlhowailNative') : null;
 const CLIENT = NativeApp ? 'android-app' : 'web';
 const REQUEST_TIMEOUT_MS = 30000;
-const LIST_TIMEOUT_MS = 120000;   // My List reads the whole sales sheet on the server
+const LIST_TIMEOUT_MS = 120000;   // generous for the legacy backend (Supabase answers My List in a few seconds)
 const TOKEN_KEY = 'alhowail_field_token';
 const USER_KEY = 'alhowail_field_user';
 
@@ -1829,7 +1843,14 @@ Object.assign(ERR, {
   ADMIN_ONLY:       ['Only the coordinator can change or delete saved customer information. You can add new information.', 'فقط المنسق يمكنه تعديل أو حذف بيانات العميل المحفوظة. يمكنك إضافة معلومات جديدة.'],
   PASSWORD_NOT_SET: ['Your account is ready but has no password yet. Ask the Sales Coordinator to set it.', 'حسابك جاهز لكن بدون كلمة مرور. اطلب من منسق المبيعات تعيينها.'],
   UNKNOWN_ACTION: ['The server is an older version. Ask the coordinator to deploy the latest Code.gs (Manage deployments → New version).', 'نسخة الخادم قديمة. اطلب من المنسق نشر آخر نسخة من Code.gs.'],
-  BUSY:           ['The server is busy with another save. Try again in a few seconds.', 'الخادم مشغول بحفظ آخر. حاول بعد ثوانٍ.']
+  BUSY:           ['The server is busy with another save. Try again in a few seconds.', 'الخادم مشغول بحفظ آخر. حاول بعد ثوانٍ.'],
+  CUSTOMER_BLACKLISTED: ['This customer is blacklisted and cannot be visited from the app.', 'هذا العميل ضمن القائمة السوداء ولا يمكن زيارته من التطبيق.'],
+  UPLOAD_FAILED:  ['The photo could not be uploaded. Check mobile data and try again.', 'تعذر رفع الصورة. تحقق من بيانات الجوال وحاول مرة أخرى.'],
+  PHOTO_TOO_BIG:  ['The photo is too large. Take it again.', 'الصورة كبيرة جدًا. التقطها مرة أخرى.'],
+  AMBIGUOUS_CUSTOMER: ['This customer number exists in more than one branch. Choose the branch account.', 'رقم العميل موجود في أكثر من فرع. اختر حساب الفرع.'],
+  INVITE_EXPIRED: ['This invitation has expired.', 'انتهت صلاحية هذه الدعوة.'],
+  ALREADY_CANCELLED: ['This follow-up was already cancelled.', 'تم إلغاء هذه المتابعة مسبقًا.'],
+  SERVER_ERROR:   ['The server could not complete the request. Try again; if it repeats, tell the coordinator.', 'تعذر على الخادم إكمال الطلب. حاول مرة أخرى، وإذا تكرر أبلغ المنسق.']
 });
 /** Known codes get their message; unknown codes still show the code so the problem can be traced. */
 /** Salesmen add customer information; only admins edit or delete it (enforced on the server too). */
