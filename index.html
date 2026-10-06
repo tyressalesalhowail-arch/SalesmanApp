@@ -3277,7 +3277,8 @@ const PRINT_BAR_CSS = `
 
 /** Opens the print page: dashboard CSS + dashboard HTML, exactly as the dashboard prints it. */
 function printDoc(title, bodyHtml, lng){
-  return '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8"><meta name="viewport" content="width=900">'
+  return '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8"><meta name="viewport" content="width=900"><meta name="color-scheme" content="only light">'
+    + '<style>:root{color-scheme:only light}html,body{background:#fff!important;color:#111}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style>'
     + '<title>' + esc(title) + '</title>' + DashPrint.fonts + '<style>' + DashPrint.css + '</style><style>' + PRINT_BAR_CSS + '</style></head><body>'
     + '<main><div class="tab-panel active"><div class="print-area" style="display:block">' + bodyHtml + '</div></div></main></body></html>';
 }
