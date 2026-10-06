@@ -1818,8 +1818,25 @@ const API_URL = DATA_SOURCE === 'legacy' ? DS_CONFIG.legacyFieldApiUrl
 const SPLASH_MIN_MS = 900;
 const APP_VERSION = '0.13.0';
 /* Inside the Alhowail Android app (APK) the Capacitor bridge is present: native GPS + native printing. */
-const NativeApp = (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform() && typeof window.Capacitor.registerPlugin === 'function')
-  ? window.Capacitor.registerPlugin('AlhowailNative') : null;
+/* Android APK detection. Capacitor 6 injects window.Capacitor + the plugin stubs (Capacitor.Plugins.AlhowailNative,
+   Capacitor.nativePromise) into the page, but NOT registerPlugin() — that only exists when @capacitor/core is bundled,
+   which this single-file app does not do. The old check required registerPlugin, so inside the real APK NativeApp was
+   null and every PDF fell back to the browser print page (Chrome). Use the injected stubs first. */
+const NATIVE_INFO = { capacitor: !!window.Capacitor, native: false, via: 'none' };
+const NativeApp = (function(){
+  const C = window.Capacitor; if (!C) return null;
+  const native = (typeof C.isNativePlatform === 'function' && C.isNativePlatform()) || C.platform === 'android' || C.getPlatform && C.getPlatform() === 'android' || !!window.androidBridge;
+  NATIVE_INFO.native = !!native; if (!native) return null;
+  const P = C.Plugins && C.Plugins.AlhowailNative;
+  if (P && typeof P.savePdf === 'function') { NATIVE_INFO.via = 'Capacitor.Plugins'; return P; }
+  if (typeof C.registerPlugin === 'function') { NATIVE_INFO.via = 'registerPlugin'; return C.registerPlugin('AlhowailNative'); }
+  if (typeof C.nativePromise === 'function') { NATIVE_INFO.via = 'nativePromise';
+    return new Proxy({}, { get: (_, m) => (typeof m === 'string' ? (opts) => C.nativePromise('AlhowailNative', m, opts || {}) : undefined) }); }
+  return null;
+})();
+/* true inside ANY Android app WebView (even if the plugin is missing): never open Chrome / a print page there */
+const IN_ANDROID_WEBVIEW = !!window.androidBridge || NATIVE_INFO.native || /; wv\)/.test(navigator.userAgent);
+try { console.info('[native] capacitor=' + NATIVE_INFO.capacitor + ' native=' + NATIVE_INFO.native + ' plugin=' + NATIVE_INFO.via + ' webview=' + IN_ANDROID_WEBVIEW); } catch (e) {}
 const CLIENT = NativeApp ? 'android-app' : 'web';
 const REQUEST_TIMEOUT_MS = 30000;
 const LIST_TIMEOUT_MS = 120000;   // generous for the legacy backend (Supabase answers My List in a few seconds)
@@ -3266,10 +3283,7 @@ function printDoc(title, bodyHtml, lng){
 }
 function openPrintPage(title, bodyHtml, lng){
   // Android app: the phone's print screen (Save as PDF / share) with the same dashboard HTML + CSS.
-  if (NativeApp) {
-    NativeApp.printHtml({ html: printDoc(title, bodyHtml, lng), name: title }).catch(() => toast(errText('DEFAULT')));
-    return true;
-  }
+  if (IN_ANDROID_WEBVIEW) { console.warn('[pdf] openPrintPage blocked inside the Android app'); return false; }
   const w = window.open('', '_blank');
   if (!w) { toast(errText('POPUP_BLOCKED')); return false; }
   const doc = '<!DOCTYPE html><html lang="' + lng + '"><head><meta charset="utf-8">'
@@ -3305,22 +3319,31 @@ function pdfSheet(title, sub, make){
       }
       btn.disabled = true; btn.classList.add('loading');
       try {
-        if (how === 'wa') { await NativeApp.sharePdf({ html, name: r.title, target: 'whatsapp' }); closeSheet(); }
+        const fname = r.fileName || r.title;
+        console.info('[pdf] path=native(' + NATIVE_INFO.via + ') action=' + how + ' file=' + fname + '.pdf');
+        if (how === 'wa') { await NativeApp.sharePdf({ html, name: fname, target: 'whatsapp' }); closeSheet(); }
         else {
-          const sv = await NativeApp.savePdf({ html, name: r.title });
-          savedSheet(r.title, sv || {}, html);
+          const sv = await NativeApp.savePdf({ html, name: fname });
+          console.info('[pdf] saved where=' + ((sv && sv.where) || '?'));
+          savedSheet(fname, sv || {}, html);
         }
       } catch (e) {
         const why = (e && (e.code || e.message)) || 'unknown';
         console.warn('[pdf]', how, why);
         const old = /not implemented|UNIMPLEMENTED/i.test(String(e && (e.message || e.code)));
         msgInto(box, old ? ['This APK is too old for direct PDF. Install the latest APK from the download link.', 'نسخة التطبيق قديمة. ثبّت آخر نسخة من رابط التحميل.']
-                         : [`Could not create the PDF (${why}). Opening the Android print screen instead — choose "Save as PDF".`, `تعذّر إنشاء الملف (${why}). سيتم فتح شاشة الطباعة — اختر "حفظ كملف PDF".`]);
-        if (!old && NativeApp.printHtml) setTimeout(() => NativeApp.printHtml({ html, name: r.title }).catch(() => {}), 1200);
+                         : [`Could not create the PDF (${why}). Please try again.`, `تعذّر إنشاء الملف (${why}). حاول مرة أخرى.`]);
+
       } finally { btn.disabled = false; btn.classList.remove('loading'); }
       return;
     }
-    if (openPrintPage(r.title, r.html, lng)) closeSheet();   // browser: print page → Save as PDF
+    if (IN_ANDROID_WEBVIEW) {                           // inside an Android app but the native PDF helper is missing: never open Chrome
+      console.warn('[pdf] native helper not available inside the Android app — browser fallback blocked');
+      msgInto(box, ['This app version cannot save PDFs. Install the latest APK.', 'هذه النسخة لا تستطيع حفظ الملفات. ثبّت آخر نسخة من التطبيق.']);
+      return;
+    }
+    console.info('[pdf] path=browser print page');
+    if (openPrintPage(r.title, r.html, lng)) closeSheet();   // normal browser only: print page → Save as PDF
   };
   $('pdfWa').onclick = () => run('wa', $('pdfWa'));
   $('pdfGo').onclick = () => run('save', $('pdfGo'));
@@ -3339,11 +3362,13 @@ function savedSheet(title, sv, html){
   const o = $('pdfOpen'); if (o) o.onclick = () => { NativeApp.openFile({ uri: sv.uri }).catch(() => toast(['No PDF viewer found on this phone.', 'لا يوجد تطبيق لعرض ملفات PDF.'])); closeSheet(); };
 }
 
+const pdfSafe = v => String(v == null ? '' : v).replace(/[^A-Za-z0-9-]+/g, '_');
 function smanListExport(){
   if (!list.report) return toast(errText('NO_LIST'));
   pdfSheet(L('SMAN List', 'قائمة العملاء'), `${state.user.code} · ${list.report.smanName || state.user.name}`, () => {
     const d = list.report;
-    return { html: DashPrint.smanList(d), title: DashPrint.fileName(`${d.smanName} (${d.smanCode}) - ${DashPrint.t('salesmanReport')}`) };
+    return { html: DashPrint.smanList(d), title: DashPrint.fileName(`${d.smanName} (${d.smanCode}) - ${DashPrint.t('salesmanReport')}`),
+      fileName: `SMAN_List_${pdfSafe(d.smanCode || state.user.code)}_${riyDate(nowS())}` };
   });
 }
 
@@ -3351,7 +3376,8 @@ function statementExport(c){
   if (!list.report) return toast(errText('NO_LIST'));
   pdfSheet(L('Account statement', 'كشف حساب'), `${c.custNo} — ${c.cust}`, () => {
     const name = displayCustName(c.custNo, c.custNo);
-    return { html: DashPrint.statement(c.custNo), title: DashPrint.fileName(`${DashPrint.t('accountStatement')} - ${c.custNo} - ${name}`) };
+    return { html: DashPrint.statement(c.custNo), title: DashPrint.fileName(`${DashPrint.t('accountStatement')} - ${c.custNo} - ${name}`),
+      fileName: `Account_Statement_${pdfSafe(c.custNo)}_${riyDate(nowS())}` };
   });
 }
 
@@ -3387,7 +3413,7 @@ function renderDrawer(){
     <div class="dr-sec"><dl class="lines" style="margin:0">
       <dt>${L('Customer data', 'بيانات العملاء')}</dt><dd>${list.savedAt ? L('Updated ', 'حُدّثت ') + esc(agoText(list.savedAt)) : L('Not loaded yet', 'لم تُحمّل بعد')}</dd>
       <dt>${L('Connection', 'الاتصال')}</dt><dd class="${navigator.onLine === false ? 'red' : ''}">${navigator.onLine === false ? L('Offline', 'غير متصل') : L('Online', 'متصل')}</dd>
-      <dt>${L('Running as', 'يعمل كـ')}</dt><dd>${NativeApp ? L('Android app', 'تطبيق أندرويد') : L('Browser', 'متصفح')}</dd>
+      <dt>${L('Running as', 'يعمل كـ')}</dt><dd>${NativeApp ? L('Android app', 'تطبيق أندرويد') + ' · PDF: native (' + esc(NATIVE_INFO.via) + ')' : IN_ANDROID_WEBVIEW ? '<span class="red">' + L('Android app — native helper missing', 'تطبيق أندرويد — المساعد غير متوفر') + '</span>' : L('Browser', 'متصفح')}</dd>
       <dt>${L('App version', 'الإصدار')}</dt><dd>${esc(APP_VERSION)}</dd>
       ${NativeApp ? `<dt>${L('Android app (APK)', 'تطبيق أندرويد')}</dt><dd class="${nativeVersion !== null && nativeVersion < NATIVE_NEEDED ? 'red' : ''}">${nativeVersion === null ? '…' : nativeVersion < NATIVE_NEEDED ? L('Old — install the latest APK', 'قديم — ثبّت آخر نسخة') : 'v' + nativeVersion + ' ✓'}</dd>` : ''}
       ${last ? `<dt>${L('Last request', 'آخر طلب')}</dt><dd class="mono">${esc(last.action)} · ${last.ms}ms · ${esc(last.result)} · ${esc(last.traceId)}</dd>` : ''}
