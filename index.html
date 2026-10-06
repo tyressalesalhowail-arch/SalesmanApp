@@ -3395,8 +3395,13 @@ const ICONS = {
 /* ---------- APK native version (PDF share/save needs v4+) ---------- */
 const NATIVE_NEEDED = 4;
 let nativeVersion = null;
-if (NativeApp && NativeApp.info) NativeApp.info().then(r => { nativeVersion = Number(r && r.nativeVersion) || 0; }, () => { nativeVersion = 0; });
-else if (NativeApp) nativeVersion = 0;
+/* Capability first: Capacitor only creates a stub for each method the installed APK really has, so savePdf + sharePdf
+   present = PDF supported (v4+). info() only refines the number; a slow/failed info() never marks the APK as old. */
+const nativeHas = m => !!(NativeApp && NATIVE_INFO.via === 'Capacitor.Plugins' && typeof window.Capacitor.Plugins.AlhowailNative[m] === 'function');
+if (nativeHas('savePdf') && nativeHas('sharePdf')) nativeVersion = NATIVE_NEEDED;
+if (NativeApp && NativeApp.info) NativeApp.info({}).then(r => { const v = Number(r && r.nativeVersion) || 0; if (v) nativeVersion = Math.max(v, nativeVersion || 0); console.info('[native] info nativeVersion=' + v); },
+  e => { console.warn('[native] info failed', e && (e.code || e.message)); if (nativeVersion === null) nativeVersion = 0; });
+else if (NativeApp && nativeVersion === null) nativeVersion = 0;
 
 /* ---------- drawer ---------- */
 function openDrawer(){ renderDrawer(); $('drawerBg').classList.add('on'); $('drawerBg').setAttribute('aria-hidden', 'false'); }
