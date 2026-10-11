@@ -4185,7 +4185,7 @@ function refreshLeadScreen(){
 }
 function leadLinkSearchSheet(l){
   openSheet(`<h3>${L('Request customer link', 'طلب ربط بعميل')}</h3>
-    <p class="hint2">${esc(l.leadId)} · ${esc(l.name)}<br>${L('Search by customer code or name (your customers and your branch).', 'ابحث بكود العميل أو اسمه (عملاؤك وعملاء فرعك).')}</p>
+    <p class="hint2">${esc(l.leadId)} · ${esc(l.name)}<br>${L('Search by customer code or name. You can link only to your own customers; others are view only.', 'ابحث بكود العميل أو اسمه. يمكنك الربط بعملائك فقط؛ الآخرون للعرض فقط.')}</p>
     <label class="search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="llQ" type="search" autocomplete="off" placeholder="${L('Customer code or name', 'كود العميل أو الاسم')}"></label>
     <div id="llRes" class="list2" style="max-height:46vh;overflow-y:auto"></div><div class="msg err" id="sheetMsg"></div>`);
   let t = null;
@@ -4194,10 +4194,13 @@ function leadLinkSearchSheet(l){
     const q = $('llQ').value.trim();
     if (!branchDir.rows) { el.innerHTML = `<div class="gps wait"><span class="spin"></span><span class="grow">${L('Loading customers…', 'جاري تحميل العملاء…')}</span></div>`; return; }
     if (q.length < 2) { el.innerHTML = `<p class="hint2" style="padding:12px">${L('Type at least 2 characters.', 'اكتب حرفين على الأقل.')}</p>`; return; }
-    const res = searchBranchDir(q);
-    el.innerHTML = res.length ? res.map((x, i) => `<button type="button" class="li2" data-i="${i}"><span class="li2-ic">${esc(initials(x.name))}</span><span class="m"><b>${esc(x.custNo)} · ${esc(x.name)}</b><small>${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Salesman', 'المندوب') + ': ' + esc(x.ownerName || x.ownerCode || '—')}</small></span>${ICONS.chev}</button>`).join('')
+    const res = searchBranchDir(q).sort((a, b) => (b.own ? 1 : 0) - (a.own ? 1 : 0));
+    el.innerHTML = res.length ? res.map((x, i) => `<button type="button" class="li2" data-i="${i}"><span class="li2-ic">${esc(initials(x.name))}</span><span class="m"><b>${esc(x.custNo)} · ${esc(x.name)}</b><small>${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Salesman', 'المندوب') + ': ' + esc(x.ownerName || x.ownerCode || '—') + ' · ' + L('view only', 'عرض فقط')}</small></span>${x.own ? `<span class="pill" style="font-size:11px">${L('Link', 'ربط')}</span>` : ICONS.chev}</button>`).join('')
       : `<p class="hint2" style="padding:12px">${L('No customer found.', 'لا يوجد عميل.')}</p>`;
-    el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => leadLinkConfirm(l, res[Number(b.dataset.i)]));
+    el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { const x = res[Number(b.dataset.i)];
+      if (x.own) return leadLinkConfirm(l, x);
+      closeSheet(); pickOther(x);   // another salesman's customer: view only
+      toast([`${x.custNo} belongs to ${x.ownerName || x.ownerCode || 'another salesman'} — you can view it, but only link leads to your own customers. Ask the admin if needed.`, `${x.custNo} يتبع ${x.ownerName || x.ownerCode || 'مندوبًا آخر'} — يمكنك عرضه فقط، والربط بعملائك فقط. اطلب من المسؤول عند الحاجة.`]); });
   };
   $('llQ').oninput = () => { clearTimeout(t); t = setTimeout(draw, 250); };
   draw();
