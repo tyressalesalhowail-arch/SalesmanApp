@@ -417,14 +417,14 @@ body{font-size:15px;background:#f2f4f8}
   .btn,.mini,.tabs button,.qa,.chip,.lrow,.opt,.tabs button svg{transition:none !important}
 }
 /* V1.1 sync indicator + pending banners (no blur / animation: cheap on low-end phones) */
-.sync-pill{position:fixed;inset-inline-start:10px;bottom:calc(68px + var(--safe-bottom, 0px));z-index:55;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#e4e7ec);background:var(--panel,#fff);color:var(--ink-dim,#475467);font:600 11.5px/1 inherit;font-family:inherit;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(16,24,40,.10);cursor:pointer}
-.sync-pill i{width:7px;height:7px;border-radius:50%;background:#12b76a;display:inline-block}
-.sync-pill.wait i{background:#f79009} .sync-pill.wait{color:#7a4b00}
-.sync-pill.bad i{background:#e5484d} .sync-pill.bad{color:#a32d2d;border-color:#f3c1c1}
-.sync-pill.off i{background:#98a2b3}
-.sync-pill.ok{opacity:.75}
-.sync-pill.hide{display:none}
-body:has(#login.on) .sync-pill, body:has(#cam.on) .sync-pill{display:none}
+.dr-sync{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 4px;padding:11px 12px;border:1px solid var(--line,#e4e7ec);border-radius:12px;background:var(--panel,#fff);color:inherit;font:inherit;font-weight:600;cursor:pointer;text-align:start}
+.dr-sync .grow{flex:1}.dr-sync-t{font-size:12.5px;color:var(--ink-dim,#475467)}
+.dr-sync i,[data-drawer]::after{width:8px;height:8px;border-radius:50%;background:#12b76a;display:inline-block;flex:none}
+.dr-sync.wait i{background:#f79009}.dr-sync.bad i{background:#e5484d}.dr-sync.off i{background:#98a2b3}.dr-sync.bad .dr-sync-t{color:#a32d2d}
+[data-drawer]{position:relative}
+[data-drawer]::after{content:'';position:absolute;top:6px;inset-inline-end:6px;display:none;box-shadow:0 0 0 2px var(--panel,#fff)}
+body[data-sync=wait] [data-drawer]::after{display:block;background:#f79009}
+body[data-sync=bad] [data-drawer]::after{display:block;background:#e5484d}
 .banner.amber{background:#fff1dc;border-color:#f5d9a8;color:#7a4a00;margin-bottom:10px}
 .banner.red{background:#fdecea;border-color:#f3c1c1;color:#a32d2d;margin-bottom:10px}
 .banner .pill{background:#fff;border-radius:999px;padding:2px 9px;font-weight:700}
@@ -3602,6 +3602,7 @@ function renderDrawer(){
     <div class="dr-head"><img class="dr-logo" data-logo src="${LOGO}" alt="Al-Howail">
       <div class="dr-user"><span class="av big-av st-new">${esc(initials(u.name))}</span><div><b>${esc(u.name || '')}</b>
       <small>${u.code ? L('Code', 'كود') + ' ' + esc(u.code) + ' · ' : ''}${esc(u.branch || '')}</small></div></div></div>
+    ${u.code ? `<button type="button" class="dr-sync" id="drSync"><i></i><span class="grow">${L('Sync', 'المزامنة')}</span><span class="dr-sync-t"></span>›</button>` : ''}
     <div class="dr-sec"><div class="dr-lbl">${L('Language', 'اللغة')}</div>${seg('lang', lang, [['en', 'English'], ['ar', 'العربية']])}</div>
     <div class="dr-sec"><div class="dr-lbl">${L('Theme', 'المظهر')}</div>${seg('theme', theme, [['light', L('Light', 'فاتح')], ['dark', L('Dark', 'داكن')], ['system', L('System', 'النظام')]])}</div>
     <div class="dr-sec"><dl class="lines" style="margin:0">
@@ -3620,6 +3621,7 @@ function renderDrawer(){
     rerenderAll(); renderDrawer();
   });
   $('logoutBtn').onclick = async () => { closeDrawer(); await doLogout(); };
+  if ($('drSync')) { $('drSync').onclick = () => { closeDrawer(); syncSheet(); }; if (typeof Outbox !== 'undefined') Outbox.badge(); }
 }
 $('drawerBg').addEventListener('click', e => { if (e.target === $('drawerBg')) closeDrawer(); });
 
@@ -3829,6 +3831,7 @@ function reasonSheet(e, then){
 const branchDir = { rows: null, version: null, loading: null };
 async function loadBranchDir(){
   const key = 'dir_' + (state.user && state.user.code);
+  if (branchDir.key !== key) { branchDir.rows = null; branchDir.version = null; branchDir.key = key; }   // another salesman signed in on this phone
   if (!branchDir.rows) { const c = await LocalCache.get(key); if (c && c.rows) { branchDir.rows = c.rows; branchDir.version = c.version; } }
   if (branchDir.loading) return branchDir.loading;
   branchDir.loading = api('branchDirectory', { ifVersion: branchDir.version || '' }, 90000).then(r => {
@@ -4032,14 +4035,17 @@ const Outbox = {
     el.querySelectorAll('[data-obretry]').forEach(b => b.onclick = () => { const o = this.items.find(x => x.id === b.dataset.obretry); if (o) { o.state = 'waiting'; o.error = ''; o.next = 0; this.save().then(() => { redraw && redraw(); this.flush(true); }); } });
     el.querySelectorAll('[data-obdrop]').forEach(b => b.onclick = () => { this.items = this.items.filter(x => x.id !== b.dataset.obdrop); this.save().then(() => { redraw && redraw(); if (day.data) applyDay(day.server || day.data); }); });
   },
-  /* small sync indicator: Synced · N pending · N failed · Offline — tap for the list */
-  badge(){
-    let el = document.getElementById('syncPill');
-    if (!el) { el = document.createElement('button'); el.type = 'button'; el.id = 'syncPill'; el.className = 'sync-pill'; document.body.appendChild(el); el.onclick = () => syncSheet(); }
+  /* sync status lives in the side menu (row "Sync") + a small dot on the menu button when something waits / failed */
+  syncText(){
     const n = this.items.length, failed = this.items.filter(o => o.state === 'failed').length, sending = this.items.some(o => o.state === 'sending');
-    const cls = failed ? 'bad' : n ? 'wait' : net.offline ? 'off' : 'ok';
-    el.className = 'sync-pill ' + cls + (state.token && state.user && state.user.code ? '' : ' hide');
-    el.innerHTML = `<i></i>${failed ? L(`${failed} failed`, `${failed} فشل`) : n ? (sending ? L('Syncing…', 'مزامنة…') : L(`${n} pending`, `${n} بانتظار المزامنة`)) : net.offline ? L('Offline', 'غير متصل') : L('Synced', 'متزامن')}`;
+    return { cls: failed ? 'bad' : n ? 'wait' : net.offline ? 'off' : 'ok',
+      text: failed ? L(`${failed} failed`, `${failed} فشل`) : n ? (sending ? L('Syncing…', 'مزامنة…') : L(`${n} pending`, `${n} بانتظار المزامنة`)) : net.offline ? L('Offline', 'غير متصل') : L('Synced', 'متزامن') };
+  },
+  badge(){
+    const st = this.syncText();
+    document.body.dataset.sync = st.cls;
+    const el = document.getElementById('drSync');
+    if (el) { el.className = 'dr-sync ' + st.cls; el.querySelector('.dr-sync-t').textContent = st.text; }
     const sh = document.getElementById('syncList'); if (sh) renderSyncList();
   },
   schedule(ms){ clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), ms == null ? 5000 : ms); },
