@@ -416,6 +416,19 @@ body{font-size:15px;background:#f2f4f8}
   .screen.on, .screen.on.nav-push, .screen.on.nav-back, .screen.on.nav-fade, #toast.toast-pop, .sheet, .done-ic, .tabs button.on::before, .sheet-bg.on{animation:none !important}
   .btn,.mini,.tabs button,.qa,.chip,.lrow,.opt,.tabs button svg{transition:none !important}
 }
+/* V1.1 sync indicator + pending banners (no blur / animation: cheap on low-end phones) */
+.sync-pill{position:fixed;inset-inline-start:10px;bottom:calc(68px + var(--safe-bottom, 0px));z-index:55;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#e4e7ec);background:var(--panel,#fff);color:var(--ink-dim,#475467);font:600 11.5px/1 inherit;font-family:inherit;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(16,24,40,.10);cursor:pointer}
+.sync-pill i{width:7px;height:7px;border-radius:50%;background:#12b76a;display:inline-block}
+.sync-pill.wait i{background:#f79009} .sync-pill.wait{color:#7a4b00}
+.sync-pill.bad i{background:#e5484d} .sync-pill.bad{color:#a32d2d;border-color:#f3c1c1}
+.sync-pill.off i{background:#98a2b3}
+.sync-pill.ok{opacity:.75}
+.sync-pill.hide{display:none}
+body:has(#login.on) .sync-pill, body:has(#cam.on) .sync-pill{display:none}
+.banner.amber{background:#fff1dc;border-color:#f5d9a8;color:#7a4a00;margin-bottom:10px}
+.banner.red{background:#fdecea;border-color:#f3c1c1;color:#a32d2d;margin-bottom:10px}
+.banner .pill{background:#fff;border-radius:999px;padding:2px 9px;font-weight:700}
+html[data-theme=dark] .banner.amber{background:#3a2c0d;color:#ffd99a} html[data-theme=dark] .banner.red{background:#3d1717;color:#ffb4b4}
 
 /* ================= AL-HOWAIL design layer (light + dark, LTR + RTL) ================= */
 :root{
@@ -2037,7 +2050,7 @@ const NativeApp = (function(){
 const IN_ANDROID_WEBVIEW = !!window.androidBridge || NATIVE_INFO.native || /; wv\)/.test(navigator.userAgent);
 try { console.info('[native] capacitor=' + NATIVE_INFO.capacitor + ' native=' + NATIVE_INFO.native + ' plugin=' + NATIVE_INFO.via + ' webview=' + IN_ANDROID_WEBVIEW); } catch (e) {}
 const CLIENT = NativeApp ? 'android-app' : 'web';
-const REQUEST_TIMEOUT_MS = 30000;
+const REQUEST_TIMEOUT_MS = 30000, READ_TIMEOUT_MS = 15000;   // reads: short, the cached data stays on screen
 const LIST_TIMEOUT_MS = 120000;   // generous for the legacy backend (Supabase answers My List in a few seconds)
 const TOKEN_KEY = 'alhowail_field_token';
 const USER_KEY = 'alhowail_field_user';
@@ -2094,14 +2107,17 @@ async function apiOnce(action, body, timeoutMs, traceId){
   if (!API_URL || API_URL.startsWith('PASTE_')) throw new ApiError('NOT_CONFIGURED');
   if (navigator.onLine === false) throw new ApiError('NETWORK');
   const ctrl = new AbortController();
+  if (!timeoutMs && READ_ACTIONS[action]) timeoutMs = READ_TIMEOUT_MS;
   const timer = setTimeout(() => ctrl.abort(), timeoutMs || REQUEST_TIMEOUT_MS);
   let res;
   try {
     // text/plain body = no CORS preflight (Apps Script can't answer OPTIONS)
     res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action, token: state.token, client: CLIENT, traceId }, body)), signal: ctrl.signal });
   } catch (e) {
+    if (typeof net !== 'undefined') { net.offline = true; if (typeof Outbox !== 'undefined') Outbox.badge(); }
     throw new ApiError(e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK');
   } finally { clearTimeout(timer); }
+  if (typeof net !== 'undefined' && net.offline) { net.offline = false; if (typeof Outbox !== 'undefined') { Outbox.badge(); Outbox.schedule(1500); } }
   if (!res.ok) throw new ApiError('SERVER_UNAVAILABLE');
   let data;
   try { data = await res.json(); } catch (e) { throw new ApiError('INVALID_RESPONSE'); }
@@ -2599,7 +2615,9 @@ async function mutate(action, payload, btn){
   const c = currentCust;
   if (btn) { btn.disabled = true; btn.classList.add('loading'); }
   try {
-    const r = await api(action, Object.assign({ custNo: c.custNo, branch: c.branch }, payload));
+    const res = await sendOrQueue(action, Object.assign({ custNo: c.custNo, branch: c.branch }, payload), c.custNo, payload.name || payload.number || '');
+    if (res.queued) { closeSheet(); toast(['No connection — saved on the phone (PENDING SYNC).', 'لا يوجد اتصال — حُفظ على الهاتف (بانتظار المزامنة).'], 'ok'); return true; }
+    const r = res.r;
     setFieldForCustomer(c.custNo, r);
     closeSheet();
     renderContacts();
@@ -2772,6 +2790,7 @@ function msgInto(el, m){ el.textContent = ''; el.append(pick(m)); el.classList.a
 
 /* ---------- time (Riyadh, UTC+3 all year) ---------- */
 const RIY = 3 * 3600000;
+const tzName = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } };
 let serverOffset = 0;
 const nowS = () => Date.now() + serverOffset;
 function syncClock(st){ if (st && st.iso) { const t = Date.parse(st.iso + '+03:00'); if (!isNaN(t)) serverOffset = t - Date.now(); } }
@@ -2873,15 +2892,21 @@ async function loadDay(){
   if (!state.user || !state.user.code) { renderDay(); return; }
   if (day.loading) return;
   day.loading = true;
+  if (!day.data) { const c = await DayCache.load(); if (c && !day.data) { day.stale = c.at; applyDay(c.r, true); } }   // instant: last saved "today"
   try {
     const r = await api('today');
     applyDay(r);
   } catch (e) {
-    if (e.code !== 'SESSION_EXPIRED' && e.code !== 'ACCOUNT_INACTIVE') { renderDay(errText(e.code)); }
+    if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') return;
+    day.loading = false;
+    if (!day.data) { const c = await DayCache.load(); if (c) { day.stale = c.at; applyDay(c.r, true); return; } }   // offline: last saved "today"
+    if (day.data) { day.stale = day.stale || Date.now(); renderDay(); } else renderDay(errText(e.code));
   } finally { day.loading = false; }
 }
-function applyDay(r){
-  day.data = r; syncClock(r.serverTime);
+function applyDay(r, cached){
+  if (!cached) { day.server = r; day.stale = null; syncClock(r.serverTime); DayCache.save(r); }
+  else day.server = day.server || r;
+  day.data = overlayDay(r);
   if (r.visits) mergeVisits(r.visits);
   renderDay();
   if (typeof updateBadge === 'function') updateBadge();
@@ -2944,7 +2969,9 @@ function renderDay(errorMsg){
   const vis = (d.visits || []).slice().reverse();
   const visHtml = vis.length ? `<div class="sec-t"><h3>${L("Today's visits", 'زيارات اليوم')}</h3><button type="button" data-go="history">${L('All', 'الكل')} ›</button></div>
       <div class="list2">${vis.slice(0, 4).map(x => `<div class="li2"><span class="li2-ic">${hm(x.start).replace(/ (AM|PM)/, '')}</span><span class="m"><b>${esc(x.customerName)}</b><small>${esc(x.custNo)} · ${esc(tr(x.locationType))}${x.result ? ' · ' + esc(tr(x.result)) : ''}</small></span><span class="chip-s ${!x.end ? 'cs-open' : x.endType === 'AUTO-CLOSED' ? 'cs-auto' : 'cs-ok'}">${!x.end ? L('Open', 'جارية') : x.endType === 'AUTO-CLOSED' ? L('Auto', 'تلقائي') : L('Closed', 'مغلقة')}</span></div>`).join('')}</div>` : '';
-  body.innerHTML = `${hello}${invites}${work}${stats}${active}${fuHtml}${pf}${visHtml}`;
+  const staleNote = day.stale && !day.loading ? `<div class="warnbox" style="margin-bottom:10px">${L('Offline — showing what was saved on this phone', 'غير متصل — يتم عرض البيانات المحفوظة على الهاتف')} (${hm(day.stale)}).</div>` : '';
+  body.innerHTML = `${hello}${staleNote}${pendingDayBanner(d)}${invites}${work}${stats}${active}${fuHtml}${pf}${visHtml}`;
+  ['pendBanner', 'failBanner'].forEach(id => { const b = $(id); if (b) b.onclick = syncSheet; });
   if (!list.report && !list.loading && u.code) loadList(false, true);
   clearInterval(day.homeTick);
   if (v || (a && !a.outTime)) day.homeTick = setInterval(() => {
@@ -3094,8 +3121,11 @@ async function submitPunch(){
   if (!punch.gps || punch.gpsErr) return msgInto(box, errMsg(punch.gpsErr || { code: 'NO_GPS' }));
   const g = punch.gps;
   await busy($('punchGo'), async () => {
-    const r = await api(punch.mode === 'in' ? 'punchIn' : 'punchOut', { lat: g.lat, lng: g.lng, accuracy: g.accuracy, km, photo: punch.photo }, 60000);
-    applyDay(r); renderHome();
+    const act = punch.mode === 'in' ? 'punchIn' : 'punchOut';
+    const res = await sendOrQueue(act, { lat: g.lat, lng: g.lng, accuracy: g.accuracy, km, photo: punch.photo, offlineAt: Date.now(), tz: tzName() }, '', '', 60000);
+    if (res.queued) { applyDay(day.server || day.data || { date: riyDate(nowS()), visits: [], summary: { visits: 0, minutes: 0 } }, true); renderHome();
+      toast(['No signal — saved with the time you pressed (PENDING SYNC).', 'لا توجد إشارة — حُفظ بوقت الضغط (بانتظار المزامنة).'], 'ok'); return; }
+    applyDay(res.r); renderHome();
     toast(punch.mode === 'in' ? ['Punched in. Have a good day.', 'تم تسجيل الحضور.'] : ['Punched out. The day is closed.', 'تم تسجيل الانصراف.'], 'ok');
   }, box);
 }
@@ -3107,7 +3137,7 @@ function cancelFollowUpSheet(visitId){
     <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Keep', 'إبقاء')}</button><button class="btn btn-red" type="button" id="fSave"><span class="spin"></span>${L('Cancel follow-up', 'إلغاء المتابعة')}</button></div>`);
   $('fCancel').onclick = closeSheet;
   $('fSave').onclick = () => busy($('fSave'), async () => {
-    await api('cancelFollowUp', { visitId });
+    const res = await sendOrQueue('cancelFollowUp', { visitId }, '', '');
     (field.visits || []).forEach(v => { if (v.visitId === visitId) v.followUpStatus = 'Cancelled'; });
     closeSheet(); renderDay(); if (typeof updateBadge === 'function') updateBadge();
     toast(['Follow-up cancelled.', 'تم إلغاء المتابعة.'], 'ok');
@@ -3132,11 +3162,9 @@ function renderNotes(c){
     $('fSave').onclick = () => { const t = $('nText').value.trim(); if (!t) return msgInto($('sheetMsg'), ['Write the note.', 'اكتب الملاحظة.']);
       const payload = { custNo: c.custNo, branch: c.branch || '', note: t, rid: newId() };
       busy($('fSave'), async () => {
-        let r;
-        try { r = await api('addNote', payload); }
-        catch (e) {   // no connection: keep it on the phone, upload automatically later (same rid ⇒ never saved twice)
-          if (!RETRYABLE[e.code]) throw e;
-          await Outbox.add('addNote', payload, c.custNo); closeSheet(); renderNotes(c);
+        const res = await sendOrQueue('addNote', payload, c.custNo, t), r = res.r;
+        if (res.queued) {   // no connection: kept on the phone, uploaded automatically later (same rid ⇒ never saved twice)
+          closeSheet(); renderNotes(c);
           toast(['No connection — note kept on the phone, it will upload automatically.', 'لا يوجد اتصال — حُفظت الملاحظة على الهاتف وسترفع تلقائيًا.'], 'ok'); return;
         }
         field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []); closeSheet(); renderNotes(c); toast(['Note saved.', 'تم حفظ الملاحظة.'], 'ok'); }, $('sheetMsg')); };
@@ -3203,7 +3231,9 @@ function pinSheet(c, done){
     if (!pick) return msgInto($('sheetMsg'), errText('BAD_LOCATION_TYPE'));
     if (!g || ge) return msgInto($('sheetMsg'), errMsg(ge || { code: 'NO_GPS' }));
     await busy($('fSave'), async () => {
-      const r = await api('saveLocation', { custNo: c.custNo, branch: c.branch, type: pick, lat: g.lat, lng: g.lng, accuracy: g.accuracy });
+      const res = await sendOrQueue('saveLocation', { custNo: c.custNo, branch: c.branch, type: pick, lat: g.lat, lng: g.lng, accuracy: g.accuracy }, c.custNo, c.custNo + ' · ' + pick);
+      if (res.queued) { closeSheet(); toast(['No connection — location saved on the phone (PENDING SYNC).', 'لا يوجد اتصال — حُفظ الموقع على الهاتف (بانتظار المزامنة).'], 'ok'); return; }
+      const r = res.r;
       field.locations = (field.locations || []).filter(l => custNoOfKey(l.CustomerKey) !== String(c.custNo)).concat(r.locations || []);
       if (vs.cust && String(vs.cust.custNo) === String(c.custNo)) { vs.locationId = r.locationId; vs.gps = g; vs.gpsErr = null; }
       closeSheet(); done && done();
@@ -3290,9 +3320,12 @@ async function submitStart(){
   const chk = vsCheck(); if (!chk || !chk.ok) return msgInto(box, vs.gpsErr ? errMsg(vs.gpsErr) : errText('TOO_FAR'));
   const c = vs.cust, g = vs.gps, photo = vs.photo;
   await busy($('vsGo'), async () => {
-    const r = await api('startVisit', { custNo: c.custNo, branch: c.branch, custName: c.cust, outReason: c.outReason || '', locationId: vs.locationId, lat: g.lat, lng: g.lng, accuracy: g.accuracy, photo, companions: [...vs.companions] }, 60000);
+    const loc = locsOf(c.custNo).find(l => l.LocationID === vs.locationId) || {};
+    const res = await sendOrQueue('startVisit', { visitId: uuid4(), custNo: c.custNo, branch: c.branch, custName: c.cust, outReason: c.outReason || '', locationId: vs.locationId, locationType: loc.Type || '', distanceM: Math.round(chk.dist), lat: g.lat, lng: g.lng, accuracy: g.accuracy, photo, companions: [...vs.companions], offlineAt: Date.now(), tz: tzName() }, c.custNo, c.cust, 60000);
     visitPhoto = photo;
-    applyDay(r); show('visit'); renderVisit(); haptic(20);
+    if (res.queued) { applyDay(day.server || day.data, true); toast(['No signal — visit started on the phone (PENDING SYNC).', 'لا توجد إشارة — بدأت الزيارة على الهاتف (بانتظار المزامنة).'], 'ok'); }
+    else applyDay(res.r);
+    show('visit'); renderVisit(); haptic(20);
   }, box);
 }
 
@@ -3358,9 +3391,10 @@ function endSheet(){
     if (desc.length < 5) return msgInto(box, errText('DESCRIPTION_REQUIRED'));
     if (date && (date < min || date > max)) return msgInto(box, errText('BAD_NEXT_DATE'));
     await busy($('fSave'), async () => {
-      const r = await api('endVisit', { visitId: v.visitId, result: pick, description: desc, nextAction: next, nextVisitDate: date }, 45000);
+      const res = await sendOrQueue('endVisit', { visitId: v.visitId, result: pick, description: desc, nextAction: next, nextVisitDate: date, custNo: v.custNo, custName: v.customerName, offlineAt: Date.now(), tz: tzName() }, v.custNo, v.customerName, 45000);
       closeSheet(); visitPhoto = null; clearInterval(day.timer);
-      applyDay(r); renderHome();
+      applyDay(res.queued ? (day.server || day.data) : res.r, !!res.queued); renderHome();
+      if (res.queued) { toast(['No signal — visit saved on the phone (PENDING SYNC).', 'لا توجد إشارة — حُفظت الزيارة على الهاتف (بانتظار المزامنة).'], 'ok'); return; }
       if (list.report) renderCustRows();
       toast(['Visit saved.', 'تم حفظ الزيارة.'], 'ok');
     }, box);
@@ -3414,66 +3448,6 @@ async function replacePhoto(v){
     toast(['Photo replaced.', 'تم استبدال الصورة.'], 'ok');
   });
 }
-
-
-/* ===================== Outbox: writes made without connection (V1: notes) =====================
-   Saved on the phone (IndexedDB) with their request id; uploaded automatically when the connection returns.
-   The server keeps one answer per request id, so an upload that is retried is never stored twice.
-   States shown to the salesman: Waiting for connection · Saving… · Sync failed (Retry / Discard). Nothing is shown as
-   "saved" until the server confirmed it. */
-const Outbox = {
-  items: [], loaded: false, busy: false,
-  key(){ return 'outbox_' + ((state.user && state.user.code) || 'x'); },
-  async load(){ const k = this.key(); if (this.loaded === k) return; const v = await LocalCache.get(k); this.items = Array.isArray(v) ? v : []; this.loaded = k; this.badge(); },
-  async save(){ await LocalCache.set(this.key(), this.items); this.badge(); },
-  async add(action, payload, custNo){ await this.load(); this.items.push({ id: payload.rid, action, payload, custNo: String(custNo), at: Date.now(), state: 'waiting' }); await this.save(); },
-  forCust(action, custNo){ return this.items.filter(o => o.action === action && o.custNo === String(custNo)); },
-  rowHtml(o, text){
-    const st = o.state === 'failed' ? `<span class="red">${L('Sync failed', 'فشل الرفع')}${o.error ? ' (' + esc(o.error) + ')' : ''}</span> <button class="mini" type="button" data-obretry="${esc(o.id)}">${L('Retry', 'إعادة')}</button> <button class="mini" type="button" data-obdrop="${esc(o.id)}">${L('Discard', 'حذف')}</button>`
-      : o.state === 'sending' ? `<span>${L('Saving…', 'جاري الحفظ…')}</span>` : `<span class="amber">⏳ ${L('Waiting for connection', 'بانتظار الاتصال')}</span>`;
-    return `<div class="vrow" style="opacity:.8"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(text)}</div><div class="dt">${st}</div></div></div>`;
-  },
-  wire(el, redraw){
-    el.querySelectorAll('[data-obretry]').forEach(b => b.onclick = () => { const o = this.items.find(x => x.id === b.dataset.obretry); if (o) { o.state = 'waiting'; o.error = ''; this.save().then(() => { redraw(); this.flush(); }); } });
-    el.querySelectorAll('[data-obdrop]').forEach(b => b.onclick = () => { this.items = this.items.filter(x => x.id !== b.dataset.obdrop); this.save().then(redraw); });
-  },
-  badge(){
-    let el = document.getElementById('obBar');
-    const n = this.items.length, failed = this.items.filter(o => o.state === 'failed').length;
-    if (!n) { if (el) el.remove(); return; }
-    if (!el) { el = document.createElement('div'); el.id = 'obBar'; el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;background:#fff7e6;color:#7a4b00;border:1px solid #f2d29b;border-radius:12px;padding:8px 12px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12)'; document.body.appendChild(el); el.onclick = () => this.flush(); }
-    el.textContent = failed ? L(`${failed} item(s) failed to upload — open the customer to retry`, `${failed} عنصر فشل رفعه — افتح العميل لإعادة المحاولة`)
-      : L(`${n} item(s) waiting for connection — will upload automatically`, `${n} عنصر بانتظار الاتصال — سيرفع تلقائيًا`);
-  },
-  async flush(){
-    await this.load();
-    if (this.busy || !state.token || navigator.onLine === false) return;
-    const todo = this.items.filter(o => o.state !== 'failed'); if (!todo.length) return;
-    this.busy = true;
-    try {
-      for (const o of todo) {
-        o.state = 'sending'; this.badge();
-        try {
-          const r = await api(o.action, o.payload);
-          this.items = this.items.filter(x => x.id !== o.id);
-          if (o.action === 'addNote' && r) { field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []); toast(['Note uploaded.', 'تم رفع الملاحظة.'], 'ok'); }
-          await this.save();
-        } catch (e) {
-          if (RETRYABLE[e.code]) { o.state = 'waiting'; await this.save(); break; }   // still offline: try later
-          if (e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') { o.state = 'waiting'; await this.save(); break; }
-          o.state = 'failed'; o.error = e.code || 'ERROR'; await this.save();
-        }
-      }
-    } finally {
-      this.busy = false; this.badge();
-      const c = $('cust').classList.contains('on') ? currentCust : null; if (c && typeof renderNotes === 'function') renderNotes(c);
-    }
-  }
-};
-window.addEventListener('online', () => Outbox.flush());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') Outbox.flush(); });
-setInterval(() => { if (Outbox.items.length) Outbox.flush(); }, 20000);
-setTimeout(() => Outbox.load().then(() => Outbox.flush()), 1500);
 
 
 /* ======================= PDFs — the dashboard's own print code (DashPrint) and CSS ======================= */
@@ -3773,13 +3747,15 @@ Object.assign(ERR, {
   LEAD_LINKED:         ['This lead is now a customer — continue on the customer page.', 'أصبح هذا العميل المحتمل عميلاً — أكمل من صفحة العميل.'],
   AMBIGUOUS_CUSTOMER:  ['This code exists in more than one branch. Ask the admin to link it.', 'هذا الكود موجود في أكثر من فرع. اطلب من المسؤول الربط.']
 });
-let leadsState = [];
+let leadsState = [], leadsClosed = {};
 const OUT_REASONS_UI = () => [['Covering colleague', L('Covering a colleague', 'تغطية زميل')], ['Customer request', L('Customer request', 'طلب العميل')], ['Other', L('Other', 'أخرى')]];
 
 /** Merge the salesman's leads (and their contacts, phones, locations, visits) into the app data. */
 function applyLeads(b){
   if (!b) return;
   leadsState = b.leads || [];
+  leadsClosed = {}; (b.closed || []).forEach(x => { leadsClosed[x.leadId] = x; });
+  setTimeout(() => { if (typeof checkOpenLeadGone === 'function') checkOpenLeadGone(); }, 0);
   const notLead = r => String(r.CustomerKey || '').indexOf('L|') !== 0;
   field.contacts = (field.contacts || []).filter(notLead).concat(b.contacts || []);
   field.phones = (field.phones || []).filter(notLead).concat(b.phones || []);
@@ -3824,11 +3800,12 @@ function openEntity(e){
   $('custBody').innerHTML = `
     <div class="cust-head"><div class="cust-h1">${esc(e.cust)}</div><div class="cust-sub">${badge}</div></div>
     ${e.kind === 'other' ? `<div class="warnbox">${L('This customer is not in your list. You can visit them; balances and statements stay with the owner.', 'هذا العميل ليس في قائمتك. يمكنك زيارته؛ الأرصدة وكشف الحساب لدى المسؤول.')}</div>` : ''}
+    ${e.kind === 'lead' ? leadLinkCardHtml(leadsState.find(l => l.leadId === e.custNo)) : ''}
     ${e.kind === 'lead' ? '<div class="card" id="contactsCard"></div>' : ''}
     <div class="card" id="locCard"></div>
     ${e.kind === 'lead' ? '<div class="card" id="notesCard"></div>' : ''}
     <div class="card" id="histCard"></div>`;
-  if (e.kind === 'lead') renderContacts();
+  if (e.kind === 'lead') { renderContacts(); wireLeadLink(leadsState.find(l => l.leadId === e.custNo)); }
   renderLocations(e); if (e.kind === 'lead') renderNotes(e); renderHistory(e);
   $('custStmt').style.display = 'none'; $('custStmtBar').style.display = 'none';
   $('custStart').onclick = () => startVisitFlow(e);
@@ -3899,6 +3876,25 @@ async function pickOther(x){
   } catch (e) { msgInto($('sheetMsg'), errMsg(e)); }
 }
 
+/* ---------- new lead: warn when it already looks like an existing customer (name in the branch list / phone of my customers) ---------- */
+const normName = s => String(s || '').toLowerCase().replace(/[\u064B-\u0652]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+  .replace(/\b(co|company|est|establishment|trading|trd|ltd|llc|for|and|the)\b/g, ' ').replace(/(شركة|شركه|مؤسسة|مؤسسه|مؤسسات|للتجارة|للتجاره|التجارية|التجاريه|لتجارة|تجارة)/g, ' ')
+  .replace(/[^a-z0-9\u0600-\u06FF]+/g, ' ').trim();
+const phoneKey = s => String(s || '').replace(/\D/g, '').slice(-9);
+function similarCustomers(name, phone){
+  const out = [], seen = new Set(), add = (x, why) => { const k = x.custNo + '|' + x.branch; if (!seen.has(k)) { seen.add(k); out.push(Object.assign({ why }, x)); } };
+  const pk = phoneKey(phone);
+  if (pk.length >= 8) (field.phones || []).forEach(p => { if (phoneKey(p.Number) === pk && String(p.CustomerKey).indexOf('C|') === 0) { const [, no, br] = String(p.CustomerKey).split('|');
+    const c = list.report && list.report.custs.find(x => String(x.custNo) === no); add({ custNo: no, branch: br, name: c ? c.cust : '', own: true }, 'phone'); } });
+  const n = normName(name);
+  if (n.length >= 4 && branchDir.rows) {
+    const words = n.split(' ').filter(w => w.length >= 3);
+    branchDir.rows.forEach(d => { const dn = normName(d[2]); if (!dn) return;
+      const hit = dn.includes(n) || (dn.length >= 4 && n.includes(dn)) || (words.length >= 2 && words.every(w => dn.includes(w)));
+      if (hit) add({ custNo: d[0], branch: d[1], name: d[2], ownerCode: d[3], ownerName: d[4], own: !!d[5] }, 'name'); });
+  }
+  return out.slice(0, 5);
+}
 /* ---------- new lead ---------- */
 function newLeadSheet(){
   const types = (state.settings && state.settings.locationTypes) || [];
@@ -3911,6 +3907,7 @@ function newLeadSheet(){
     <div class="field"><label><span>${L('Pin location now (optional)', 'تثبيت الموقع الآن (اختياري)')}</span></label>
       <div class="chips-wrap" id="nlLoc">${types.map(t => `<button type="button" class="chip" data-t="${esc(t.type)}">${esc(tr(t.type))}</button>`).join('')}</div></div>
     <div id="nlGps"></div>
+    <div id="nlDup"></div>
     <div class="msg err" id="sheetMsg"></div>
     <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Cancel', 'إلغاء')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('Save lead', 'حفظ')}</button></div>`);
   $('nlType').querySelectorAll('button').forEach(b => b.onclick = () => $('nlType').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)));
@@ -3921,6 +3918,18 @@ function newLeadSheet(){
     if (was) { loc = ''; $('nlGps').innerHTML = ''; return; }
     b.classList.add('on'); loc = b.dataset.t; if (!g) locate();
   });
+  let dupT = null;
+  const dupCheck = () => {
+    const el = $('nlDup'); if (!el) return;
+    const res = similarCustomers($('nlName').value, $('nlPhone').value);
+    el.innerHTML = res.length ? `<div class="warnbox"><b>${L('This may already be a customer', 'قد يكون هذا عميلاً موجودًا بالفعل')}</b>
+      ${res.map((x, i) => `<div class="row" style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="flex:1;min-width:0"><b>${esc(x.custNo)}</b> — ${esc(x.name)}<br><small>${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Salesman', 'المندوب') + ': ' + esc(x.ownerName || x.ownerCode || '—')} · ${x.why === 'phone' ? L('same phone', 'نفس الرقم') : L('similar name', 'اسم مشابه')}</small></span><button class="mini" type="button" data-dup="${i}">${L('Open customer', 'فتح العميل')}</button></div>`).join('')}
+      <small style="display:block;margin-top:6px">${L('Not the same? You can still save the lead.', 'ليس نفسه؟ يمكنك حفظ العميل المحتمل.')}</small></div>` : '';
+    el.querySelectorAll('[data-dup]').forEach(b => b.onclick = () => { const x = res[Number(b.dataset.dup)]; closeSheet(); pickOther(x); });
+  };
+  const dupLater = () => { clearTimeout(dupT); dupT = setTimeout(dupCheck, 300); };
+  $('nlName').addEventListener('input', dupLater); $('nlPhone').addEventListener('input', dupLater);
+  loadBranchDir().then(dupCheck, () => {});
   $('fCancel').onclick = closeSheet;
   $('fSave').onclick = async () => {
     const box = $('sheetMsg'), name = $('nlName').value.trim();
@@ -3928,7 +3937,9 @@ function newLeadSheet(){
     const payload = { name, contactName: $('nlContact').value.trim(), phone: $('nlPhone').value.trim(), phoneType: ($('nlType').querySelector('.on') || {}).dataset.t || 'Mobile' };
     if (loc) { if (!g || ge) return msgInto(box, errMsg(ge || { code: 'NO_GPS' })); Object.assign(payload, { locationType: loc, lat: g.lat, lng: g.lng, accuracy: g.accuracy }); }
     await busy($('fSave'), async () => {
-      const r = await api('saveLead', payload);
+      const res = await sendOrQueue('saveLead', payload, '', name);
+      if (res.queued) { closeSheet(); toast(['No connection — lead saved on the phone (PENDING SYNC). It appears after upload.', 'لا يوجد اتصال — حُفظ العميل المحتمل على الهاتف (بانتظار المزامنة).'], 'ok'); return; }
+      const r = res.r;
       applyLeads(r.leads);
       closeSheet();
       if (list.report) renderList();
@@ -3960,7 +3971,7 @@ function wireLeadCards(){
 /* ---------- "This customer was my lead": the salesman asks, the admin approves (nothing is merged by the phone) ---------- */
 function renderLeadLink(c){
   const el = $('leadLinkCard'); if (!el) return;
-  const open = (leadsState || []).filter(l => (l.status || 'OPEN') === 'OPEN');
+  const open = (leadsState || []).filter(l => (l.status || 'OPEN') === 'OPEN' && !(l.linkRequest && l.linkRequest.status === 'PENDING'));
   if (!open.length) { el.innerHTML = ''; return; }
   el.innerHTML = `<div class="card"><div class="sec-h"><h2>${L('Was this one of your leads?', 'هل كان هذا عميلاً محتملاً لك؟')}</h2>
     <button class="mini" type="button" id="llReq">${L('Request link', 'طلب ربط')}</button></div>
@@ -3972,10 +3983,249 @@ function renderLeadLink(c){
       <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Cancel', 'إلغاء')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('Send request', 'إرسال الطلب')}</button></div>`);
     $('fCancel').onclick = closeSheet;
     $('fSave').onclick = () => { const pick = (document.querySelector('input[name=llPick]:checked') || {}).value; if (!pick) return;
-      busy($('fSave'), async () => { await api('requestLeadLink', { leadId: pick, custNo: c.custNo, branch: c.branch || '' }); closeSheet();
+      busy($('fSave'), async () => { const res = await sendOrQueue('requestLeadLink', { leadId: pick, custNo: c.custNo, branch: c.branch || '' }, pick, pick + ' → ' + c.custNo); const l = leadsState.find(x => x.leadId === pick); if (l) l.linkRequest = { status: 'PENDING', at: new Date(nowS()).toISOString(), custNo: c.custNo, custName: c.cust, branch: c.branch, queued: !!res.queued }; closeSheet();
         toast(['Request sent — the admin will approve it.', 'تم إرسال الطلب — سيوافق عليه المسؤول.'], 'ok'); }, $('sheetMsg')); };
   };
 }
+
+/* ===================== Offline & weak signal: one write queue for everything the salesman saves =====================
+   Every write gets a stable operation id (rid) the moment the button is pressed. It is tried at once; when there is no
+   connection (or the answer is lost) the SAME operation is kept on the phone (IndexedDB) and sent again later, with the
+   same id — the server keeps one answer per id, so a retry can never create a duplicate (note, contact, punch, visit …).
+   Punch in/out and start/end visit carry the phone time of the button press (offlineAt) and the phone time at sending
+   (deviceNow): the server corrects the phone clock, records server_received_at, and keeps the original event time.
+   States: Pending (waiting for connection) · Syncing · Synced (removed from the queue) · Failed (server refused: reason + Retry). */
+Object.assign(ERR, {
+  LEAD_DELETED:     ['This lead was removed by the admin.', 'حذف المسؤول هذا العميل المحتمل.'],
+  OFFLINE_TOO_OLD:  ['Saved offline more than 24 hours ago — ask the admin to correct it.', 'حُفظ دون اتصال منذ أكثر من 24 ساعة — اطلب من المسؤول تصحيحه.'],
+  OFFLINE_BAD_TIME: ['The phone date/time looks wrong. Check the phone clock and retry.', 'تاريخ/وقت الهاتف غير صحيح. تحقق من ساعة الهاتف وأعد المحاولة.']
+});
+const DAY_ACTIONS = { punchIn: 1, punchOut: 1, startVisit: 1, endVisit: 1 };
+const OB_LABEL = {
+  addNote: ['Note', 'ملاحظة'], saveContact: ['Contact', 'جهة اتصال'], savePhone: ['Phone number', 'رقم هاتف'], saveLocation: ['Location pin', 'تثبيت موقع'],
+  cancelFollowUp: ['Cancel follow-up', 'إلغاء متابعة'], saveLead: ['New lead', 'عميل محتمل جديد'], requestLeadLink: ['Lead link request', 'طلب ربط عميل محتمل'],
+  punchIn: ['Punch in', 'تسجيل الحضور'], punchOut: ['Punch out', 'تسجيل الانصراف'], startVisit: ['Start visit', 'بدء زيارة'], endVisit: ['End visit', 'إنهاء زيارة']
+};
+const net = { offline: navigator.onLine === false };
+const uuid4 = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+
+const Outbox = {
+  items: [], loaded: false, busy: false, timer: null,
+  key(){ return 'outbox_' + ((state.user && state.user.code) || 'x'); },
+  async load(){ const k = this.key(); if (this.loaded === k) return; const v = await LocalCache.get(k); this.items = Array.isArray(v) ? v : []; this.items.forEach(o => { if (o.state === 'sending') o.state = 'waiting'; }); this.loaded = k; this.badge(); },
+  async save(){ await LocalCache.set(this.key(), this.items); this.badge(); },
+  async add(action, payload, custNo, label){
+    await this.load();
+    if (this.items.some(o => o.id === payload.rid)) return;
+    this.items.push({ id: payload.rid, action, payload, custNo: String(custNo || ''), label: label || '', at: Date.now(), state: 'waiting', tries: 0, next: 0 });
+    await this.save(); this.schedule(4000);
+  },
+  pending(action){ return this.items.filter(o => !action || o.action === action); },
+  forCust(action, custNo){ return this.items.filter(o => o.action === action && o.custNo === String(custNo)); },
+  stateHtml(o){
+    return o.state === 'failed' ? `<span class="red">${L('Sync failed', 'فشل المزامنة')}${o.error ? ' — ' + esc(pick(errText(o.error))) : ''}</span> <button class="mini" type="button" data-obretry="${esc(o.id)}">${L('Retry', 'إعادة')}</button> <button class="mini ghost" type="button" data-obdrop="${esc(o.id)}">${L('Discard', 'حذف')}</button>`
+      : o.state === 'sending' ? `<span>${L('Syncing…', 'جاري المزامنة…')}</span>` : `<span class="amber">⏳ ${L('Pending sync', 'بانتظار المزامنة')}</span>`;
+  },
+  rowHtml(o, text){ return `<div class="vrow" style="opacity:.85"><div style="flex:1;min-width:0"><div class="nm" style="font-weight:500;white-space:pre-wrap">${esc(text)}</div><div class="dt">${this.stateHtml(o)}</div></div></div>`; },
+  wire(el, redraw){
+    el.querySelectorAll('[data-obretry]').forEach(b => b.onclick = () => { const o = this.items.find(x => x.id === b.dataset.obretry); if (o) { o.state = 'waiting'; o.error = ''; o.next = 0; this.save().then(() => { redraw && redraw(); this.flush(true); }); } });
+    el.querySelectorAll('[data-obdrop]').forEach(b => b.onclick = () => { this.items = this.items.filter(x => x.id !== b.dataset.obdrop); this.save().then(() => { redraw && redraw(); if (day.data) applyDay(day.server || day.data); }); });
+  },
+  /* small sync indicator: Synced · N pending · N failed · Offline — tap for the list */
+  badge(){
+    let el = document.getElementById('syncPill');
+    if (!el) { el = document.createElement('button'); el.type = 'button'; el.id = 'syncPill'; el.className = 'sync-pill'; document.body.appendChild(el); el.onclick = () => syncSheet(); }
+    const n = this.items.length, failed = this.items.filter(o => o.state === 'failed').length, sending = this.items.some(o => o.state === 'sending');
+    const cls = failed ? 'bad' : n ? 'wait' : net.offline ? 'off' : 'ok';
+    el.className = 'sync-pill ' + cls + (state.token && state.user && state.user.code ? '' : ' hide');
+    el.innerHTML = `<i></i>${failed ? L(`${failed} failed`, `${failed} فشل`) : n ? (sending ? L('Syncing…', 'مزامنة…') : L(`${n} pending`, `${n} بانتظار المزامنة`)) : net.offline ? L('Offline', 'غير متصل') : L('Synced', 'متزامن')}`;
+    const sh = document.getElementById('syncList'); if (sh) renderSyncList();
+  },
+  schedule(ms){ clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), ms == null ? 5000 : ms); },
+  /** Sends the queue in order (punch before visit …). Retryable failures wait with backoff; refusals become Failed. */
+  async flush(force){
+    await this.load();
+    if (this.busy || !state.token) return;
+    if (navigator.onLine === false) { net.offline = true; this.badge(); return; }
+    const now = Date.now(), todo = this.items.filter(o => o.state !== 'failed' && (force || !o.next || o.next <= now));
+    if (!todo.length) { this.planNext(); return; }
+    this.busy = true;
+    try {
+      for (const o of todo) {
+        o.state = 'sending'; this.badge();
+        try {
+          const body = Object.assign({}, o.payload);
+          if (DAY_ACTIONS[o.action] && body.offlineAt) body.deviceNow = Date.now();   // clock offset measured at send time
+          const r = await api(o.action, body, DAY_ACTIONS[o.action] ? 60000 : 30000);
+          this.items = this.items.filter(x => x.id !== o.id); await this.save();
+          onSynced(o, r);
+        } catch (e) {
+          if (RETRYABLE[e.code] || e.code === 'SESSION_EXPIRED' || e.code === 'ACCOUNT_INACTIVE') {
+            o.state = 'waiting'; o.tries = (o.tries || 0) + 1; o.next = Date.now() + Math.min(300000, 5000 * Math.pow(2, o.tries)); await this.save(); break;   // keep the order
+          }
+          o.state = 'failed'; o.error = e.code || 'ERROR'; await this.save();
+          if (DAY_ACTIONS[o.action] && day.server) applyDay(day.server);
+        }
+      }
+    } finally {
+      this.busy = false; this.badge(); this.planNext();
+      const c = $('cust').classList.contains('on') ? currentCust : null;
+      if (c && typeof renderNotes === 'function') renderNotes(c);
+    }
+  },
+  planNext(){ const w = this.items.filter(o => o.state === 'waiting'); if (w.length) this.schedule(Math.max(3000, Math.min(...w.map(o => (o.next || 0) - Date.now())))); }
+};
+
+/** Try now; with no connection keep the SAME operation (same rid) in the queue. Returns { r } or { queued: true }. */
+async function sendOrQueue(action, payload, custNo, label, timeoutMs){
+  payload.rid = payload.rid || newId();
+  if (DAY_ACTIONS[action]) { payload.offlineAt = payload.offlineAt || Date.now(); }
+  if (navigator.onLine !== false && !Outbox.items.some(o => DAY_ACTIONS[o.action] && DAY_ACTIONS[action] && o.state !== 'failed')) {
+    try {
+      const body = Object.assign({}, payload);
+      if (DAY_ACTIONS[action]) { delete body.offlineAt; }        // live: the server time is the event time
+      return { r: await api(action, body, timeoutMs) };
+    } catch (e) { if (!RETRYABLE[e.code]) throw e; }
+  }
+  await Outbox.add(action, payload, custNo, label);
+  return { queued: true };
+}
+
+/** What a synced item changes on the phone. */
+function onSynced(o, r){
+  if (!r) return;
+  const a = o.action;
+  if (a === 'addNote') { field.notes = (field.notes || []).filter(n => n.CustomerKey !== r.key).concat(r.notes || []); }
+  else if (a === 'saveContact' || a === 'savePhone') { setFieldForCustomer(o.custNo, r); if ($('cust').classList.contains('on') && typeof renderContacts === 'function') renderContacts(); }
+  else if (a === 'saveLocation') { field.locations = (field.locations || []).filter(l => custNoOfKey(l.CustomerKey) !== String(o.custNo)).concat(r.locations || []); }
+  else if (a === 'saveLead') { applyLeads(r.leads); if (list.report && $('list').classList.contains('on')) renderList(); }
+  else if (a === 'requestLeadLink') { const l = leadsState.find(x => x.leadId === o.payload.leadId); if (l) l.linkRequest = Object.assign({}, l.linkRequest, { status: 'PENDING', queued: false }); refreshLeadScreen(); }
+  else if (DAY_ACTIONS[a]) applyDay(r);
+  toast([`${OB_LABEL[a] ? OB_LABEL[a][0] : 'Item'} synced.`, `تمت مزامنة ${OB_LABEL[a] ? OB_LABEL[a][1] : 'العنصر'}.`], 'ok');
+}
+
+/* ---------- Home while punch / visit events are still on the phone: shown as PENDING SYNC ---------- */
+function overlayDay(r){
+  const d = JSON.parse(JSON.stringify(r || {}));
+  const pend = Outbox.items.filter(o => DAY_ACTIONS[o.action] && o.state !== 'failed');
+  d.pendingSync = pend.length;
+  d.summary = d.summary || { visits: 0, minutes: 0, joint: 0 };
+  d.visits = d.visits || [];
+  for (const o of pend) {
+    const p = o.payload, at = new Date(p.offlineAt + serverOffset).toISOString();
+    if (o.action === 'punchIn' && !d.attendance) d.attendance = { inTime: at, inKm: Number(String(p.km).replace(/[,\s]/g, '')) || 0, outTime: null, outKm: null, outType: '', pending: true };
+    else if (o.action === 'punchOut' && d.attendance && !d.attendance.outTime) Object.assign(d.attendance, { outTime: at, outKm: Number(String(p.km).replace(/[,\s]/g, '')) || 0, outType: 'SALESMAN', pendingOut: true });
+    else if (o.action === 'startVisit' && !(d.openVisit && d.openVisit.visitId === p.visitId) && !d.visits.some(v => v.visitId === p.visitId)) {
+      d.openVisit = { visitId: p.visitId, custNo: p.custNo, customerName: p.custName, customerKey: '', locationType: p.locationType || '', start: at, companions: [], distanceM: p.distanceM, pending: true };
+    } else if (o.action === 'endVisit' && d.openVisit && d.openVisit.visitId === p.visitId) {
+      d.visits.push(Object.assign({}, d.openVisit, { end: at, endType: 'SALESMAN', result: p.result, pending: true }));
+      d.summary.visits++; d.openVisit = null;
+    }
+  }
+  return d;
+}
+function pendingDayBanner(d){
+  if (!d || !d.pendingSync) return '';
+  const fails = Outbox.items.filter(o => DAY_ACTIONS[o.action] && o.state === 'failed').length;
+  return `<button type="button" class="banner amber" id="pendBanner"><div class="grow"><b>⏳ ${L('PENDING SYNC', 'بانتظار المزامنة')}</b><small>${L('Saved on the phone with the time you pressed. It uploads automatically when the signal returns.', 'حُفظ على الهاتف بوقت الضغط، وسيرفع تلقائيًا عند عودة الإشارة.')}</small></div><span class="pill">${d.pendingSync}</span></button>`
+    + (fails ? `<button type="button" class="banner red" id="failBanner"><div class="grow"><b>${L('SYNC FAILED', 'فشلت المزامنة')}</b><small>${L('Tap to see the reason and retry.', 'اضغط لرؤية السبب وإعادة المحاولة.')}</small></div></button>` : '');
+}
+
+/* ---------- sync sheet: everything still on the phone ---------- */
+function syncSheet(){
+  openSheet(`<h3>${L('Sync', 'المزامنة')}</h3><p class="hint2" id="syncNet"></p><div id="syncList" class="list2" style="max-height:52vh;overflow-y:auto"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Close', 'إغلاق')}</button><button class="btn btn-primary" type="button" id="syncAll"><span class="spin"></span>${L('Retry all', 'إعادة الكل')}</button></div>`);
+  $('fCancel').onclick = closeSheet;
+  $('syncAll').onclick = () => { Outbox.items.forEach(o => { if (o.state === 'failed') { o.state = 'waiting'; o.error = ''; } o.next = 0; }); Outbox.save().then(() => Outbox.flush(true)); };
+  renderSyncList();
+}
+function renderSyncList(){
+  const el = document.getElementById('syncList'); if (!el) return;
+  const n = document.getElementById('syncNet');
+  if (n) n.textContent = Outbox.items.length ? L(`${Outbox.items.length} item(s) saved on this phone, not yet on the server.`, `${Outbox.items.length} عنصر محفوظ على الهاتف ولم يصل للخادم بعد.`)
+    : (net.offline ? L('Offline — everything already saved is on the server.', 'غير متصل — كل ما حُفظ موجود على الخادم.') : L('Everything is synced.', 'كل شيء متزامن.'));
+  el.innerHTML = Outbox.items.map(o => {
+    const t = OB_LABEL[o.action] || [o.action, o.action];
+    const what = o.label || o.payload.note || o.payload.name || o.payload.number || o.payload.custName || o.custNo || '';
+    return `<div class="vrow"><div style="flex:1;min-width:0"><div class="nm">${L(t[0], t[1])}${what ? ' · ' + esc(String(what).slice(0, 60)) : ''}</div><div class="dt">${dayShort(o.at)} ${hm(o.at)} · ${Outbox.stateHtml(o)}</div></div></div>`;
+  }).join('') || `<p class="hint2" style="padding:12px">✓ ${L('Nothing waiting.', 'لا يوجد شيء بالانتظار.')}</p>`;
+  Outbox.wire(el, renderSyncList);
+}
+
+/* ---------- Home is readable offline: the last good "today" is kept on the phone ---------- */
+const DayCache = {
+  key(){ return 'day_' + ((state.user && state.user.code) || 'x'); },
+  save(r){ try { LocalCache.set(this.key(), { r, at: Date.now() }); } catch (e) {} },
+  async load(){ try { const c = await LocalCache.get(this.key()); return c && c.r && c.r.date === riyDate(nowS()) ? c : null; } catch (e) { return null; } }
+};
+
+/* ---------- Lead → "Request customer link" (lead details screen) ---------- */
+function leadLinkCardHtml(l){
+  const rq = l && l.linkRequest;
+  if (rq && rq.status === 'PENDING') return `<div class="card" id="leadLinkReq"><div class="sec-h"><h2>${L('LINK REQUEST PENDING', 'طلب الربط قيد المراجعة')}</h2><span class="sdot st-stale">${rq.queued ? L('Pending sync', 'بانتظار المزامنة') : L('Waiting for admin', 'بانتظار المسؤول')}</span></div>
+    <p class="hint2" style="margin:0">${L('Requested customer', 'العميل المطلوب')}: <b>${esc(rq.custNo || '')}</b> ${esc(rq.custName || '')}${rq.branch ? ' · ' + esc(rq.branch) : ''}<br>${rq.at ? dayShort(rq.at) + ' ' + hm(rq.at) : ''}</p></div>`;
+  const rej = rq && rq.status === 'REJECTED' ? `<div class="warnbox" style="margin-bottom:10px"><b>${L('Link request rejected', 'تم رفض طلب الربط')}</b> — ${esc(rq.custNo || '')} ${esc(rq.custName || '')}${rq.note ? '<br>' + L('Reason', 'السبب') + ': ' + esc(rq.note) : ''}</div>` : '';
+  return `<div class="card" id="leadLinkReq">${rej}<button class="btn btn-primary" type="button" id="reqLinkBtn" style="width:100%">${L('REQUEST CUSTOMER LINK', 'طلب ربط بعميل')}</button>
+    <p class="hint2" style="margin:8px 0 0">${L('Did this lead become a real customer? Pick the customer; the admin approves and the lead’s history moves to it.', 'هل أصبح هذا العميل المحتمل عميلاً فعليًا؟ اختر العميل، ويوافق المسؤول ثم ينتقل السجل إليه.')}</p></div>`;
+}
+function wireLeadLink(l){
+  const b = $('reqLinkBtn'); if (b) b.onclick = () => leadLinkSearchSheet(l);
+}
+function refreshLeadScreen(){
+  const c = currentCust; if (!c || c.kind !== 'lead' || !$('cust').classList.contains('on')) return;
+  const l = leadsState.find(x => x.leadId === c.custNo), el = $('leadLinkReq');
+  if (l && el) { el.outerHTML = leadLinkCardHtml(l); wireLeadLink(l); }
+}
+function leadLinkSearchSheet(l){
+  openSheet(`<h3>${L('Request customer link', 'طلب ربط بعميل')}</h3>
+    <p class="hint2">${esc(l.leadId)} · ${esc(l.name)}<br>${L('Search by customer code or name (your customers and your branch).', 'ابحث بكود العميل أو اسمه (عملاؤك وعملاء فرعك).')}</p>
+    <label class="search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="llQ" type="search" autocomplete="off" placeholder="${L('Customer code or name', 'كود العميل أو الاسم')}"></label>
+    <div id="llRes" class="list2" style="max-height:46vh;overflow-y:auto"></div><div class="msg err" id="sheetMsg"></div>`);
+  let t = null;
+  const draw = () => {
+    const el = $('llRes'); if (!el) return;
+    const q = $('llQ').value.trim();
+    if (!branchDir.rows) { el.innerHTML = `<div class="gps wait"><span class="spin"></span><span class="grow">${L('Loading customers…', 'جاري تحميل العملاء…')}</span></div>`; return; }
+    if (q.length < 2) { el.innerHTML = `<p class="hint2" style="padding:12px">${L('Type at least 2 characters.', 'اكتب حرفين على الأقل.')}</p>`; return; }
+    const res = searchBranchDir(q);
+    el.innerHTML = res.length ? res.map((x, i) => `<button type="button" class="li2" data-i="${i}"><span class="li2-ic">${esc(initials(x.name))}</span><span class="m"><b>${esc(x.custNo)} · ${esc(x.name)}</b><small>${esc(x.branch)} · ${x.own ? L('My customer', 'عميلي') : L('Salesman', 'المندوب') + ': ' + esc(x.ownerName || x.ownerCode || '—')}</small></span>${ICONS.chev}</button>`).join('')
+      : `<p class="hint2" style="padding:12px">${L('No customer found.', 'لا يوجد عميل.')}</p>`;
+    el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => leadLinkConfirm(l, res[Number(b.dataset.i)]));
+  };
+  $('llQ').oninput = () => { clearTimeout(t); t = setTimeout(draw, 250); };
+  draw();
+  loadBranchDir().then(draw, e => { if (!branchDir.rows) { $('llRes').innerHTML = ''; msgInto($('sheetMsg'), errMsg(e)); } });
+}
+function leadLinkConfirm(l, x){
+  openSheet(`<h3>${L('Confirm link request', 'تأكيد طلب الربط')}</h3>
+    <dl class="lines"><dt>${L('Lead', 'العميل المحتمل')}</dt><dd>${esc(l.leadId)} · ${esc(l.name)}</dd>
+      <dt>${L('Customer code', 'كود العميل')}</dt><dd><b>${esc(x.custNo)}</b></dd><dt>${L('Customer name', 'اسم العميل')}</dt><dd>${esc(x.name)}</dd>
+      <dt>${L('Branch', 'الفرع')}</dt><dd>${esc(x.branch)}</dd><dt>${L('Salesman', 'المندوب')}</dt><dd>${x.own ? L('Me', 'أنا') : esc(x.ownerName || x.ownerCode || '—')}</dd></dl>
+    <p class="hint2">${L('The admin checks the request. After approval this lead closes and its contacts, notes and visits move to the customer.', 'يراجع المسؤول الطلب. بعد الموافقة يُغلق العميل المحتمل وتنتقل بياناته إلى العميل.')}</p>
+    <div class="msg err" id="sheetMsg"></div>
+    <div class="row2"><button class="btn btn-quiet" type="button" id="fCancel">${L('Back', 'رجوع')}</button><button class="btn btn-primary" type="button" id="fSave"><span class="spin"></span>${L('SUBMIT LINK REQUEST', 'إرسال طلب الربط')}</button></div>`);
+  $('fCancel').onclick = () => leadLinkSearchSheet(l);
+  $('fSave').onclick = () => busy($('fSave'), async () => {
+    const res = await sendOrQueue('requestLeadLink', { leadId: l.leadId, custNo: x.custNo, branch: x.branch || '' }, l.leadId, `${l.leadId} → ${x.custNo}`);
+    l.linkRequest = { status: 'PENDING', at: new Date(nowS()).toISOString(), custNo: x.custNo, custName: x.name, branch: x.branch, queued: !!res.queued };
+    closeSheet(); refreshLeadScreen();
+    toast(res.queued ? ['Saved on the phone — PENDING SYNC.', 'حُفظ على الهاتف — بانتظار المزامنة.'] : ['Link request sent to the admin.', 'تم إرسال طلب الربط للمسؤول.'], 'ok');
+  }, $('sheetMsg'));
+}
+/** Lead screen open while the admin linked / deleted it: tell the salesman, offer the customer. */
+function checkOpenLeadGone(){
+  const c = currentCust; if (!c || c.kind !== 'lead' || !$('cust').classList.contains('on')) return;
+  if (leadsState.some(l => l.leadId === c.custNo)) return;
+  const gone = (leadsClosed || {})[c.custNo];
+  if (gone && gone.linkedCode) { openLinkedLead(Object.assign({}, c, { linkedCode: gone.linkedCode, status: 'LINKED' })); toast(['Lead has been linked to customer ' + gone.linkedCode + '.', 'تم ربط العميل المحتمل بالعميل ' + gone.linkedCode + '.']); }
+  else if (gone) { toast(errText('LEAD_DELETED')); go('list'); }
+}
+
+window.addEventListener('online', () => { net.offline = false; Outbox.badge(); Outbox.flush(true); });
+window.addEventListener('offline', () => { net.offline = true; Outbox.badge(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') Outbox.flush(); });
+setTimeout(() => Outbox.load().then(() => Outbox.flush()), 1500);
 
 boot();
 </script>
