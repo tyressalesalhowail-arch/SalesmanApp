@@ -786,6 +786,7 @@ html[data-theme=dark] .k3.blue .k3-v{color:#7aa7ff}
 .cc-fig small{font-size:12px;color:var(--ink-dim)}
 .cc-num{font-size:18px;font-weight:800;font-family:'Manrope',sans-serif;white-space:nowrap}
 .cc-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-dim)}
+.cc-vis{display:flex;flex-direction:column;align-items:flex-end;text-align:end;line-height:1.35;flex:none}.cc-vis b{color:var(--ink);font-weight:700}
 .cc-acts{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;border-top:1px solid var(--line);padding-top:12px}
 .cc-acts .btn{min-height:46px;font-size:14.5px;border-radius:14px}
 .cc-acts .btn svg{width:18px;height:18px}
@@ -1752,6 +1753,7 @@ function buildSmanReportPrintHTML(d){
     <td class="num">${money(c.due)}</td>
     <td class="num">${formatPaymentDueCell(c)}</td>
     <td class="num">${formatLastPurchaseCell(c)}</td>
+    ${typeof visitStatsOf === 'function' ? (() => { const v = visitStatsOf(c.custNo); return `<td class="num" style="line-height:1.3;">${v[0] ? `<b>${v[0]}</b> ${L('total', 'إجمالي')}<br><span style="color:#5E6687;font-size:.92em">${v[1]} ${L('this month', 'هذا الشهر')}</span><br><span style="color:#5E6687;font-size:.92em">${dayShort(new Date(v[2]).toISOString())}</span>` : '—'}</td>`; })() : ''}
   </tr>`).join('');
   return `
     <div class="sman-report-page">
@@ -1772,7 +1774,7 @@ function buildSmanReportPrintHTML(d){
     <div style="font-size:10px; color:var(--ink-mute); margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;">${t('salesCollSinceStartOfYear')}</div>
     ${buildSalesCollChartSVG(d.monthlySeries)}
     <table class="sman-cust-table">
-      <thead><tr><th>${t('rowNumCol')}</th><th>${t('statusCol')}</th><th>${t('custCol')}</th><th class="num">${t('custSalesCol')}</th><th class="num">${t('overdueCol')}</th><th class="num">${t('dueCol')}</th><th class="num">${t('nextDueCol')}</th><th class="num">${t('lastInvoiceDateCol')}</th></tr></thead>
+      <thead><tr><th>${t('rowNumCol')}</th><th>${t('statusCol')}</th><th>${t('custCol')}</th><th class="num">${t('custSalesCol')}</th><th class="num">${t('overdueCol')}</th><th class="num">${t('dueCol')}</th><th class="num">${t('nextDueCol')}</th><th class="num">${t('lastInvoiceDateCol')}</th>${typeof visitStatsOf === 'function' ? `<th class="num">${L('Visits', 'الزيارات')}</th>` : ''}</tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
     </div>`;
@@ -2367,7 +2369,7 @@ function stateHTML(kind, msg){
 function applyPayload(payload){
   loadSalesmanData(payload);                                 // dashboard engine
   const f = payload.field || {};
-  field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || []; field.notes = f.notes || [];
+  field.contacts = f.contacts || []; field.phones = f.phones || []; field.locations = f.locations || []; field.visits = f.visits || []; field.notes = f.notes || []; field.visitStats = f.visitStats || null; field.visitStatsAt = nowS();
   if (day.data && day.data.visits) mergeVisits(day.data.visits);
   list.report = getSalesmanReportData(String(state.user.code));
   if (payload.custIdentity) custIdentity = { dups: new Set(payload.custIdentity.dups || []), abbr: payload.custIdentity.abbr || {} };
@@ -2490,7 +2492,7 @@ function renderCustRows(){
     return `<div class="cc" data-cc="${esc(c.custNo)}">
       <div class="cc-top" data-c="${esc(c.custNo)}"><div style="min-width:0"><div class="cc-code">${esc(c.custNo)}${phonesOf(c.custNo).length ? '' : ' · <span class="warn">' + L('no phone', 'بدون رقم') + '</span>'}</div><div class="cc-name">${esc(c.cust)}</div></div><span class="sdot ${m.cls}">${esc(lang === 'ar' && m.ar ? m.ar : m.en)}</span></div>
       <div class="cc-fig" data-c="${esc(c.custNo)}"><div><small>${L('Current', 'حالي')}</small><div class="cc-num"><em>SAR</em>${SAR.format(Math.round(c.due))}</div></div><div><small>${L('Overdue', 'متأخر')}</small><div class="cc-num ${c.overdue > 0 ? 'red' : ''}"><em>SAR</em>${SAR.format(Math.round(c.overdue))}</div></div></div>
-      <div class="cc-meta"><span class="${due.cls}">${due.t !== '—' ? L('Due ', 'الاستحقاق ') + esc(due.t) : L('Last invoice ', 'آخر فاتورة ') + esc(lastInvText(c))}</span><span>${lv ? L('Last visit ', 'آخر زيارة ') + dayShort(lv.start) : L('No visit yet', 'لا زيارات')}</span></div>
+      <div class="cc-meta"><span class="${due.cls}">${due.t !== '—' ? L('Due ', 'الاستحقاق ') + esc(due.t) : L('Last invoice ', 'آخر فاتورة ') + esc(lastInvText(c))}</span>${visitStatsHtml(c.custNo)}</div>
       <div class="cc-acts"><button class="btn btn-quiet" type="button" data-stmt="${esc(c.custNo)}">${IS}<span>${L('Statement', 'كشف حساب')}</span></button><button class="btn btn-primary" type="button" data-sv="${esc(c.custNo)}">${IV}<span>${L('Start Visit', 'بدء زيارة')}</span></button></div>
     </div>`;
   }).join('');
@@ -3180,6 +3182,21 @@ function mergeVisits(views){
     const i = field.visits.findIndex(x => x.visitId === v.visitId);
     if (i >= 0) field.visits[i] = rec; else field.visits.push(rec);
   });
+}
+/* All-time visit stats for one customer: [total, this month, last visit ms]. Server numbers (My List load) plus
+   any visit recorded on this phone since; falls back to the visits kept on the phone (last 12 months). */
+function visitStatsOf(custNo){
+  const k = String(custNo), mine = visitsOf(k), ym = riyDate(nowS()).slice(0, 7);
+  const inMonth = v => riyDate(toMs(v.start)).slice(0, 7) === ym;
+  const base = field.visitStats ? (field.visitStats[k] || [0, 0, 0]) : null;
+  if (!base) return [mine.length, mine.filter(inMonth).length, mine.length ? toMs(mine[0].start) : 0];
+  const extra = mine.filter(v => toMs(v.start) > (field.visitStatsAt || 0));
+  return [base[0] + extra.length, base[1] + extra.filter(inMonth).length, Math.max(base[2] || 0, extra.length ? toMs(extra[0].start) : 0)];
+}
+function visitStatsHtml(custNo){
+  const [n, m, last] = visitStatsOf(custNo);
+  if (!n) return `<span class="cc-vis"><b>${L('No visit yet', 'لا زيارات')}</b></span>`;
+  return `<span class="cc-vis"><b>${n} ${L(n === 1 ? 'visit' : 'visits', 'زيارة')}</b><span>${m} ${L('this month', 'هذا الشهر')}</span><span>${L('Last', 'آخر')} ${dayShort(new Date(last).toISOString())}</span></span>`;
 }
 function visitsOf(custNo){ return (field.visits || []).filter(v => String(v.custNo) === String(custNo)).sort((a, b) => toMs(b.start) - toMs(a.start)); }
 function visitLine(c){
