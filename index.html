@@ -3637,19 +3637,40 @@ function rawNotifications(){
   const out = [], d = day.data;
   if (d && d.openVisit) out.push({ key: 'v:' + d.openVisit.visitId, kind: 'visit', t: L('Visit in progress', 'زيارة جارية'), s: `${d.openVisit.custNo} — ${d.openVisit.customerName}` });
   ((d && d.invites) || []).forEach(i => out.push({ key: 'i:' + i.visitId, kind: 'invite', id: i.visitId, t: L(`${i.ownerName} added you to a visit`, `${i.ownerName} أضافك إلى زيارة`), s: `${i.custNo} — ${i.customerName}` }));
+  inbox.rows.filter(n => !n.read).forEach(n => out.push({ key: 'n:' + n.id, kind: 'admin', ref: n, t: n.title, s: n.body || '' }));
   if (typeof followUpsDue === 'function') followUpsDue().forEach(({ c, v }) => out.push({ key: 'f:' + v.visitId + ':' + v.nextVisitDate, kind: 'fu', id: c.custNo, t: L('Follow-up due', 'متابعة مستحقة') + ' · ' + dateLabel(v.nextVisitDate), s: `${c.custNo} — ${c.cust}` }));
   return out;
 }
+/* Admin messages from the server (note added to his customer, visit edited / removed / restored by admin). */
+const inbox = { rows: [], seen: null, busy: false };
+async function pollInbox(){
+  if (inbox.busy || document.hidden || !(state.user && state.user.code) || navigator.onLine === false) return;
+  inbox.busy = true;
+  try {
+    const r = await api('myNotifications', {}, 15000);
+    const rows = (r.rows || []).filter(n => Date.parse(n.at) > nowS() - 30 * 86400000);
+    const fresh = inbox.seen ? rows.filter(n => !n.read && !inbox.seen.has(n.id)) : [];
+    inbox.rows = rows; inbox.seen = new Set(rows.map(n => n.id));
+    if (fresh.length) toast(fresh.length === 1 ? fresh[0].title : L(`${fresh.length} new messages from admin`, `${fresh.length} رسائل جديدة من الإدارة`));
+    updateBadge();
+  } catch (e) { /* offline or old server: keep the last list */ }
+  finally { inbox.busy = false; }
+}
+setInterval(pollInbox, 60000);
+setTimeout(pollInbox, 4000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollInbox(); });
 function updateBadge(){ const n = notifications().length; document.querySelectorAll('[data-badge]').forEach(b => { b.textContent = n > 9 ? '9+' : String(n); b.classList.toggle('on', n > 0); }); }
 function bellSheet(){
   const items = notifications();
+  if (inbox.rows.some(n => !n.read)) { inbox.rows.forEach(n => { n.read = true; }); api('markNotificationsRead', {}, 15000).catch(() => {}); }
   openSheet(`<div class="sec-h"><h3>${L('Notifications', 'الإشعارات')}</h3>${items.length ? `<button class="mini ghost" type="button" id="nClear">${L('Clear all', 'مسح الكل')}</button>` : ''}</div>${items.length ? `<div class="lrows">${items.map((n, i) => `<div class="lrow nrow"><button type="button" class="nopen" data-n="${i}">
-      <span class="av ${n.kind === 'fu' ? 'st-risk' : 'st-new'}">${n.kind === 'fu' ? '!' : n.kind === 'invite' ? '+' : '●'}</span>
+      <span class="av ${n.kind === 'fu' ? 'st-risk' : 'st-new'}">${n.kind === 'fu' ? '!' : n.kind === 'invite' ? '+' : n.kind === 'admin' ? '✉' : '●'}</span>
       <span class="lmain"><b>${esc(n.t)}</b><small>${esc(n.s)}</small></span></button><button type="button" class="ndel" data-d="${i}" aria-label="${L('Delete', 'حذف')}">${ICONS.x}</button></div>`).join('')}</div>`
     : `<p class="hint2" style="text-align:center;padding:18px 0">${L('No notifications', 'لا توجد إشعارات')}</p>`}`);
   $('sheet').querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
     const n = items[Number(b.dataset.n)]; closeSheet();
     if (n.kind === 'visit') { show('visit'); renderVisit(); }
+    else if (n.kind === 'admin') { if (n.ref.refType === 'customer' && n.ref.refId) openCustomer(n.ref.refId); else show('history'); }
     else if (n.kind === 'invite') inviteSheet(((day.data && day.data.invites) || []).find(i => i.visitId === n.id));
     else openCustomer(n.id);
   });
